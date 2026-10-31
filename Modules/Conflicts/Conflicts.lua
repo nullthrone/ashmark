@@ -65,6 +65,35 @@ local function index()
   return idx
 end
 
+-- Old id -> current id for conflicts the dataset renamed (data/conflicts/renamed.csv). The generator
+-- only names targets that are in the data, so one step always reaches the current id.
+local function renames()
+  local data = ns.Data and ns.Data.Conflicts
+  local t = type(data) == "table" and data.renamed
+  if type(t) == "table" then return t end
+end
+
+-- Every character's stored state follows a renamed conflict, so House reads siblings' alliances by the
+-- current id. A current id already stored keeps its value; the old key goes either way.
+local function follow()
+  local r, chars = renames(), type(AshmarkDB) == "table" and AshmarkDB.chars
+  if not r or ns.DB.readOnly or type(chars) ~= "table" then return end
+  for _, char in pairs(chars) do
+    local rec = type(char) == "table" and char.conflicts
+    for _, key in ipairs(STORES) do
+      local t = type(rec) == "table" and rec[key]
+      if type(t) == "table" then
+        for old, new in pairs(r) do
+          if t[old] ~= nil and type(new) == "string" then
+            if t[new] == nil then t[new] = t[old] end
+            t[old] = nil
+          end
+        end
+      end
+    end
+  end
+end
+
 -- Public services (3.8) --------------------------------------------------------
 
 function M:All()
@@ -73,8 +102,10 @@ function M:All()
   return out
 end
 
+-- Old log entries name a renamed conflict by its old id; they resolve to the current one.
 function M:Get(id)
-  return index().byId[id]
+  local byId, r = index().byId, renames()
+  return byId[id] or (r and type(id) == "string" and byId[r[id]]) or nil
 end
 
 function M:SideOf(questId)
@@ -405,6 +436,7 @@ end
 
 function M:OnInitialize()
   idx = build()
+  follow()
   ns.Log:RegisterKind("alliance", { fields = { "c", "side", "rep" }, keep = true, render = renderAlliance })
   ns.Log:RegisterKind("violation", { fields = { "c", "side", "q", "o" }, keep = true, render = renderViolation })
   ns.Log:RegisterKind("houseturn", { fields = { "c", "side", "q", "h" }, keep = true, render = renderHouseturn })

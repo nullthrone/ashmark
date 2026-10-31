@@ -108,6 +108,46 @@ describe("Conflicts", function()
     end)
   end)
 
+  describe("renamed ids", function()
+    local function renamedData()
+      local data = mock.data()
+      data.renamed = { old_choice = "clan_choice", old_grove = "grove" }
+      return data
+    end
+
+    it("move every character's stored state to the current id, keeping a current value already stored", function()
+      wow.saved({ schema = 1, chars = {
+        [ME] = { guid = ME, name = "Aren", conflicts = {
+          allied = { old_choice = "B" }, since = { old_choice = 100 }, began = { old_choice = 3 },
+          broken = { old_choice = 1 }, turned = { old_choice = true }, violations = 1 } },
+        [SISTER] = { guid = SISTER, name = "Sera", conflicts = {
+          allied = { old_grove = "B", grove = "A", coast_raid = "A" }, since = { old_grove = 5 } } },
+      } })
+      local char = boot(nil, renamedData())
+      assert.same({ allied = { clan_choice = "B" }, since = { clan_choice = 100 }, began = { clan_choice = 3 },
+                    broken = { clan_choice = 1 }, turned = { clan_choice = true }, violations = 1 }, char.conflicts)
+      local sister = _G.AshmarkDB.chars[SISTER].conflicts
+      assert.same({ grove = "A", coast_raid = "A" }, sister.allied)
+      assert.same({ grove = 5 }, sister.since)
+      assert.same({ "B", 3 }, { ns.Conflicts:Alliance(char, "clan_choice") })
+    end)
+
+    it("resolve in Get, so entries written under an old id still render", function()
+      boot(nil, renamedData())
+      assert.equal("clan_choice", ns.Conflicts:Get("old_choice").id)
+      assert.is_nil(ns.Conflicts:Get("never_was"))
+      assert.equal("You sided with Gelkis Clan Centaur in Desolace.",
+        render({ k = "alliance", c = "old_choice", side = "A", n = 1, t = 1 }))
+    end)
+
+    it("leave a read-only record untouched", function()
+      wow.saved({ schema = 99, chars = {
+        [ME] = { guid = ME, name = "Aren", conflicts = { allied = { old_choice = "A" } } } } })
+      boot(nil, renamedData())
+      assert.same({ old_choice = "A" }, _G.AshmarkDB.chars[ME].conflicts.allied)
+    end)
+  end)
+
   describe("alliance by quest", function()
     it("forms on accepting a quest of one side", function()
       local char = boot()
