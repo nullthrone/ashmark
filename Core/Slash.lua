@@ -57,14 +57,25 @@ local function forgetCharacter(db, guid)
   end
 end
 
+-- The new record keeps Comm's sender map of the party the player is in (5.6): nobody re-sends HI, so
+-- without it every RU from that party would be dropped. Its group flag starts false, so CheckGroup
+-- fires GROUP_CHANGED(true) while grouped and Encounters opens a session for the group.
 local function wipeCharacter()
   local guid = ns.playerGUID
   if ns.DB.readOnly or not guid then return end
+  local old = type(AshmarkDB.chars[guid]) == "table" and AshmarkDB.chars[guid].state
   AshmarkDB.chars[guid] = nil
   forgetCharacter(AshmarkDB, guid)
   ns.Identity:Refresh()
   local char = ns.DB:Char()
-  if char then ns.Bus:Fire("LOG_COMPACTED", char) end
+  if char then
+    if type(old) == "table" then
+      if type(old.senders) == "table" then char.state.senders = old.senders end
+      char.state.selfSender = old.selfSender
+    end
+    ns.Bus:Fire("LOG_COMPACTED", char)
+    ns.Watch:CheckGroup()
+  end
   ns.Print(L.CORE_RESET_DONE)
 end
 

@@ -234,6 +234,37 @@ describe("Integration", function()
       assert.same({}, wow.errors)
     end)
 
+    it("keeps hearing and recording the party it is in through /ashmark reset", function()
+      local MIRA = flow.MIRA
+      wow.state.map = 1443
+      local ns = start()
+      wow.unit("party1", { guid = MIRA, name = "Mira", classFile = "MAGE", className = "Mage", raceID = 7, sex = 3,
+                           faction = "Alliance", level = 21, isPlayer = true })
+      wow.fire("GROUP_ROSTER_UPDATE")
+      wow.advance(2)
+      local function receive(...)
+        wow.fire("CHAT_MSG_ADDON", "Ashmark", table.concat({ "1", ... }, "|"), "PARTY", "Mira-Forever")
+      end
+      receive("HI", MIRA, "WANDERER", "1429", "Normal", "1.0.0")
+      SlashCmdList.ASHMARK("reset")
+      wow.script(AshmarkDialog.Accept, "OnClick")
+      local char = ns.DB:Char()
+      assert.is_table(char.state.group)
+      receive("RU", "deadbeef", "BROKE", "0", "90", "5", "OPPORTUNIST", "93", "1443")
+      assert.is_table(_G.AshmarkDB.rumours.heard.deadbeef)
+      -- Mira leaves, the first roster change since the reset: the group still ends with her as a contact.
+      wow.unit("party1", nil)
+      wow.fire("GROUP_LEFT")
+      wow.fire("GROUP_ROSTER_UPDATE")
+      wow.advance(2)
+      local kinds = {}
+      for entry in ns.Log:Iter(char, 1) do kinds[entry.k] = true end
+      assert.is_true(kinds["group.end"])
+      assert.is_true(kinds.contact)
+      assert.is_table(ns.Encounters:Contact(MIRA).byChar[char.guid])
+      assert.same({}, wow.errors)
+    end)
+
     it("keeps its record through a /reload", function()
       local ns = start()
       wow.state.map = 1443

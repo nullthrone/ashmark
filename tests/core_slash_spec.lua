@@ -96,6 +96,37 @@ describe("Core Slash", function()
     assert.same({ [alt] = 6 }, db.peers.p.logged)
   end)
 
+  it("keeps the sender map of the party it is in, and opens the group again, when reset while grouped", function()
+    local MIRA = "Player-1-00000002"
+    wow.unit("party1", { guid = MIRA, name = "Mira" })
+    wow.fire("GROUP_ROSTER_UPDATE")
+    wow.advance(1)
+    local state = ns.DB:Char().state
+    assert.is_true(state.inGroup)
+    state.senders["Mira-Forever"], state.selfSender = MIRA, "Aren-Forever"
+    state.greeted = { [MIRA] = 1 }
+    local changed = {}
+    ns.Bus:Subscribe(ns.Core, "GROUP_CHANGED", function(_, _, inGroup) changed[#changed + 1] = inGroup end)
+    SlashCmdList.ASHMARK("reset")
+    dialog.onAccept()
+    state = ns.DB:Char().state
+    assert.same({ true }, changed)
+    assert.is_true(state.inGroup)
+    assert.same({ ["Mira-Forever"] = MIRA }, state.senders)
+    assert.equal("Aren-Forever", state.selfSender)
+    assert.is_nil(state.greeted)
+  end)
+
+  it("opens no group when reset alone", function()
+    local changed = {}
+    ns.Bus:Subscribe(ns.Core, "GROUP_CHANGED", function(_, _, inGroup) changed[#changed + 1] = inGroup end)
+    SlashCmdList.ASHMARK("reset")
+    dialog.onAccept()
+    assert.same({}, changed)
+    assert.is_false(ns.DB:Char().state.inGroup)
+    assert.same({}, ns.DB:Char().state.senders)
+  end)
+
   it("wipes contacts, peers and rumours that are not own", function()
     local db = _G.AshmarkDB
     db.contacts.x, db.peers.y = {}, {}
