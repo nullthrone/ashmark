@@ -1,0 +1,87 @@
+## Interface: 16001
+## Title: Ashmark
+## Notes: Decisions leave a mark. Solo role-play for World of Warcraft Forever.
+## Author: Nullthrone
+## Version: @project-version@
+## AllowLoadGameType: forever, camelot
+## ExcludeLoadGameType: standard, classic
+## SavedVariables: AshmarkDB
+## IconTexture: Interface\Icons\INV_Misc_Book_09
+## Category: Roleplay
+## AddonCompartmentFunc: Ashmark_OnAddonCompartmentClick
+## AddonCompartmentFuncOnEnter: Ashmark_OnAddonCompartmentEnter
+## AddonCompartmentFuncOnLeave: Ashmark_OnAddonCompartmentLeave
+## X-TocVariant: Forever
+## X-License: MIT
+
+Core\Init.lua
+Core\Util.lua
+
+Locales\Locale.lua
+Locales\enUS\Core.lua
+Locales\enUS\Test.lua
+Locales\enUS\Conflicts.lua
+Locales\enUS\Profile.lua
+Locales\enUS\Map.lua
+Locales\enUS\Encounters.lua
+Locales\enUS\House.lua
+Locales\enUS\Campfire.lua
+Locales\enUS\Knowledge.lua
+Locales\enUS\Fiction.lua
+Locales\enUS\Rumours.lua
+Locales\deDE.lua
+Locales\frFR.lua
+Locales\esES.lua
+Locales\esMX.lua
+Locales\ptBR.lua
+Locales\ruRU.lua
+Locales\koKR.lua
+Locales\zhTW.lua
+Locales\zhCN.lua
+
+Core\Compat.lua
+Core\Safe.lua
+Core\Combat.lua
+Core\Events.lua
+Core\Bus.lua
+Core\DB.lua
+Core\Identity.lua
+Core\Where.lua
+Core\Names.lua
+Core\Log.lua
+Core\Watch.lua
+Core\Chronicle.lua
+Core\Comm.lua
+Core\Settings.lua
+Core\Slash.lua
+
+UI\Widgets.lua
+UI\MainFrame.lua
+UI\Dialog.lua
+UI\Notice.lua
+UI\ChatLine.lua
+UI\Compartment.lua
+
+Data\Conflicts.lua
+
+Modules\Conflicts\Conflicts.lua
+Modules\Conflicts\QuestDialog.lua
+Modules\Profile\Profile.lua
+Modules\Map\Map.lua
+Modules\Map\MapPins.xml
+Modules\Encounters\Encounters.lua
+Modules\Encounters\Tooltip.lua
+Modules\House\House.lua
+Modules\Campfire\Campfire.lua
+Modules\Knowledge\Knowledge.lua
+Modules\Fiction\Fiction.lua
+Modules\Rumours\Rumours.lua
+Modules\Traces\Traces.lua
+
+UI\Tabs\Chronicle.lua
+UI\Tabs\Decisions.lua
+UI\Tabs\Encounters.lua
+UI\Tabs\House.lua
+
+Dev\TestMode.lua
+Dev\Probe.lua
