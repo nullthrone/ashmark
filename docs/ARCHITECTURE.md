@@ -300,9 +300,11 @@ AshmarkDB = {
   profile = { fidelity = 0, habitat = 0, mercy = 0, raw = { fidelity = 0, habitat = 0, mercy = 0 },
               asOf, origin, originSec = { [zoneMapId] = s }, kept = { [conflictId] = epoch },
               day = { key, kills, loot, quest }, wild = 0, civil = 0 },   -- Profile, 7.2
-  knowledge = { held = { [itemId] = epoch }, scanned = false },           -- Knowledge
+  knowledge = { held = { [itemId] = epoch }, scanned = { bags = false, bank = false } },   -- Knowledge
   sessions = { [sessionId] = Session },                  -- Encounters, 7.4
   state = {                                              -- volatile state that survives /reload
+    inGroup = false,                                     -- Core: the group boundary (5.10)
+    senders = { [sender] = guid }, selfSender = nil,     -- Core (Comm): sender map (5.6)
     group   = Session|nil,                               -- Encounters: the open group session
     greeted = { [guid] = epoch },                        -- Fiction
     rest    = { started = epoch }|nil,                   -- Campfire
@@ -362,17 +364,17 @@ ns.Log:Compact(char)                             -- Log only
 ```
 
 `Add` rules:
-- Before `OnWorldReady`, or when the DB is read-only (4.4), `Add` returns nil.
+- Before Core sets the ready flag at the start of lifecycle step 3 (3.3), or when the DB is read-only (4.4), `Add` returns nil.
 - An unknown kind, or a reserved key in `fields`, raises an error in debug mode and is otherwise dropped or stripped.
 - Every field value must be a number, a string or a boolean and not secret. Otherwise the entry is dropped, `stats["Core.secretDropped"]` grows, and the drop is reported once per kind.
 - `n = char.seq + 1`; `t = time()`; location from `ns.Where()` unless `opts.noWhere`; the entry is appended; `LOG_ADDED(entry, char)` fires.
 
 Core registers the `quest.*`, `zone`, `level`, `death`, `rep` and `gold` kinds in `Core/Watch.lua` and `chapter` in `Core/Log.lua`. Modules register their kinds in `OnInitialize`.
 
-**Chapters.** The open chapter is every entry with `n` greater than the last chapter's `to`. `CloseChapter(members, opts)` returns nil if the open chapter is empty; otherwise it writes a `chapter { no, auto }` entry, appends `{ no = #chapters + 1, from = previous.to + 1 (or 1), to = entry.n, closed = entry.t, m, x, y, auto }` to `chapters`, and fires `CHAPTER_CLOSED(chapter, members or {})`. Campfire decides when a rest closes a chapter (7.6). In `OnWorldReady` Core closes the open chapter itself (`auto = true`, no notice) when it holds more than 1,000 entries or began more than 7 days ago, so the chronicle never becomes one endless chapter.
+**Chapters.** The open chapter is every entry with `n` greater than the last chapter's `to`. `CloseChapter(members, opts)` returns nil if the open chapter is empty; otherwise it writes a `chapter { no, auto }` entry, appends `{ no = #chapters + 1, from = previous.to + 1 (or 1), to = entry.n, closed = entry.t, m, x, y, auto }` to `chapters`, and fires `CHAPTER_CLOSED(chapter, members or {})`. Campfire decides when a rest closes a chapter (7.6). In lifecycle step 3, after every module's `OnWorldReady`, Core closes the open chapter itself (`auto = true`, no notice) when it holds more than 1,000 entries or began more than 7 days ago, so the chronicle never becomes one endless chapter.
 
 **Compaction.** Only `Log:Compact` removes entries, and it does not depend on chapters.
-- It runs in `OnWorldReady` for the current character, and after an `Add` that takes the log above 4,000 entries (scheduled with `C_Timer.After(0)` through `ns.Combat.Run("log:compact")`). An `Iter` in progress defers it.
+- It runs in lifecycle step 3, after every module's `OnWorldReady` and the automatic chapter close, for the current character, and after an `Add` that takes the log above 4,000 entries (scheduled with `C_Timer.After(0)` through `ns.Combat.Run("log:compact")`). An `Iter` in progress defers it.
 - One pass builds a new array: keep-kind entries stay; non-keep entries older than 180 days go; then the oldest non-keep entries go until at most 3,000 entries remain. If keep-kind entries alone exceed 2,000, the oldest `contact` and `peer` entries go first (their stores keep the summary).
 - The new array replaces the old one and `LOG_COMPACTED(char)` fires. Sequence numbers and chapter ranges never change; an old chapter simply contains fewer entries.
 
@@ -407,9 +409,9 @@ At `ADDON_LOADED` for this addon:
 
 1. `AshmarkDB` is set but not a table: a fresh table is built with `recovered = <old value>`.
 2. A table without `schema`: a fresh table is built with `recovered = <old table>`. Nothing is overwritten silently.
-3. `schema` newer than the code: read-only mode. `ns.DB.readOnly = true`, every module is unavailable (`"schema"`), `Log:Add` returns nil, nothing is written, `CORE_SV_NEWER` is printed. The table stays untouched, so logout writes it back unchanged.
+3. `schema` newer than the code: read-only mode. `ns.DB.readOnly = true`, every module is unavailable (`"schema"`), `Log:Add` returns nil, `CORE_SV_NEWER` is printed, and nothing is written. Core's own writers are gated: it skips the Identity refresh (no `chars[guid]` is created or updated; `M:Char()` returns the existing record or nil), `zones`, `lastSeen`, `stats` (including the played-time ticker), `state` (group flag, sender map; Comm keeps them in memory), pending `other` gold, `dev.blocked`, `dev.tests`, `dev.probes` and the settings binding (no `RegisterAddOnSetting` on `AshmarkDB.settings`; the panel shows only `CORE_SV_NEWER`). `/ashmark test` and `probe` print their report without storing it, and `/ashmark reset` refuses. The table stays untouched, so logout writes it back unchanged.
 4. `schema` older: migrations run in order; each is idempotent and tested.
-5. `AshmarkDB` is nil: a fresh table with `created = time()`, `ns.DB.fresh = true`, and `CORE_SV_NEW` is printed once: a new record has started; if Ashmark was used on this account before, the saved data did not load, and `WTF\Account\<account>\SavedVariables\Ashmark.lua.bak` must be restored while the game is closed, before the next login.
+5. `AshmarkDB` is nil: a fresh table with `created = time()`, `ns.DB.fresh = true`, and `CORE_SV_NEW` is printed once: "A new record has started. If Ashmark was used on this account before, the saved data did not load: do not /reload or log out again. Quit the game, then replace `Ashmark.lua` with `Ashmark.lua.bak` in `WTF\Account\<account>\SavedVariables\` before the next login." The client moves `Ashmark.lua` to `Ashmark.lua.bak` on every save (each /reload, logout or quit), so after a failed load the first save moves the good file to `.bak` and the second destroys it.
 
 `Core/DB.lua` creates every top-level table of the schema, including `traces`. The test report shows `created`, `fresh`, `readOnly`, `recovered` and the entry count; a second test run must find the first run's record, which proves the SavedVariables round trip.
 
@@ -505,6 +507,7 @@ ns.Identity:Unit(unit) -> Person|nil               -- nil if the GUID or name is
 ns.Identity:Group(scope) -> { [guid] = Person }    -- excludes the player, skips secret members
     -- scope "party": party1..4 (in a raid, the player's subgroup); "all": raid1..40 or party1..4
 ns.Identity:Ruleset() -> key
+ns.Identity:InGroup() -> bool                      -- IsInGroup() and GetNumGroupMembers() > 1; the only group predicate
 -- Person = { guid, name, surname, full, class, race, sex, faction, level, ruleset, unit }
 ```
 
@@ -526,7 +529,7 @@ ns.Where.Zone(m) -> mapId|nil       -- m or the first map up its parent chain wi
 ns.Where.Continent(m) -> mapId|nil  -- same for Enum.UIMapType.Continent
 ```
 
-`m = Safe.Value(C_Map.GetBestMapForUnit("player"))`. Inside an instance (`IsInInstance()`), only `i = select(8, GetInstanceInfo())` (through Safe) is set and `GetPlayerMapPosition` is not called. Otherwise, if `m` is set: `ok, pos = Safe.Call(C_Map.GetPlayerMapPosition, m, "player")`, and `pos.x`, `pos.y` are read through `Safe.Field`. Only plain numbers are rounded: `x = math.floor(px * 100 + 0.5)`. `Zone` and `Continent` walk `C_Map.GetMapInfo(id).parentMapID` with nil checks and cache per map per session.
+`m = Safe.Value(C_Map.GetBestMapForUnit("player"))`, inside instances as well. Inside an instance (`IsInInstance()`), `m` is kept when `Safe.Value` returns it, `x` and `y` are nil, `i = select(8, GetInstanceInfo())` (through Safe) is set, and `GetPlayerMapPosition` is not called. Otherwise, if `m` is set: `ok, pos = Safe.Call(C_Map.GetPlayerMapPosition, m, "player")`, and `pos.x`, `pos.y` are read through `Safe.Field`. Only plain numbers are rounded: `x = math.floor(px * 100 + 0.5)`. `Zone` and `Continent` walk `C_Map.GetMapInfo(id).parentMapID` with nil checks and cache per map per session.
 
 ### 5.5 Combat
 
@@ -583,8 +586,10 @@ ns.Comm.stats                 -- { sent, rejected, dropped, results = { [code] =
 3. Split on `|`; drop unless the version is `1` and every field passes its rule; count failures in `stats.rejected`.
 4. Drop beyond 20 messages per sender per minute.
 5. Drop messages whose sender equals `selfSender`.
-6. `HI`, `PR`: if the GUID equals `Safe.UnitGUID("player")`, set `selfSender` to this sender and drop. Otherwise accept only if some `party1..4` has `Safe.UnitGUID(unit) == guid`; then `senders[sender] = guid` for the rest of the group session. `RU`: accept only if `senders[sender]` is set.
+6. `HI`, `PR`: if the GUID equals `Safe.UnitGUID("player")`, set `selfSender` to this sender and drop. Otherwise accept only if some `party1..4` has `Safe.UnitGUID(unit) == guid`; then `senders[sender] = guid`. `RU`: accept only if `senders[sender]` is set.
 7. Call the handler (wrapped, 3.6). Handlers build a complete record before writing anything.
+
+**Sender map.** `senders` and `selfSender` are `state.senders` and `state.selfSender` of the current CharRecord (4.1), so a /reload while grouped keeps them; nobody re-sends `HI` after a reload, and an in-memory map would drop every `RU` from the party until someone new joined. On `GROUP_CHANGED(false)` (5.10) Comm clears `state.senders`; `selfSender` is kept. At most 40 senders (4).
 
 If `Compat.Has.canSend` is false or `Comm.share` is off, Ashmark only receives.
 
@@ -638,7 +643,10 @@ ns.Locale:Missing(code) -> { key, ... }   -- enUS keys the locale lacks
 ```
 
 - Locale files have no early return; `ns.Locale.tables[code]` keeps only the active locale (all locales when `loadAll` is set).
-- Keys are upper snake case with the prefix of the unit that displays them (`CORE_`, `TEST_`, `CONFLICT_`, `PROFILE_`, `MAP_`, `ENC_`, `HOUSE_`, `CAMP_`, `KNOW_`, `RUMOUR_`, `FICTION_`) and live in that unit's enUS file.
+- Keys are upper snake case. A key lives with the unit that owns the concept: in that unit's enUS file, with that unit's prefix (`CORE_`, `TEST_`, `CONFLICT_`, `PROFILE_`, `MAP_`, `ENC_`, `HOUSE_`, `CAMP_`, `KNOW_`, `RUMOUR_`, `FICTION_`). `TEST_` keys belong to Core's test mode (`enUS/Test.lua`).
+- Shared vocabularies that any unit may read: `PROFILE_<ARCHETYPE>` (Profile; shown by House, Encounters' tooltip, the `group.end` renderer and Rumours), `CORE_RULESET_<KEY>` and `CORE_UNKNOWN_*` (Core).
+- A unit's own test-check strings use its own prefix, e.g. `PROFILE_TEST_MERCY_HOWTO` in `enUS/Profile.lua`.
+- Rumours carry no sex, so `RUMOUR_HEARD_*` must phrase `{archetype}` in a gender-neutral way and have no `_F` forms; `enUS/Rumours.lua` says so to translators in a comment above these keys.
 - Placeholders are named, `{name}`, so translators can reorder them.
 - Every unit defines `<PREFIX>_MODULE_NAME` and `<PREFIX>_MODULE_DESC`.
 - A key ending in `_F` is the feminine form, used for languages that inflect (de, fr, es, pt, ru). `esMX` and `esES` are separate files.
@@ -664,11 +672,12 @@ ns.Locale:Missing(code) -> { key, ... }   -- enUS keys the locale lacks
 
 - **Quests.** `QUEST_ACCEPTED`: `questID = select(select("#", ...), ...)` (the last argument), valid only if `C_QuestLog.GetLogIndexForQuestID(questID)` returns non-nil → `quest.accept`. `QUEST_TURNED_IN(questID, xpReward, moneyReward)` → `quest.turnin`, and if `moneyReward > 0` also `gold { src = "quest", c = moneyReward }`. `QUEST_DETAIL` carries no quest ID; readers use `GetQuestID()`.
 - **Abandon.** With `abandonHooks`: `hooksecurefunc(C_QuestLog, "SetAbandonQuest")` remembers `C_QuestLog.GetAbandonQuest()`, and `hooksecurefunc(C_QuestLog, "AbandonQuest")` writes `quest.abandon` for it; `QUEST_REMOVED` is ignored. Without them: on `QUEST_REMOVED(questID)`, after `C_Timer.After(1)`, write `quest.abandon` only if no `QUEST_TURNED_IN` for that quest arrived within 2 s in either order, `not C_QuestLog.IsQuestFlaggedCompleted(questID)`, and the quest is not a task quest (`C_QuestLog.IsQuestTask`, if present).
-- **Zone.** On `ZONE_CHANGED_NEW_AREA` and in `OnWorldReady`: `z = Where.Zone(m)`; write `zone` only when `z` differs from the last `zone` entry; `first = true` and `zones[z] = t` on the first visit.
+- **Zone.** On `ZONE_CHANGED_NEW_AREA` and in lifecycle step 3 after the modules' `OnWorldReady`: `z = Where.Zone(m)`; no entry when `z` is nil; write `zone` only when `z` differs from the last `zone` entry; `first = true` and `zones[z] = t` on the first visit.
+- **Group.** The group boundary is defined once, here. On `GROUP_ROSTER_UPDATE` and `GROUP_LEFT` (coalesced 1 s), and in lifecycle step 3 after the modules' `OnWorldReady`, Core compares `ns.Identity:InGroup()` with `state.inGroup`. When they differ, Core stores the new value and fires `GROUP_CHANGED(inGroup)`. Comm, Fiction and Encounters take the group boundary only from this topic: Comm clears `state.senders`, Fiction clears `state.greeted`, Encounters opens or ends its session. Because `state.inGroup` survives /reload and logout, a character that logs back in outside the group still gets `GROUP_CHANGED(false)`.
 - **Level and death.** `PLAYER_LEVEL_UP(level)` → `level { l }`; `PLAYER_DEAD` → `death`.
-- **Reputation.** Tracked factions: every non-zero faction in `ns.Data.Conflicts` plus 2802. The baseline (`reaction`, `currentStanding` via `Safe.Fields`) is taken silently in `OnWorldReady`, or at a faction's first non-nil read. `UPDATE_FACTION` is coalesced to 1 s; for each tracked faction whose values changed, Core fires `REP_CHANGED(f, reaction, delta)`, and writes `rep { f, s = reaction, d }` only when `reaction` changed.
+- **Reputation.** Tracked factions: every non-zero faction in `ns.Data.Conflicts` plus 2802. The baseline (`reaction`, `currentStanding` via `Safe.Fields`) is taken silently at the start of lifecycle step 3, or at a faction's first non-nil read. `UPDATE_FACTION` is coalesced to 1 s; for each tracked faction whose values changed, Core fires `REP_CHANGED(f, reaction, delta)`, and writes `rep { f, s = reaction, d }` only when `reaction` changed.
 - **Gold.** On `PLAYER_MONEY`, `delta = GetMoney() - last`. Money already logged from `QUEST_TURNED_IN` is consumed first (pending for 2 s). The rest accumulates in the open context: `loot` (`LOOT_OPENED` to `LOOT_CLOSED`), `vendor` (`MERCHANT_SHOW` to `MERCHANT_CLOSED`), `trade` (`TRADE_SHOW` to `TRADE_CLOSED`), `mail` (`MAIL_SHOW` to `MAIL_CLOSED`). One `gold` entry with signed `c` is written when the context closes, if `c ~= 0`. Changes outside any context collect as `other`, written at most every 10 minutes and at logout.
-- **Played time.** `stats["Core.playedSec"]` grows by session time on a 5-minute ticker and at `PLAYER_LOGOUT`. Ashmark never calls `RequestTimePlayed()`.
+- **Played time.** `stats["Core.playedSec"]` grows by session time on a 5-minute ticker and at `PLAYER_LOGOUT`, and `lastSeen = time()` is written at the same moments. Core never writes `lastSeen` at login, so readers in `OnWorldReady` see when the previous session ended (to within 5 minutes after a crash). Ashmark never calls `RequestTimePlayed()`.
 - **Blocked actions.** `ADDON_ACTION_BLOCKED` and `ADDON_ACTION_FORBIDDEN` with arg1 == `ADDON` append `{ t, event, fn }` to `dev.blocked`.
 
 ## 6. UI
@@ -753,10 +762,10 @@ ns.Data.Conflicts = {
 - Conflicts builds its indices in `OnInitialize` (`byQuest[q] = { id, side }`, `byId`, `byZone`) and never edits the data. `tests/conflicts_spec.lua` uses its own fixture, not `Data/Conflicts.lua`.
 
 Rules, active from `OnWorldReady`:
-1. **Alliance by quest.** A `quest.accept` or `quest.turnin` entry (via `LOG_ADDED`) for a quest on side S of conflict C, with no alliance in C: `allied[C] = S`, `since[C] = t`, `alliance { c, side = S }`, `ALLIANCE_FORMED(C, S, false)`.
-2. **Alliance by reputation.** In `OnWorldReady` and on `REP_CHANGED`, for each conflict with `honored` and no alliance: read `reaction` with `Safe.Fields(C_Reputation.GetFactionDataByID(f), "reaction")` for both sides' factions. Compare `reaction` (standing ID 1 to 8; 6 = Honored) with `honored`; never compare `currentStanding`, which holds raw points. If exactly one side is at or above `honored`: `alliance { c, side, rep = true }` and `ALLIANCE_FORMED(C, S, true)`. If both are, no alliance forms.
+1. **Alliance by quest.** A `quest.accept` or `quest.turnin` entry (via `LOG_ADDED`) for a quest on side S of conflict C, with no alliance in C: `allied[C] = S`, `since[C] = t`, `alliance { c, side = S }`, `began[C]` = that entry's `n`, `ALLIANCE_FORMED(C, S, false)`.
+2. **Alliance by reputation.** In `OnWorldReady` and on `REP_CHANGED`, for each conflict with `honored` and no alliance: read `reaction` with `Safe.Fields(C_Reputation.GetFactionDataByID(f), "reaction")` for both sides' factions. Compare `reaction` (standing ID 1 to 8; 6 = Honored) with `honored`; never compare `currentStanding`, which holds raw points. If exactly one side S is at or above `honored`: `allied[C] = S`, `since[C] = t`, `alliance { c, side = S, rep = true }`, `began[C]` = that entry's `n`, `ALLIANCE_FORMED(C, S, true)`. If both are, no alliance forms.
 3. **Contradiction line.** On `QUEST_DETAIL`, `questID = GetQuestID()`. A quest on side S' of C while `allied[C]` is the other side shows `CONFLICT_CONTRADICTS` with `{faction}` = `ns.Names.Faction` of the allied side (or `CONFLICT_CONTRADICTS_NOFACTION`). Quest acceptance is never blocked; addons cannot block it.
-4. **Violation.** A `quest.turnin` of such a quest: `o = ns.Profile:IsOpportunist(char) and 1 or nil`, read before the write; `violation { c, side = S', q, o }`; `violations + 1`; `broken[C] + 1`; `allied[C] = S'`; `since[C] = t`; `ALLIANCE_BROKEN(C, S', q)`. No `alliance` entry and no `ALLIANCE_FORMED` follow; the violation is the record. The renderer uses `CONFLICT_SWITCHED` when `o == 1`, otherwise `CONFLICT_BROKE_WORD`.
+4. **Violation.** A `quest.turnin` of such a quest: `o = ns.Profile:IsOpportunist(char) and 1 or nil`, read before the write; `violation { c, side = S', q, o }`; `violations + 1`; `broken[C] + 1`; `allied[C] = S'`; `since[C] = t`; `began[C]` = the violation's `n`; `ALLIANCE_BROKEN(C, S', q)`. No `alliance` entry and no `ALLIANCE_FORMED` follow; the violation is the record. The renderer uses `CONFLICT_SWITCHED` when `o == 1`, otherwise `CONFLICT_BROKE_WORD`.
 5. **Turning from the house.** When rule 1 or 2 forms this character's first alliance in C on side S and `ns.House:SiblingAlliances(char)[C]` holds GUIDs only on the other side, Conflicts writes `houseturn { c, side = S, q, h = ns.House:Key(char) }` right after the `alliance` entry and sets `turned[C] = true`. At most once per conflict per character; never a violation.
 6. **House hint.** On `QUEST_DETAIL` for a quest on side S of C, with no alliance in C and siblings holding only the other side: `CONFLICT_HOUSE_STANDS_AGAINST` with `{house}`. Siblings on both sides: no hint.
 
@@ -776,7 +785,7 @@ The weights live in one `WEIGHTS` table at the top of `Profile.lua` and are cove
 
 | Axis | Input | Weight |
 | --- | --- | --- |
-| Fidelity | `quest.turnin` of a quest on this character's allied side (`ns.Conflicts:SideOf`) | +2 |
+| Fidelity | `quest.turnin` of a quest on the side this character was allied with before the turn-in: `C, S = ns.Conflicts:SideOf(q)`, `side, began = ns.Conflicts:Alliance(char, C)`, `side == S` and `began < entry.n`. A violation or an alliance formed by this turn-in begins at a later `n` and earns nothing | +2 |
 | | an alliance held 7 days since `since[C]` or the last award (`kept[C]`) | +5 |
 | | `violation` | -25, or -15 when `o == 1` |
 | | `quest.abandon` | -2 |
@@ -792,10 +801,13 @@ The weights live in one `WEIGHTS` table at the top of `Profile.lua` and are cove
 `CAPITAL_MAPS = { 1453, 1454, 1455, 1456, 1457, 1458 }` (Stormwind, Orgrimmar, Ironforge, Thunder Bluff, Darnassus, Undercity), at the top of `Profile.lua`.
 
 **Kill approximation** (no combat log):
-- Out of combat, on `PLAYER_TARGET_CHANGED` and `UNIT_FLAGS` for `target`: `cand` is set only if a target exists, `Safe.Value(UnitReaction("target", "player")) == 4`, `Safe.Bool(UnitAffectingCombat("target")) == false` and `Safe.Bool(UnitPlayerControlled("target")) == false`; `cand.critter = isCritter("target")`. Any secret read clears `cand` and adds to `Profile.killSecret`.
-- `PLAYER_REGEN_DISABLED` freezes `cand` (no new reads). If `cand` is set, Profile adds to `Profile.killCand` and registers `UNIT_HEALTH` for `target`. "Attacked" means: the target when combat began.
+- "Out of combat" means live `Safe.Bool(UnitAffectingCombat("player")) == false`, read at each sample; never `InCombatLockdown()` and never a flag set by the REGEN events. A secret read counts as in combat: no sample.
+- Out of combat, `PLAYER_TARGET_CHANGED` samples from scratch: `cand` is set only if a target exists, `Safe.Bool(UnitIsDead("target")) == false`, `Safe.Value(UnitReaction("target", "player")) == 4`, `Safe.Bool(UnitAffectingCombat("target")) == false` and `Safe.Bool(UnitPlayerControlled("target")) == false`; `cand.critter = isCritter("target")`. Otherwise `cand = nil`.
+- Out of combat, `UNIT_FLAGS` for `target` samples the same way while there is no `cand`. With a `cand` it only refreshes the reaction and the secret checks: it clears `cand` when the reaction is no longer 4 or a read is secret, never because the target is now in combat. The target and the player usually enter combat in the same server update, and `UNIT_FLAGS(target)` can be dispatched before `PLAYER_REGEN_DISABLED`. The target itself changes only through `PLAYER_TARGET_CHANGED`, which samples again.
+- Any secret read clears `cand` and adds to `Profile.killSecret`.
+- `PLAYER_REGEN_DISABLED` freezes `cand` (no new samples). If `cand` is set, Profile adds to `Profile.killCand` and registers `UNIT_HEALTH` for `target`. "Attacked" means: the target when combat began.
 - In combat, `PLAYER_TARGET_CHANGED` clears `cand`, so no GUID comparison is needed.
-- On `UNIT_HEALTH` while `cand` is set: if `Safe.Bool(UnitIsDead("target")) == true` and `Safe.Bool(UnitIsTapDenied("target")) == false`, write `kill.critter` (when `cand.critter`) or `kill.neutral`, count it, clear `cand` and unregister. `PLAYER_REGEN_ENABLED` clears and unregisters as well.
+- On `UNIT_HEALTH` and on `UNIT_FLAGS` for `target` while a frozen `cand` is set: if `Safe.Bool(UnitIsDead("target")) == true` and `Safe.Bool(UnitIsTapDenied("target")) == false`, write `kill.critter` (when `cand.critter`) or `kill.neutral`, count it, clear `cand` and unregister `UNIT_HEALTH`. Checking both events catches a death that shows up in a flags update after the last health update. `PLAYER_REGEN_ENABLED` clears and unregisters as well.
 - `isCritter(unit)`: creature type 8. The second return of `UnitCreatureType(unit)` if it is a number; otherwise the first return equals `C_CreatureInfo.GetCreatureTypeInfo(8).name` (`critterType`). Neither available: false, so `kill.critter` is off and the test report says so.
 - Counters `Profile.killCand`, `killSecret`, `killNeutral`, `killCritter` feed the Mercy accuracy check (7.10).
 
@@ -866,12 +878,12 @@ Session = { id = <ns.Util.Token()>, start, stop, members = { guid, ... }, people
 
 Contacts are keyed by the contact's GUID account-wide; counts, dates and outcomes live per character, so an alt does not remember what a sibling met. The House tab shows sibling meetings as family memory.
 
-- **Membership**, everywhere including instances: on `GROUP_ROSTER_UPDATE` and `GROUP_LEFT` (coalesced 1 s), `IsInGroup() and GetNumGroupMembers() > 1` opens a session in `state.group` if none is open; otherwise the open session ends.
+- **Membership**, everywhere including instances: `GROUP_CHANGED(true)` (5.10) opens a session in `state.group` if none is open; `GROUP_CHANGED(false)` ends the open session. Encounters never decides the group boundary itself. While a session is open, it adds members when it opens and on every `GROUP_ROSTER_UPDATE` (coalesced 1 s).
 - **Snapshots** via `ns.Identity:Group("all")` only when `not IsInInstance()` and `not ns.Safe.InLockdown()`; `people` holds up to 40 Persons. A member who joins inside an instance is snapshotted at the first roster update outside it, or never; such members appear in `members` only.
 - **Context:** `zone` entries during the session add to `maps`; `PLAYER_ENTERING_WORLD` inside an instance adds `select(8, GetInstanceInfo())` (through Safe) to `inst`. `ENCOUNTER_END`: `success = Safe.Value(select(5, ...))`; `== 1` adds a boss, `== 0` a wipe, secret counts neither; `encounterName` is never read. `CHAPTER_CLOSED` with members sets `camp`. `CHAT_MSG_SYSTEM`: `msg = Safe.Value(...)`; `if msg and msg == ERR_UNINVITE_YOU` sets `kick` (kick detection is unavailable where the text is secret, e.g. inside instances).
 - **Outcome** `e` at session end, first that applies: `kick`, `boss`, `wipe`, `camp`, `travel`.
 - **Session end:** `stop = now`. For each member in `people`: the contact's snapshot fields are overwritten; `byChar[current]` gets `count + 1`, `first` if unset, `last`, `lastPlace` (last of `maps`), `lastInstance`, `outcomes[e] + 1` and the session id (keep 10); a `contact { p }` entry on this character's first meeting; `CONTACT_UPDATED(guid)`. Then `group.end { g = id, size = #members, inst = last of inst, e }`, `sessions[id] = session` (without `people`), `state.group = nil`, `GROUP_SESSION_ENDED(session)`.
-- **Reload and login:** in `OnWorldReady`, an open `state.group` resumes if `IsInGroup()` and at least one stored member is still in the group; otherwise it ends with `stop = char.lastSeen`.
+- **Reload and login:** in `OnWorldReady`, an open `state.group` resumes if `ns.Identity:InGroup()` and at least one stored member is still in the group. Otherwise it ends with `stop = char.lastSeen`, the end of the previous session (5.10), not the login time; if the player is in a group, a new session then opens.
 - **Recognition:** when a roster update adds members this character has met, one chat line `ENC_RECOGNISE` ("You know {name}: met {count}×, last in {place}.") for at most 3 of them, then `ENC_RECOGNISE_MORE` ("…and {count} more you know."). Not inside instances.
 - **Recurring contact:** `byChar[current].count >= 3` (`ENC_RECURRING`).
 - **Unit tooltip** (`Tooltip.lua`, through `M:Hook`): `TooltipDataProcessor.AddTooltipPostCall(Enum.TooltipDataType.Unit, function(tooltip, data) ... end)`. Return unless `tooltip == GameTooltip` and not `tooltip:IsForbidden()`; `guid, ok = Safe.Field(data, "guid")` (`TooltipUtil.GetDisplayedUnit` only as a fallback); return unless ok and `byChar[current]` exists; add `ENC_TOOLTIP` ("Met: {count}× · last {place}"), plus `ENC_TOOLTIP_PEER` ("{archetype}") when `ns.Fiction:Peer(guid)` exists.
@@ -887,7 +899,7 @@ Contacts are keyed by the contact's GUID account-wide; counts, dates and outcome
 - `/ashmark house <name>`: if `<name>` equals the stored surname of an account character ignoring ASCII case, that stored surname becomes `houseOverride`; otherwise `<name>` as typed (trimmed). `house reset` clears it. Both fire `HOUSE_CHANGED`.
 - `SiblingAlliances(char)`: the siblings' `conflicts.allied`, grouped per conflict into `A` and `B` GUID lists.
 - `FamilyChronicle(char, limit)`: all members' `alliance`, `violation`, `houseturn`, `chapter` and `level` (multiples of 10 only) entries, newest first, rendered with `ctx.own = (member == char)`.
-- **House tab:** members sorted by level (class icon, level, full name, ruleset tag when rulesets differ); the three axes as `ns.UI:StatusBar`s labelled with the archetype; inherited feuds = sibling alliances this character does not share; the family chronicle; family memory = siblings' recurring contacts ("{sibling} knows {name}"); the Legacy level if `legacy` (`C_MajorFactions.GetMajorFactionData(2802).renownLevel`, else the standing label `GetText("FACTION_STANDING_LABEL" .. reaction, sex)`).
+- **House tab:** members sorted by level (class icon, level, full name, ruleset tag when rulesets differ); the three axes as `ns.UI:StatusBar`s labelled with the archetype; inherited feuds = sibling alliances this character does not share; the family chronicle; family memory = siblings' recurring contacts from `ns.Encounters:Known(sibling, 3)` ("{sibling} knows {name}"); the Legacy level if `legacy` (`C_MajorFactions.GetMajorFactionData(2802).renownLevel`, else the standing label `GetText("FACTION_STANDING_LABEL" .. reaction, sex)`).
 
 ### 7.6 Campfire (Module 6)
 
@@ -904,19 +916,20 @@ ns.Campfire.AURAS = {
 ```
 
 - **Check()**: return if `InCombatLockdown()` or `Safe.AurasRestricted("player") == true`. For each tracked ID: `ok, aura = Safe.Call(C_UnitAuras.GetPlayerAuraBySpellID, id)`; if any call is not ok, return and keep the old state. `now[id] = aura ~= nil`; diff with `present`. The `UNIT_AURA` payload is ignored.
-- Called on `UNIT_AURA` (unit event, `player`) and `PLAYER_REGEN_ENABLED`. In `OnWorldReady` it only seeds `present` and fires no transitions, so a reload at a camp writes nothing.
-- **Transitions:** `WELCOME` appears → `state.rest = { started = t }`. `BENEFITS` appears while `state.rest` is set → `rest.camp`, `state.rest = nil`, chapter check. Any `BEDROLL` ID appears → `rest.bedroll`, chapter check.
+- Called on `UNIT_AURA` (unit event, `player`) and `PLAYER_REGEN_ENABLED`. In `OnWorldReady` it only seeds `present` and fires no transitions, so a reload at a camp writes nothing; then `state.rest` is cleared unless `WELCOME` is present.
+- **Transitions**, in this order within one Check: `BENEFITS` appears while `state.rest` is set → `rest.camp`, `state.rest = nil`, chapter check. `WELCOME` disappears while `state.rest` is still set (the player stood up before the benefit) → `state.rest = nil`. `WELCOME` appears → `state.rest = { started = t }`. Any `BEDROLL` ID appears → `rest.bedroll`, chapter check.
+- A `state.rest` older than 10 minutes is stale: Check clears it before the transitions, and `IsResting()` ignores it, so a later `BENEFITS` never writes `rest.camp` against an old start.
 - **Chapter check:** the open chapter holds at least 20 entries (`Log:Seq(char)` minus the last chapter's `to`) or began at least 30 minutes ago → `ns.Log:CloseChapter(members)` with the GUIDs of `ns.Identity:Group("party")`; notice `CAMP_CHAPTER_CLOSED` ("Chapter {roman} closes · {place}") with `ns.Util.Roman` and `ns.Names.Map`; the page-turn sound.
-- `IsResting()`: `state.rest ~= nil` or `present[WELCOME]`.
+- `IsResting()`: a `state.rest` at most 10 minutes old, or `present[WELCOME]`.
 
 ### 7.7 Knowledge (Module 7)
 
 Held items:
 - Bags: `Enum.BagIndex.Backpack` to `Enum.BagIndex.ReagentBag` (0 to `NUM_TOTAL_EQUIPPED_BAG_SLOTS`). Bank, on `BANKFRAME_OPENED`: every `Enum.BagIndex` value whose key contains `Bank` and not `Account`, plus `Enum.BagIndex.Bank` if present, keeping those with `C_Container.GetContainerNumSlots(i) > 0`. Equipment: `GetInventoryItemID("player", slot)` for `INVSLOT_FIRST_EQUIPPED` to `INVSLOT_LAST_EQUIPPED`.
 - Events: `BAG_UPDATE_DELAYED` (coalesced 1 s), `PLAYER_EQUIPMENT_CHANGED`, `BANKFRAME_OPENED`.
-- A new item ID writes `knowledge.held[id] = t` and an `item.held { it }` entry. The first full scan of a character (`scanned == false`) fills `held` silently and sets `scanned = true`.
+- A new item ID writes `knowledge.held[id] = t` and an `item.held { it }` entry. Silence is tracked per area: the first full scan of bags and equipment (`scanned.bags == false`) and the first bank scan (`scanned.bank == false`) fill `held` silently and set their flag, so the first bank visit after install writes no burst of entries.
 
-Item tooltip (`TooltipDataProcessor.AddTooltipPostCall(Enum.TooltipDataType.Item, fn)` through `M:Hook`), in this order:
+Item tooltip (`TooltipDataProcessor.AddTooltipPostCall(Enum.TooltipDataType.Item, fn)` through `M:Hook`), in this order. Steps 2 to 8 are one function of `(tooltip, data)`; the post-call runs step 1 and then calls it, and the test check calls it directly (7.10).
 1. Return unless the tooltip is `GameTooltip`, `ItemRefTooltip`, `ShoppingTooltip1` or `ShoppingTooltip2`, is not `IsForbidden()`, and `GetName()` is not nil.
 2. `id, ok = Safe.Field(data, "id")`; return unless ok and id.
 3. Return if this character holds the item.
@@ -924,7 +937,7 @@ Item tooltip (`TooltipDataProcessor.AddTooltipPostCall(Enum.TooltipDataType.Item
 5. Revealed = `C_Item.IsItemDataCachedByID(id)`, cached per item per session and updated on `ITEM_DATA_LOAD_RESULT` and `GET_ITEM_INFO_RECEIVED`. Not revealed: return (the server still hides it). The post-call never calls `C_Item.GetItemInfo` and never requests item data.
 6. For `i = 2, tooltip:NumLines()`: read `_G[name .. "TextLeft" .. i]:GetText()` and `TextRight` through Safe; if any text is secret, return without changes.
 7. Keep line 1 and every line that is: of type `ItemName`, `ItemBinding`, `EquipSlot`, `SellPrice` or `Restricted*` (`data.lines[i].type`, used only when `#data.lines == tooltip:NumLines()`, i.e. no other addon added lines); matching `ITEM_LEVEL` turned into a pattern once at load (magic characters escaped, `%d` → `%d+`, `%s` → `.+`); or equal to the item's type or subtype from `C_Item.GetItemInfoInstant`. Every other line gets `SetText("")` on its left and right font strings.
-8. Add `KNOW_UNKNOWN` ("Your character has never held this."), then `tooltip:Show()` to resize.
+8. Add `KNOW_UNKNOWN` ("Your character has never held this."), then `tooltip:Show()` to resize (rule 11).
 
 Three states result: hidden by the server (untouched), revealed but never held by this character (lines hidden), held (untouched).
 
@@ -951,7 +964,12 @@ Peer = { guid, archetype, origin, ruleset, version, profile = { fidelity, habita
          first, last, seenBy = { [charGuid] = archetype } }
 ```
 
-- **Greeting:** on `GROUP_ROSTER_UPDATE` (coalesced 2 s), if `ns.Identity:Group("party")` holds a GUID not in `state.greeted`, send `HI { guid, archetype, origin, ruleset, version }` and then `PR { guid, fidelity, habitat, mercy }`, and set `greeted[guid] = now` for every current party member. At most one greeting per 30 s. `state.greeted` is cleared when the group session ends. Every client greets on its own roster change, so nobody replies and nothing loops: one join in a party of five costs at most 10 messages across all clients.
+- **Greeting:** the roster check runs on `GROUP_ROSTER_UPDATE` (coalesced 2 s) and once in `OnWorldReady`:
+  1. Every GUID in `state.greeted` that is no longer in `ns.Identity:Group("party")` is removed, so a member who leaves and rejoins is greeted again.
+  2. If the party holds a GUID not in `state.greeted`, send `HI { guid, archetype, origin, ruleset, version }` and then `PR { guid, fidelity, habitat, mercy }`, and set `greeted[guid] = now` for every current party member.
+  3. At most one greeting per 30 s. A greeting due inside the window waits instead of being dropped: `ns.Util.Debounce("Fiction.greet", remaining, check)` runs the roster check again when the window ends, so a member who joins within 30 s of the last greeting is still greeted.
+
+  `state.greeted` is cleared on `GROUP_CHANGED(false)` (5.10). Every client greets on its own roster change, so nobody replies and nothing loops: one join in a party of five costs at most 10 messages across all clients. A /reload loses nothing: `state.greeted` and Comm's sender map (5.6) both survive it.
 - `version` = `ns.version` stripped to `[%w.%-]` and cut to 20 characters, or `dev`. `origin` = `ns.Profile:Origin(char)` or 0.
 - **Receiving `HI`** (validated by Comm): `peers[guid]` is created or updated through `Safe.Clean`, then `PEER_SEEN(guid, peer, isNew)`. A `peer { p, a }` entry is written when `seenBy[current]` is unset or differs from the archetype. **`PR`** updates the profile of an existing peer only.
 - `PresentPeers()`: peers whose GUID is in `ns.Identity:Group("party")`.
@@ -962,6 +980,9 @@ Peer = { guid, archetype, origin, ruleset, version, profile = { fidelity, habita
 
 ```lua
 ns.Test:Register(id, fn)   -- Core/Init.lua; fn() -> ok (true, false, or nil = skipped), detail (string)
+ns.Test:Tooltip()          -- Core/Init.lua; AshmarkTestTooltip, created on first call with
+                           -- CreateFrame("GameTooltip", "AshmarkTestTooltip", UIParent, "GameTooltipTemplate"),
+                           -- returned cleared and owned (ClearLines, SetOwner(UIParent, "ANCHOR_NONE"))
 ```
 
 Every unit registers its own checks in `OnInitialize`, in its own files; `Dev/TestMode.lua` only runs them.
@@ -969,11 +990,11 @@ Every unit registers its own checks in `OnInitialize`, in its own files; `Dev/Te
 `/ashmark test`:
 1. In combat (`InCombatLockdown()`): print `TEST_NOT_IN_COMBAT` and stop.
 2. Run every registered check synchronously, each through the error wrapper.
-3. Store `AshmarkDB.dev.tests[#+1] = { t, build, locale, project, tocVariant, db = { created, fresh, readOnly, recovered, entries, seq }, comm = ns.Comm.stats, results = { { id, ok, detail }, ... } }`.
+3. Store `AshmarkDB.dev.tests[#+1] = { t, build, locale, project, tocVariant, db = { created, fresh, readOnly, recovered, entries, seq }, comm = ns.Comm.stats, results = { { id, ok, detail }, ... } }`. `recovered` is only `type(AshmarkDB.recovered)` or nil, never the value, which can be a whole old DB. In read-only mode nothing is stored (4.4).
 4. Print a summary (`TEST_SUMMARY`).
 5. Show `AshmarkFrame` on the Chronicle tab. If `QuestFrame:IsShown()`, anchor `AshmarkFrame` to the right of it; otherwise print `TEST_OPEN_QUEST_DIALOG` ("Talk to a quest giver first for the screenshot."). Ashmark never opens the quest log or the world map.
 6. Call `Screenshot()` directly in the slash handler (the key press is the hardware event). `SCREENSHOT_SUCCEEDED`, `SCREENSHOT_FAILED`, and `ADDON_ACTION_BLOCKED` / `ADDON_ACTION_FORBIDDEN` with arg1 == `ADDON` within the next 10 s are added to the same test record.
-7. Print `TEST_RELOAD` ("Type /reload to save the results."). Addon code cannot reload the UI without a hardware event, so Ashmark never calls `C_UI.Reload` or `ReloadUI`. If `ns.DB.fresh` is set, `CORE_SV_NEW` is printed first.
+7. Print `TEST_RELOAD` ("Type /reload to save the results."). Addon code cannot reload the UI without a hardware event, so Ashmark never calls `C_UI.Reload` or `ReloadUI`. If `ns.DB.fresh` is set, the test mode prints `CORE_SV_NEW` (4.4) in place of `TEST_RELOAD`: a reload is a save that moves the files (4.4), and after it `fresh` is false, so no second warning would come.
 
 Core checks:
 - Forever detection, TOC variant, build; every `Compat.Has` value; each module's `enabled`, `unavailable` and `missingEvents`.
@@ -987,10 +1008,10 @@ Core checks:
 
 Unit checks:
 - Conflicts: every quest ID yields a title and every faction ID a name (uncached → "pending, run again"), so `verified = false` entries can be checked in the client.
-- Profile: the kill counters, `critterType`, and `TEST_MERCY_HOWTO` ("Kill 3 critters and 3 calm neutral beasts, then run /ashmark test again.").
+- Profile: the kill counters, `critterType`, and `PROFILE_TEST_MERCY_HOWTO` ("Kill 3 critters and 3 calm neutral beasts, then run /ashmark test again.").
 - Map: atlases, pin template, provider added.
 - Encounters, Knowledge: the tooltip handler on secret input (with `secretwrap`) changes nothing and raises nothing.
-- Knowledge: lines hidden on a sample tooltip for a revealed item the character has not held (first match from a short list in `Knowledge.lua`).
+- Knowledge: lines hidden on a sample tooltip for a revealed item the character has not held (first match from a short list in `Knowledge.lua`). The check never displays a Blizzard tooltip: `tip = ns.Test:Tooltip()`, `tip:SetItemByID(id)`, then the post-call body (7.7, steps 2 to 8) runs on `(tip, C_TooltipInfo.GetItemByID(id))`; the check reads the blanked lines and hides `tip`.
 - Campfire: each aura ID resolves through `C_Spell.GetSpellName`; current `present` state.
 - Fiction, Rumours: peer, rumour and told counts.
 
@@ -1002,6 +1023,7 @@ Unit checks:
 - `Enum.GameRule` keys `HardcoreRuleset`, `RPRuleset`, `PvPRuleset`, `RPPvPRuleset` and `IsGameRuleActive` for each; `C_GameRules.GetForeverExperiencePreset()`.
 - Camp auras present; faction data for 92, 93 and 2802; `C_MajorFactions.GetMajorFactionData(2802)`.
 - `UnitCreatureType("target")` (all returns), `C_CreatureInfo.GetCreatureTypeInfo(8)`.
+- For the next pull (registered for the session): the dispatch order of `UNIT_FLAGS` for `target`, `UNIT_FLAGS` for `player` and `PLAYER_REGEN_DISABLED`, each with `GetTime()` and `UnitAffectingCombat` of `player` and `target` at that moment (7.2).
 - `Enum.BagIndex` keys and values; line types of `C_TooltipInfo.GetItemByID(6948)`.
 - `C_EventUtils.IsEventValid` for every event named in this spec (the list lives in `Probe.lua`).
 - The argument count and values of the next `QUEST_ACCEPTED` (registered for the session).
@@ -1032,21 +1054,23 @@ wow.combat(on)                     -- InCombatLockdown and the REGEN events
 | Spec | Covers |
 | --- | --- |
 | `core_log` | sequence numbers, `Add` checks (reserved keys, secrets), `Iter` ranges, compaction by size and by age, `CloseChapter`, auto chapter |
-| `core_db` | fresh, recovered, newer schema read-only, migrations |
-| `core_comm` | field whitelist, size limit, schema validation, throttle, priorities, lockdown pause, GUID check against party units, self drop, sender map |
+| `core_db` | fresh, recovered, newer schema read-only (Core writes nothing: Identity, settings binding, `stats`, `state`, `dev.*`), migrations |
+| `core_comm` | field whitelist, size limit, schema validation, throttle, priorities, lockdown pause, GUID check against party units, self drop, sender map: `RU` accepted after a /reload from a sender learned before it (`state.senders`), cleared on `GROUP_CHANGED(false)`, relearned from the `HI` of a member who left and rejoined, cap |
 | `core_safe`, `core_events`, `core_errors` | secret proxy; shared and unit frames with refcounts, invalid events; once per source, disable after 10 |
+| `core_bus` | subscription order; a `Fire` inside a handler is queued and delivered FIFO after the current topic reached every subscriber |
+| `core_lifecycle` | ready flag at the start of step 3, Core's zone, group, chapter and compaction writes after every `OnWorldReady` |
 | `core_locale` | fallback, `Format`, `Gender`, `Missing` for every locale (`loadAll`) |
 | `core_identity`, `core_where`, `core_names` | surname order and rejection, ruleset; nil map, nil position, secret map; placeholders and requests |
-| `core_watch` | `QUEST_ACCEPTED` argument, abandon in both event orders, gold contexts, rep baseline and standing change, first zone visit |
-| `conflicts` | alliance by accept and turn-in, reputation trigger (`reaction`, both sides), contradiction line, violation with `o` read before the write, `houseturn`, no hint when siblings are split, faction 0 |
-| `profile` | weights, decay, day rollover, archetype, origin, kill approximation incl. secret and tap-denied |
+| `core_watch` | `QUEST_ACCEPTED` argument, abandon in both event orders, gold contexts, rep baseline and standing change, first zone visit, no zone entry for a nil zone, `GROUP_CHANGED` only on change and after login outside the stored group, `lastSeen` never written at login |
+| `conflicts` | alliance by accept and turn-in, reputation trigger (`reaction`, both sides), contradiction line, violation with `o` read before the write, `began` set by alliance and violation, `houseturn`, no hint when siblings are split, faction 0 |
+| `profile` | weights, decay, day rollover, archetype, origin, kill approximation incl. secret and tap-denied, `UNIT_FLAGS(target)` in combat before `PLAYER_REGEN_DISABLED` keeps `cand`, death seen on `UNIT_FLAGS`; a violating turn-in changes fidelity by exactly the violation weight, an alliance formed by the turn-in earns no +2 |
 | `map` | placement on zone and continent maps, combat deferral |
-| `encounters` | session lifecycle in and out of instances, outcome priority, `ENCOUNTER_END` with success 0, per-character contact merge, resume after reload |
+| `encounters` | session lifecycle on `GROUP_CHANGED` in and out of instances, outcome priority, `ENCOUNTER_END` with success 0, per-character contact merge, resume after reload, a stale session ended after a long offline gap stops at the previous `lastSeen`, `Known` |
 | `house` | key, override matching, sibling alliances with split sides, family chronicle filter |
-| `campfire` | aura transitions, seed after reload, chapter thresholds |
-| `knowledge` | silent first scan, keep set by type and by pattern, secret bail-out |
+| `campfire` | aura transitions, seed after reload, chapter thresholds, `state.rest` cleared when `WELCOME` goes without `BENEFITS` and after 10 minutes |
+| `knowledge` | silent first scan of bags and of the bank, keep set by type and by pattern, secret bail-out |
 | `rumours` | ids, decay with age, precision loss, caps, re-print limits |
-| `fiction` | greeting once per member, no loop, peer storage, `PR` before `HI` |
+| `fiction` | greeting once per member, no loop, peer storage, `PR` before `HI`, a join inside the 30 s window greeted when it ends, leave and rejoin greeted again, `greeted` cleared on `GROUP_CHANGED(false)`, no re-greeting after a /reload |
 
 - `luacheck .` must pass with `.luacheckrc` (Core): std `lua51`, a broad WoW `read_globals` list, Ashmark's globals (3.1) as `globals`. A unit that reads a WoW global missing from the list declares it at the top of its own file with `-- luacheck: read globals X, Y`. Units never edit `.luacheckrc`.
 - CI (Packaging) runs busted, luacheck, `python3 tools/conflicts.py --check` and the TOC file-list comparison on every push and pull request.
@@ -1067,7 +1091,7 @@ Every file in the repository belongs to exactly one unit.
 | Knowledge | `Modules/Knowledge/*`, `Locales/enUS/Knowledge.lua`, `tests/knowledge*_spec.lua`, `tests/helpers/knowledge_mock.lua` |
 | Rumours | `Modules/Rumours/*`, `Locales/enUS/Rumours.lua`, `tests/rumours*_spec.lua`, `tests/helpers/rumours_mock.lua` |
 | Fiction | `Modules/Fiction/*`, `Modules/Traces/Traces.lua`, `Locales/enUS/Fiction.lua`, `tests/fiction*_spec.lua`, `tests/helpers/fiction_mock.lua` |
-| Dataset | `data/conflicts/*.csv`, `tools/conflicts.py`, `Data/Conflicts.lua` |
+| Dataset | `data/conflicts/*` (the CSV files and `README.md`), `tools/conflicts.py`, `Data/Conflicts.lua` |
 | Localization | `Locales/deDE.lua`, `frFR.lua`, `esES.lua`, `esMX.lua`, `ptBR.lua`, `ruRU.lua`, `koKR.lua`, `zhTW.lua`, `zhCN.lua`; delivers the TOC `## Notes-<locale>` texts in its report, Core inserts them |
 | Packaging | `.pkgmeta`, `.github/workflows/*` |
 | Docs | `README.md`, `docs/index.html` |
