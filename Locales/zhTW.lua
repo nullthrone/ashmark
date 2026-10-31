@@ -15,24 +15,24 @@ L.CORE_TITLE = "Ashmark"
 
 -- Load safety (4.4)
 L.CORE_NOT_FOREVER = "Ashmark 只能在 World of Warcraft Forever 上運作，在此用戶端中不會啟用。"
-L.CORE_SV_NEW = "新的紀錄已經開始。如果此帳號曾使用過 Ashmark，那麼已儲存的資料並未載入："
-  .. "請不要再輸入 /reload 或登出。請結束遊戲，並在下次登入前，將 "
-  .. "WTF\\Account\\<帳號名稱>\\SavedVariables\\ 中的 Ashmark.lua 換成 Ashmark.lua.bak。"
+L.CORE_SV_NEW = "已開始新的紀錄。如果此帳號曾使用過 Ashmark，表示已儲存的資料未能載入："
+  .. "請勿再次 /reload 或登出。請離開遊戲，並在下次登入前，於 "
+  .. "WTF\\Account\\<帳號名稱>\\SavedVariables\\ 中以 Ashmark.lua.bak 取代 Ashmark.lua。"
 L.CORE_SV_NEWER = "這些已儲存的資料來自較新版本的 Ashmark。在你更新之前，Ashmark 只會讀取這些資料。"
-L.CORE_SV_RECOVERED = "已儲存的資料不是 Ashmark 認得的格式。新的紀錄已經開始；舊資料原封不動地保留在 "
+L.CORE_SV_RECOVERED = "已儲存的資料不是 Ashmark 認得的格式。已開始新的紀錄；舊資料原封不動地保留在 "
   .. "AshmarkDB.recovered 中。"
 L.CORE_SV_MIGRATE_FAILED = "Ashmark 無法更新其已儲存的資料，本次登入期間只會讀取這些資料。"
 
 -- Modules and settings (3.2, 4.3)
-L.CORE_MODULE_FAILED = "模組「{module}」在多次出錯後已停止，直到下次重新載入前都會保持關閉。"
+L.CORE_MODULE_FAILED = "模組「{module}」因多次出錯而停止運作，在下次重新載入介面前都會保持關閉。"
 L.CORE_UNAVAILABLE = "需要 {capability}"
 L.CORE_MISSING_EVENTS = "此用戶端缺少的事件：{events}"
 L.CORE_SETTING_CHAT_LINES = "聊天視窗訊息"
 L.CORE_SETTING_CHAT_LINES_DESC = "Ashmark 可以在聊天視窗中寫下簡短的訊息。"
 L.CORE_SETTING_SOUNDS = "音效"
-L.CORE_SETTING_SOUNDS_DESC = "Ashmark 會播放遊戲中翻頁與書本的音效。"
+L.CORE_SETTING_SOUNDS_DESC = "Ashmark 會播放遊戲本身的翻頁與書本音效。"
 L.CORE_SETTING_SHARE = "與其他 Ashmark 使用者分享"
-L.CORE_SETTING_SHARE_DESC = "將你的原型、出身與傳聞傳送給同樣使用 Ashmark 的隊伍成員。"
+L.CORE_SETTING_SHARE_DESC = "將你的人物類型、出身與傳聞傳送給同樣使用 Ashmark 的隊伍成員。"
   .. "相識者紀錄與筆記絕不會離開你的用戶端。"
 
 -- Shared vocabulary (5.8)
@@ -144,7 +144,7 @@ L.CONFLICT_TAB = "抉擇"
 L.CONFLICT_TAB_SIDES = "{a}或{b}"
 L.CONFLICT_TAB_ALLIED = "自 {date} 起站在{faction}一邊"
 L.CONFLICT_TAB_OPEN = "尚未選擇"
-L.CONFLICT_TAB_BROKEN = "違背 {count} 次"
+L.CONFLICT_TAB_BROKEN = "違諾 {count} 次"
 L.CONFLICT_TAB_VIOLATIONS = "違背諾言：{count} 次"
 L.CONFLICT_TAB_NO_VIOLATIONS = "你從未違背諾言。"
 L.CONFLICT_TAB_EMPTY = "Ashmark 尚未得知這個世界中的任何衝突。"
@@ -165,7 +165,7 @@ L.PROFILE_RUTHLESS = "冷酷之人"
 L.PROFILE_PRAGMATIST = "務實者"
 
 -- Test mode (7.10)
-L.PROFILE_TEST_MERCY_HOWTO = "擊殺 3 隻小動物和 3 隻溫馴的中立野獸，然後再次執行 /ashmark test。"
+L.PROFILE_TEST_MERCY_HOWTO = "擊殺 3 隻小動物和 3 隻尚未進入戰鬥的中立野獸，然後再次執行 /ashmark test。"
 L.PROFILE_TEST_CRITTER_TARGET = "以任一生物為目標，然後再次執行 /ashmark test。"
 L.PROFILE_TEST_CRITTER_OFF = "此用戶端無法辨識小動物，因此不會計入擊殺小動物的次數。"
 
@@ -205,20 +205,20 @@ L.ENC_RECOGNISE_MORE = "……另外還有 {count} 位你認識的人。"
 L.ENC_RECURRING = "熟面孔"
 
 -- Note editor (6.2)
-L.ENC_NOTE_PROMPT = "你關於{name}的筆記："
+L.ENC_NOTE_PROMPT = "你對{name}的筆記："
 L.ENC_NOTE_SAVE = "儲存"
 
 -- Encounters tab (6.1)
 L.ENC_TAB = "相遇"
 L.ENC_TAB_TOTAL = "你遇見過的人：{count} · 熟面孔：{recurring}"
-L.ENC_TAB_EMPTY = "還沒有人與你的旅途交會。與他人組隊，Ashmark 便會記住他們。"
+L.ENC_TAB_EMPTY = "你的旅途中還沒有遇見任何人。與他人組隊，Ashmark 便會記住他們。"
 L.ENC_TAB_MET = "相遇 {count} 次 · 上次在{place} · {date}"
 L.ENC_TAB_MET_NOPLACE = "相遇 {count} 次 · {date}"
 L.ENC_TAB_NOTE = "筆記"
 L.ENC_TAB_WHO = "{race} {class}"
 L.ENC_TAB_FIRST = "初次相遇於 {date}"
 
--- Chronicle sentences. {people} always follows 與; its parts are joined with 、 and 和.
+-- Chronicle sentences. {people} follows 與 (or precedes 所在的隊伍); its parts are joined with 、 and 和.
 L.ENC_LOG_CONTACT = "你初次遇見了{contact}。"
 L.ENC_LOG_CONTACT_THEY = "{name}初次遇見了{contact}。"
 L.ENC_LOG_TRAVEL = "你與{people}同行。"
@@ -229,8 +229,8 @@ L.ENC_LOG_WIPE = "你與{people}並肩作戰，卻倒下了。"
 L.ENC_LOG_WIPE_THEY = "{name}與{people}並肩作戰，卻倒下了。"
 L.ENC_LOG_CAMP = "你與{people}圍坐在同一堆營火旁。"
 L.ENC_LOG_CAMP_THEY = "{name}與{people}圍坐在同一堆營火旁。"
-L.ENC_LOG_KICK = "你被請出了與{people}同行的隊伍。"
-L.ENC_LOG_KICK_THEY = "{name}被請出了與{people}同行的隊伍。"
+L.ENC_LOG_KICK = "你被請出了{people}所在的隊伍。"
+L.ENC_LOG_KICK_THEY = "{name}被請出了{people}所在的隊伍。"
 
 -- Parts of {people}
 L.ENC_LOG_PEER = "{who}（來自{place}的{archetype}）"
@@ -264,7 +264,7 @@ L.HOUSE_TAB_HEADING = "{house}家族"
 L.HOUSE_TAB_NO_HOUSE = "無所屬家族"
 L.HOUSE_TAB_NONE = "此帳號上姓氏相同的角色組成一個家族。Ashmark 不知道此角色的姓氏："
   .. "輸入 /ashmark house <名稱> 即可選擇一個家族。"
-L.HOUSE_TAB_ARCHETYPE = "原型：{archetype}"
+L.HOUSE_TAB_ARCHETYPE = "人物類型：{archetype}"
 L.HOUSE_TAB_MEMBERS = "成員"
 L.HOUSE_TAB_MEMBER = "{name}，等級 {level}"
 L.HOUSE_TAB_MEMBER_RULESET = "{member} · {ruleset}"
@@ -281,7 +281,7 @@ L.HOUSE_LEGACY_STANDING = "{faction}：{standing}"
 -- Campfire -------------------------------------------------------------------------------------------------------
 
 L.CAMP_MODULE_NAME = "營火"
-L.CAMP_MODULE_DESC = "在營地休息直到其效果生效，若自上一章以來已發生了足夠多的事，Ashmark 便可能在那裡"
+L.CAMP_MODULE_DESC = "在營地休息到增益效果生效，若自上一章以來已發生足夠多的事，Ashmark 便可能在那裡"
   .. "為你的編年史結束一章。"
 
 -- Centre-screen notice (7.6)
@@ -290,7 +290,7 @@ L.CAMP_CHAPTER_CLOSED = "第 {roman} 章落幕 · {place}"
 -- Knowledge ------------------------------------------------------------------------------------------------------
 
 L.KNOW_MODULE_NAME = "角色見聞"
-L.KNOW_MODULE_DESC = "物品的滑鼠提示只會顯示你的角色所能知道的資訊。從未放進此角色的背包、銀行或裝備中"
+L.KNOW_MODULE_DESC = "物品的滑鼠提示只會顯示你的角色所能知道的資訊。從未出現在此角色的背包、銀行或裝備中"
   .. "的物品，只會顯示名稱、綁定方式、裝備欄位、物品等級、類型與需求，其餘內容則保持隱藏。"
   .. "遊戲本身仍會隱藏的物品，則依遊戲原本的方式顯示。"
 
@@ -299,12 +299,12 @@ L.KNOW_UNKNOWN = "你的角色從未持有過這件物品。"
 
 -- Setting (4.3)
 L.KNOW_SETTING_QUEST_REWARDS = "完整顯示任務獎勵"
-L.KNOW_SETTING_QUEST_REWARDS_DESC = "永不隱藏任務視窗中獎勵的滑鼠提示，讓你在選擇獎勵時能清楚它的效果。"
+L.KNOW_SETTING_QUEST_REWARDS_DESC = "永不隱藏任務視窗中獎勵的滑鼠提示，讓你在選擇獎勵時知道它的作用。"
 
 -- Fiction --------------------------------------------------------------------------------------------------------
 
 L.FICTION_MODULE_NAME = "共同敘事"
-L.FICTION_MODULE_DESC = "同樣使用 Ashmark 的隊伍成員無需在聊天中多說一句，就能得知你的原型與出身，"
+L.FICTION_MODULE_DESC = "同樣使用 Ashmark 的隊伍成員無需在聊天中多說一句，就能得知你的人物類型與出身，"
   .. "你也能得知他們的，讓你的編年史與滑鼠提示能說出你曾與誰同行。其他玩家看不到任何內容。"
 
 -- Test mode (7.10)
@@ -314,7 +314,7 @@ L.FICTION_TEST_HOWTO = "與另一位 Ashmark 使用者組隊，然後再次執�
 
 L.RUMOUR_MODULE_NAME = "傳聞"
 L.RUMOUR_MODULE_DESC = "你在衝突中的作為會化為傳聞，在隊伍之間流傳，你也會聽到他人的所作所為。"
-  .. "傳聞只會提及某類人物、一個地點與一個陣營，從不提及角色。"
+  .. "傳聞只會提及某類人物、一個地點與一個陣營，從不指名道姓。"
 
 -- Chat lines for a rumour heard (7.8). No sex is known: {archetype} follows the neutral 那位 (no _F forms).
 L.RUMOUR_HEARD_ALLIANCE = "據說，來自{place}的那位{archetype}已站到了{faction}一邊。"
