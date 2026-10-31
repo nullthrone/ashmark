@@ -214,7 +214,10 @@ frameMeta.__index = function(self, key)
   if m then return m end
   if type(key) ~= "string" or not key:match("^%u") then return nil end
   local stub
-  if key:match("^Create") then
+  if key == "CreateAnimation" then
+    -- CreateAnimation(animationType, name, template): the first argument is the kind, not a name.
+    stub = function(owner, kind, name, template) return newFrame(kind or "Animation", name, owner, template) end
+  elseif key:match("^Create") then
     stub = function(owner, name, _, template) return newFrame(key:sub(7), name, owner, template) end
   else
     stub = function() end
