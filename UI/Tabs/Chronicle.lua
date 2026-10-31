@@ -18,6 +18,7 @@ local selected                   -- chapter number the reader picked; nil follow
 local shown                      -- chapter number on the page
 local turning                    -- a chapter click waits for the refresh that turns the page
 local parchment                  -- the page has the client's parchment; otherwise light text on the Inset
+local listed = {}                -- the chapter rows kept between refreshes: rows, provider, chapters, count, current
 
 local function day(t)
   local d = date("*t", t)
@@ -72,7 +73,7 @@ local function initChapter(button, data)
     button.label = label
   end
   button.no = data.no
-  button:SetText(data.text)
+  button:SetText(title(data, true))
   if data.current then button:LockHighlight() else button:UnlockHighlight() end
 end
 
@@ -119,6 +120,27 @@ local function fill(box, rows, keepScroll)
   box:SetDataProvider(CreateDataProvider(rows), keepScroll and retain or discard)
 end
 
+-- The chapter column, newest first. A row holds no, open and current; its title is formatted when it is
+-- drawn. No entry changes a closed chapter's title, so the rows stay until a chapter closes or the record
+-- is replaced; otherwise only the current mark moves, and the same provider redraws the visible rows.
+local function chapterColumn(box, char, chapters, chapter)
+  local list, no = char and char.chapters, chapter and chapter.no
+  if listed.provider and listed.chapters == list and listed.count == #chapters then
+    if listed.current == no then return end
+    for _, row in ipairs(listed.rows) do row.current = row.no == no end
+  else
+    local rows = {}
+    for i = #chapters, 1, -1 do
+      local c = chapters[i]
+      rows[#rows + 1] = { no = c.no, open = c.open, current = c == chapter }
+    end
+    listed.rows, listed.chapters, listed.count = rows, list, #chapters
+    listed.provider = CreateDataProvider(rows)
+  end
+  listed.current = no
+  box:SetDataProvider(listed.provider, ScrollBoxConstants and ScrollBoxConstants.RetainScrollPosition)
+end
+
 local function refresh(tab)
   local char = ns.DB:Char()
   local chapters = char and Chronicle:Chapters(char) or {}
@@ -126,12 +148,7 @@ local function refresh(tab)
   if not chapter then
     selected, chapter = nil, chapters[#chapters]
   end
-  local rows = {}
-  for i = #chapters, 1, -1 do
-    local c = chapters[i]
-    rows[#rows + 1] = { no = c.no, text = title(c, true), current = c == chapter }
-  end
-  fill(tab.Chapters, rows, true)
+  chapterColumn(tab.Chapters, char, chapters, chapter)
   local no = chapter and chapter.no
   local lines = chapter and Chronicle:Lines(char, chapter, { char = char, own = true }) or {}
   if turning and no ~= shown then UI:Sound("IG_ABILITY_PAGE_TURN") end

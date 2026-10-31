@@ -28,12 +28,6 @@ describe("UI Chronicle tab", function()
     return lists[i].box.provider.items
   end
 
-  local function texts(i)
-    local out = {}
-    for _, row in ipairs(rows(i)) do out[#out + 1] = row.text end
-    return out
-  end
-
   local function tab()
     return lists[1].parent:GetParent()
   end
@@ -49,6 +43,13 @@ describe("UI Chronicle tab", function()
     b.UnlockHighlight = function(self) self.locked = false end
     lists[i].opts.init(b, row)
     return b
+  end
+
+  -- A chapter row gets its title when it is drawn; a page row carries its sentence.
+  local function texts(i)
+    local out = {}
+    for _, row in ipairs(rows(i)) do out[#out + 1] = i == 1 and button(1, row):GetText() or row.text end
+    return out
   end
 
   before_each(function()
@@ -105,6 +106,37 @@ describe("UI Chronicle tab", function()
     assert.is_true(lists[2].box.retain)
     wow.script(first, "OnClick")
     assert.equal(1, #wow.sounds)
+  end)
+
+  it("keeps its chapter rows while the open chapter grows, and titles a row only when it is drawn", function()
+    for l = 2, 4 do
+      ns.Log:Add("level", { l = l })
+      ns.Log:CloseChapter({})
+    end
+    show()
+    local box = lists[1].box
+    local provider, sets = box.provider, 0
+    local set = box.SetDataProvider
+    box.SetDataProvider = function(self, ...)
+      sets = sets + 1
+      return set(self, ...)
+    end
+    assert.same({ no = 4, open = true, current = true }, rows(1)[1])
+    ns.Log:Add("level", { l = 5 })
+    wow.advance(0.5)
+    assert.same({ "You reached level 5." }, texts(2))
+    assert.equal(0, sets)
+    wow.script(button(1, rows(1)[3]), "OnClick")
+    assert.equal(1, sets)
+    assert.equal(provider, box.provider)
+    assert.same({ false, false, true, false }, {
+      rows(1)[1].current, rows(1)[2].current, rows(1)[3].current, rows(1)[4].current,
+    })
+    ns.Log:CloseChapter({})
+    wow.advance(0.5)
+    assert.are_not.equal(provider, box.provider)
+    assert.same({ "Chapter V (current)", "Chapter IV", "Chapter III", "Chapter II", "Chapter I" }, texts(1))
+    assert.is_true(button(1, rows(1)[4]).locked)
   end)
 
   it("turns the page and plays the sound together once combat ends", function()
