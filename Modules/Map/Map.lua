@@ -47,7 +47,7 @@ end
 local function sideName(conflict, side)
   local s = type(conflict) == "table" and conflict[side]
   local f = type(s) == "table" and s.faction or nil
-  if f == 0 then return L.MAP_UNNAMED end
+  if f == 0 then return L.CONFLICT_UNNAMED end
   return ns.Names.Faction(f)
 end
 

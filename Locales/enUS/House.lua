@@ -32,9 +32,6 @@ L.HOUSE_TAB_CHRONICLE = "Family chronicle"
 L.HOUSE_TAB_MEMORY = "Family memory"
 L.HOUSE_TAB_KNOWS = "{sibling} knows {name}."
 
--- A side without a reputation faction, where a faction name would stand.
-L.HOUSE_UNNAMED = "those without a banner"
-
 -- The account's Legacy (7.5). {faction} is the faction's name from the client, {standing} a standing
 -- label from the client ("Friendly").
 L.HOUSE_LEGACY_LEVEL = "{faction}: level {level}"

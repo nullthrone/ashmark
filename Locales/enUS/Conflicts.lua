@@ -5,7 +5,8 @@ L.CONFLICT_MODULE_NAME = "Conflicts"
 L.CONFLICT_MODULE_DESC = "Some quests set one side against another. Ashmark remembers the side you take, marks quests "
   .. "that contradict it under the quest dialog and records it when you break your word."
 
--- A side without a reputation faction, used where a faction name would stand.
+-- A side without a reputation faction, used where a faction name would stand. Shared vocabulary:
+-- Map and House show it too (ARCHITECTURE 5.8).
 L.CONFLICT_UNNAMED = "those without a banner"
 
 -- Quest-dialog line (7.1). {faction} is a faction name from the client, {house} a family name.

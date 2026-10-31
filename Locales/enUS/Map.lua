@@ -15,5 +15,3 @@ L.MAP_PIN_VIOLATION = "Here you broke your word"
 L.MAP_PIN_CHAPTER = "Chapter {roman}"
 L.MAP_PIN_CHAPTER_CLOSED = "Closed here on {date}"
 
--- A side without a reputation faction, where a faction name would stand.
-L.MAP_UNNAMED = "those without a banner"
