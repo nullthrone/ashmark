@@ -256,6 +256,8 @@ describe("Fiction", function()
 
     it("writes at most one archetype change a day, so a peer flipping archetypes cannot flood the log", function()
       local char = start()
+      -- Comm's receive budget (5.6) would stop this flood first; widen it to test Fiction's own limit.
+      for _, budget in pairs(ns.Comm.RECEIVE) do budget.burst, budget.every = 1000, 0.001 end
       local t = wow.state.epoch
       mock.hi(wow, "mira", "WANDERER")
       for i = 1, 200 do

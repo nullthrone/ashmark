@@ -262,6 +262,8 @@ describe("Rumours", function()
 
     it("writes the rumour entry only with a printed line, so a flood adds at most 5 entries an hour", function()
       start()
+      -- Comm's receive budget (5.6) would stop this flood first; widen it to test Rumours' own limits.
+      for _, budget in pairs(ns.Comm.RECEIVE) do budget.burst, budget.every = 1000, 0.001 end
       for minute = 1, 120 do
         for i = 1, 20 do mock.ru(wow, "mira", { id = string.format("%04x%04x", minute, i) }) end
         wow.advance(60)
@@ -328,6 +330,7 @@ describe("Rumours", function()
 
     it("leave the player's own log alone through four hours of RU floods and archetype flips", function()
       boot()
+      for _, budget in pairs(ns.Comm.RECEIVE) do budget.burst, budget.every = 1000, 0.001 end
       for i = 1, 1500 do ns.Log:Add("quest.turnin", { q = i }) end
       mock.peers(wow, "mira", "thalen")
       for minute = 1, 240 do
