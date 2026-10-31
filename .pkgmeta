@@ -12,3 +12,5 @@ ignore:
   - .busted
   - .luacheckrc
   - README.md
+  - CONTRIBUTING.md
+  - CODE_OF_CONDUCT.md

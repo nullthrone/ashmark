@@ -1,0 +1,49 @@
+name: "🌍 Translation fix"
+description: "A sentence in your language reads wrong, sounds off or is missing."
+labels: ["translation"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Faction, zone, quest, item, class and race names come from the game client and are not part of Ashmark's translations.
+  - type: dropdown
+    id: locale
+    attributes:
+      label: "Language"
+      options:
+        - "deDE"
+        - "frFR"
+        - "esES"
+        - "esMX"
+        - "ptBR"
+        - "ruRU"
+        - "koKR"
+        - "zhTW"
+        - "zhCN"
+        - "enUS (the English source text)"
+    validations:
+      required: true
+  - type: textarea
+    id: current
+    attributes:
+      label: "What you see in the game"
+      description: "The sentence as it appears, or a screenshot. Add the key from `Locales/` if you know it."
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: "What it should say"
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: "Why"
+      description: "Grammar, tone, the term the game itself uses, a feminine form, anything that helps."
+  - type: checkboxes
+    id: native
+    attributes:
+      label: "About you"
+      options:
+        - label: "This is my native language."

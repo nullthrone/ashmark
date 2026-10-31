@@ -1,0 +1,83 @@
+name: "🧪 Launch test results"
+description: "Share what /ashmark test and /ashmark probe found in the live Forever client."
+labels: ["launch test"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for testing! The steps are in the README under "Help us at launch". After each run, `/reload` so the results are saved.
+  - type: input
+    id: version
+    attributes:
+      label: "Ashmark version"
+      placeholder: "v1.0.0"
+    validations:
+      required: true
+  - type: input
+    id: build
+    attributes:
+      label: "Client build"
+      description: "From `/dump GetBuildInfo()`."
+      placeholder: "1.60.1.70707"
+  - type: dropdown
+    id: locale
+    attributes:
+      label: "Client language"
+      options:
+        - "enUS / enGB"
+        - "deDE"
+        - "frFR"
+        - "esES"
+        - "esMX"
+        - "ptBR"
+        - "ruRU"
+        - "koKR"
+        - "zhTW"
+        - "zhCN"
+    validations:
+      required: true
+  - type: dropdown
+    id: preset
+    attributes:
+      label: "Experience Preset"
+      options:
+        - "Classic"
+        - "Enhanced"
+        - "Not sure"
+    validations:
+      required: true
+  - type: checkboxes
+    id: runs
+    attributes:
+      label: "What did you run?"
+      options:
+        - label: "`/ashmark test`, `/reload`, `/ashmark test` again"
+        - label: "`/ashmark probe` in the open world"
+        - label: "`/ashmark probe` in a party"
+        - label: "`/ashmark probe` inside a dungeon"
+        - label: "`/ashmark probe` in a raid"
+        - label: "`/ashmark probe` at a camp"
+        - label: "Mercy check: 3 critters and 3 calm neutral beasts, then `/ashmark test`"
+        - label: "Grouped with another Ashmark player and sided with a faction in a conflict"
+  - type: textarea
+    id: dev
+    attributes:
+      label: "The dev table"
+      description: "Copy the `dev` table from `_forever_\\WTF\\Account\\<ACCOUNT>\\SavedVariables\\Ashmark.lua`. The rest of that file holds your characters, contacts and notes, so paste only the `dev` table."
+      render: lua
+    validations:
+      required: true
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: "Screenshots"
+      description: "Drag the screenshots from `_forever_\\Screenshots` in here."
+  - type: textarea
+    id: error
+    attributes:
+      label: "Lua errors"
+      render: text
+  - type: textarea
+    id: notes
+    attributes:
+      label: "Anything else you noticed"

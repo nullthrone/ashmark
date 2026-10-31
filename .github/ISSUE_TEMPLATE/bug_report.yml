@@ -1,0 +1,94 @@
+name: "🐞 Bug report"
+description: "Ashmark does the wrong thing, shows the wrong text or raises a Lua error."
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time! Turn Lua error display on with `/console scriptErrors 1` before you reproduce the problem.
+  - type: input
+    id: version
+    attributes:
+      label: "Ashmark version"
+      description: "The release tag, such as v1.0.0, or the commit if you run the source."
+      placeholder: "v1.0.0"
+    validations:
+      required: true
+  - type: dropdown
+    id: locale
+    attributes:
+      label: "Client language"
+      options:
+        - "enUS / enGB"
+        - "deDE"
+        - "frFR"
+        - "esES"
+        - "esMX"
+        - "ptBR"
+        - "ruRU"
+        - "koKR"
+        - "zhTW"
+        - "zhCN"
+    validations:
+      required: true
+  - type: dropdown
+    id: preset
+    attributes:
+      label: "Experience Preset"
+      options:
+        - "Classic"
+        - "Enhanced"
+        - "Not sure"
+    validations:
+      required: true
+  - type: dropdown
+    id: module
+    attributes:
+      label: "Where did it happen?"
+      options:
+        - "Chronicle"
+        - "Conflicts / Decisions tab"
+        - "Profile"
+        - "World map"
+        - "Encounters"
+        - "House"
+        - "Campfire"
+        - "Character knowledge (tooltips)"
+        - "Rumours"
+        - "Shared fiction"
+        - "Settings, commands or the main window"
+        - "Not sure"
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: "What happened, and what did you expect?"
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: "Steps to reproduce"
+      placeholder: |
+        1. Accept quest ... from ... in Desolace
+        2. ...
+  - type: textarea
+    id: error
+    attributes:
+      label: "Lua error"
+      description: "The full text of the error, if there was one."
+      render: text
+  - type: textarea
+    id: dev
+    attributes:
+      label: "Test results (optional)"
+      description: "The `dev` table from `_forever_\\WTF\\Account\\<ACCOUNT>\\SavedVariables\\Ashmark.lua`. The rest of that file holds your characters, contacts and notes, so paste only the `dev` table."
+      render: lua
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: "Before you submit"
+      options:
+        - label: "I searched the open issues and this is not a duplicate."
+          required: true
