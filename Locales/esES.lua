@@ -15,7 +15,7 @@ L.CORE_TITLE = "Ashmark"
 -- Load safety (4.4)
 L.CORE_NOT_FOREVER = "Ashmark solo funciona en World of Warcraft Forever y permanece desactivado en este cliente."
 L.CORE_SV_NEW = "Ha comenzado un registro nuevo. Si ya usabas Ashmark en esta cuenta, los datos guardados no se "
-  .. "han cargado: no uses /reload ni vuelvas a cerrar sesión. Sal del juego y, antes de volver a conectarte, "
+  .. "han cargado: no uses /reload ni vuelvas a desconectarte. Sal del juego y, antes de volver a conectarte, "
   .. "sustituye Ashmark.lua por Ashmark.lua.bak en WTF\\Account\\<cuenta>\\SavedVariables\\."
 L.CORE_SV_NEWER = "Estos datos guardados proceden de una versión más reciente de Ashmark. Ashmark solo los leerá "
   .. "hasta que lo actualices."
@@ -42,7 +42,7 @@ L.CORE_UNKNOWN_ITEM = "un objeto"
 L.CORE_UNKNOWN_FACTION = "una facción"
 L.CORE_UNKNOWN_PLACE = "algún lugar"
 L.CORE_UNKNOWN_PLAYER = "alguien"
-L.CORE_UNKNOWN_CLASS = "aventurero"
+L.CORE_UNKNOWN_CLASS = "Aventurero"
 L.CORE_UNKNOWN_RACE = "Pueblo desconocido"
 L.CORE_RULESET_NORMAL = "Normal"
 L.CORE_RULESET_PVP = "JcJ"
@@ -104,7 +104,7 @@ L.CORE_COMPARTMENT_RIGHT_CLICK = "Haz clic derecho para abrir las opciones."
 
 L.TEST_HELP = "ejecutar la autoprueba en este cliente y hacer una captura de pantalla"
 L.TEST_HELP_PROBE = "registrar datos en bruto de este cliente para los desarrolladores"
-L.TEST_NOT_IN_COMBAT = "La prueba no se ejecuta durante un combate. Vuelve a intentarlo cuando haya terminado."
+L.TEST_NOT_IN_COMBAT = "La prueba no se ejecuta en combate. Vuelve a intentarlo cuando termine el combate."
 L.TEST_SUMMARY = "Prueba terminada. Superadas: {passed}; fallidas: {failed}; omitidas: {skipped}."
 L.TEST_LINE = "{state} {id}: {detail}"
 L.TEST_PASS = "superada"
@@ -138,8 +138,8 @@ L.CONFLICT_ALLIED = "Te pusiste del lado de {faction} en {zone}."
 L.CONFLICT_ALLIED_THEY = "{name} se puso del lado de {faction} en {zone}."
 L.CONFLICT_ALLIED_REP = "Tu reputación con {faction} decidió tu bando en {zone}."
 L.CONFLICT_ALLIED_REP_THEY = "La reputación de {name} con {faction} decidió su bando en {zone}."
-L.CONFLICT_BROKE_WORD = "Traicionaste a {broken} y completaste {quest} para {faction}."
-L.CONFLICT_BROKE_WORD_THEY = "{name} traicionó a {broken} y completó {quest} para {faction}."
+L.CONFLICT_BROKE_WORD = "Faltaste a la palabra dada a {broken} y completaste {quest} para {faction}."
+L.CONFLICT_BROKE_WORD_THEY = "{name} faltó a la palabra dada a {broken} y completó {quest} para {faction}."
 L.CONFLICT_SWITCHED = "Cambiaste de bando una vez más: completaste {quest} para {faction} y dejaste atrás a "
   .. "{broken}."
 L.CONFLICT_SWITCHED_THEY = "{name} cambió de bando una vez más: completó {quest} para {faction} y dejó atrás a "
@@ -176,7 +176,8 @@ L.PROFILE_PRAGMATIST = "Pragmático"
 L.PROFILE_PRAGMATIST_F = "Pragmática"
 
 -- Test mode (7.10)
-L.PROFILE_TEST_MERCY_HOWTO = "Mata 3 alimañas y 3 bestias neutrales tranquilas y vuelve a ejecutar /ashmark test."
+L.PROFILE_TEST_MERCY_HOWTO = "Mata 3 alimañas y 3 bestias neutrales tranquilas; después, vuelve a ejecutar "
+  .. "/ashmark test."
 L.PROFILE_TEST_CRITTER_TARGET = "Selecciona como objetivo cualquier criatura y vuelve a ejecutar /ashmark test."
 L.PROFILE_TEST_CRITTER_OFF = "Este cliente no distingue las alimañas, así que no se cuentan las que matas."
 
@@ -210,7 +211,7 @@ L.ENC_TOOLTIP_PEER = "{archetype}"
 -- Chat line when people you know join your group
 L.ENC_RECOGNISE = "Conoces a {name}: habéis coincidido {count}×, la última vez en {place}."
 L.ENC_RECOGNISE_NOPLACE = "Conoces a {name}: habéis coincidido {count}×."
-L.ENC_RECOGNISE_MORE = "…y otras {count} personas que conoces."
+L.ENC_RECOGNISE_MORE = "…y {count} más que conoces."
 
 -- Marker for someone this character has met at least three times
 L.ENC_RECURRING = "Cara conocida"
@@ -219,14 +220,15 @@ L.ENC_RECURRING = "Cara conocida"
 L.ENC_NOTE_PROMPT = "Tu nota sobre {name}:"
 L.ENC_NOTE_SAVE = "Guardar"
 
--- Encounters tab (6.1). {race} {class} in the order of the client's own unit tooltip.
+-- Encounters tab (6.1). "·" between race and class, so neither has to read as the other's adjective and the
+-- fallbacks ("Pueblo desconocido", "Aventurero") fit as labels too.
 L.ENC_TAB = "Encuentros"
 L.ENC_TAB_TOTAL = "Personas que conoces: {count} · caras conocidas: {recurring}"
 L.ENC_TAB_EMPTY = "Aún no se ha cruzado nadie en tu camino. Forma grupo con alguien y Ashmark lo recordará."
 L.ENC_TAB_MET = "Encuentros: {count} · el último en {place} · {date}"
 L.ENC_TAB_MET_NOPLACE = "Encuentros: {count} · {date}"
 L.ENC_TAB_NOTE = "Nota"
-L.ENC_TAB_WHO = "{race} {class}"
+L.ENC_TAB_WHO = "{race} · {class}"
 L.ENC_TAB_FIRST = "Primer encuentro: {date}"
 
 -- Chronicle sentences. Only "expulsado" agrees with the subject, so ENC_LOG_KICK alone has _F forms.
@@ -309,13 +311,13 @@ L.KNOW_MODULE_NAME = "Conocimiento del personaje"
 L.KNOW_MODULE_DESC = "Las descripciones emergentes de los objetos solo muestran lo que tu personaje puede saber. "
   .. "Un objeto que nunca ha estado en las bolsas, el banco o el equipo de este personaje muestra su nombre, cómo "
   .. "se liga, su ranura, su nivel de objeto, su tipo y sus requisitos; el resto permanece oculto. Los objetos que "
-  .. "el propio juego aún oculta se quedan tal como los muestra el juego."
+  .. "el propio juego aún oculta se dejan tal como los muestra el juego."
 
 -- Last line of such a tooltip (7.7)
 L.KNOW_UNKNOWN = "Tu personaje nunca ha tenido esto en sus manos."
 
 -- Setting (4.3)
-L.KNOW_SETTING_QUEST_REWARDS = "Recompensas de misión completas"
+L.KNOW_SETTING_QUEST_REWARDS = "Recompensas de misión al completo"
 L.KNOW_SETTING_QUEST_REWARDS_DESC = "No ocultar nunca las descripciones emergentes de las recompensas que aparecen "
   .. "en la ventana de misión, para que puedas elegir una recompensa sabiendo lo que hace."
 
@@ -339,7 +341,8 @@ L.RUMOUR_MODULE_DESC = "Lo que haces en un conflicto viaja como rumor de grupo e
 -- name after "a quien llaman", with no article or adjective to agree with (no _F forms).
 L.RUMOUR_HEARD_ALLIANCE = "Cuentan que alguien de {place} a quien llaman {archetype} se ha puesto del lado de "
   .. "{faction}."
-L.RUMOUR_HEARD_BROKE = "Cuentan que alguien de {place} a quien llaman {archetype} ha traicionado a {faction}."
+L.RUMOUR_HEARD_BROKE = "Cuentan que alguien de {place} a quien llaman {archetype} ha faltado a la palabra dada "
+  .. "a {faction}."
 L.RUMOUR_HEARD_TURNED = "Cuentan que alguien de {place} a quien llaman {archetype} le ha dado la espalda a su casa "
   .. "para ponerse del lado de {faction}."
 -- Without a faction
