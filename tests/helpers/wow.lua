@@ -613,7 +613,10 @@ local function unitOf(token)
   return nil
 end
 
+-- A fixture with loading = true has no name yet: the name APIs return UNKNOWNOBJECT, as the client's do until
+-- the unit's name has arrived.
 local function nameReturns(u, api)
+  if u.loading then return _G.UNKNOWNOBJECT end
   local r = u.nameReturns and u.nameReturns[api]
   if r then return unpack(r, 1, r.n or #r) end
   return u.name, u.surname
@@ -974,6 +977,8 @@ local function buildGlobals()
     G["FACTION_STANDING_LABEL" .. i .. "_FEMALE"] = label
   end
   G.ERR_UNINVITE_YOU = "You have been removed from the group."
+  G.UNKNOWNOBJECT = "Unknown"         -- UnitName's placeholder until a unit's name has arrived
+  G.UKNOWNBEING = "Unknown Being"     -- (sic) the client's other stand-in for a name
   G.ITEM_LEVEL = "Item Level %d"
   G.FACTION_ALLIANCE, G.FACTION_HORDE = "Alliance", "Horde"
   G.ACCEPT, G.CANCEL, G.YES, G.NO, G.OKAY, G.CLOSE = "Accept", "Cancel", "Yes", "No", "Okay", "Close"

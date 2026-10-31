@@ -91,10 +91,16 @@ local function two(fn, unit)
   if ok then return a, b end
 end
 
--- name, surname, surnameSource; steps 1 and 2 of the surname order (5.3).
+-- The client's stand-ins for a name that has not arrived yet: UnitName returns UNKNOWNOBJECT ("Unknown")
+-- until the unit is loaded. No character may take either name. Read at call time.
+local function placeholder(name)
+  return name == UNKNOWNOBJECT or name == UKNOWNBEING
+end
+
+-- name, surname, surnameSource; steps 1 and 2 of the surname order (5.3). Nil also for a placeholder.
 function Safe.UnitName(unit)
   local name = two(UnitName, unit)
-  if IsSecret(name) or type(name) ~= "string" or name == "" then return nil end
+  if IsSecret(name) or type(name) ~= "string" or name == "" or placeholder(name) then return nil end
   local _, surname = two(UnitNameUnmodified, unit)
   surname = Safe.Surname(surname)
   if surname then return name, surname, "UnitNameUnmodified" end

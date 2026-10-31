@@ -39,7 +39,7 @@ local function person(unit, guid, name, surname)
     guid = guid,
     name = name,
     surname = surname,
-    full = surname and (name .. " " .. surname) or name,
+    full = (name and surname) and (name .. " " .. surname) or name,
     class = read(UnitClass, unit, 2),
     race = read(UnitRace, unit, 3),
     raceName = read(UnitRace, unit, 1),    -- the client's name for the unit's sex (Names.Race, 5.7)
@@ -135,7 +135,10 @@ function Identity:Refresh()
     chars[ns.playerGUID] = char
   end
   local p = self:Player()
-  char.guid, char.name, char.surname, char.surnameSource = p.guid, p.name, p.surname, p.surnameSource
+  char.guid = p.guid
+  if p.name then                 -- a name the client does not know yet (Safe.UnitName) keeps the stored ones
+    char.name, char.surname, char.surnameSource = p.name, p.surname, p.surnameSource
+  end
   char.ruleset, char.faction, char.race, char.class, char.sex, char.level =
     p.ruleset, p.faction, p.race, p.class, p.sex, p.level
   ensure(char, "firstSeen", time())

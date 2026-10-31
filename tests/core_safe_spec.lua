@@ -81,6 +81,16 @@ describe("Core Safe", function()
     assert.is_nil(Safe.UnitName("party4"))
   end)
 
+  it("UnitName returns nil for the client's placeholder while a unit's name has not arrived", function()
+    wow.unit("party1", { guid = "Player-1-00000002", name = "Mira", surname = "Vale", loading = true })
+    assert.equal("Unknown", UnitName("party1"))
+    assert.is_nil(Safe.UnitName("party1"))
+    wow.unit("party2", { guid = "Player-1-00000003", name = "Unknown Being" })
+    assert.is_nil(Safe.UnitName("party2"))
+    wow.state.units.party1.loading = nil
+    assert.same({ "Mira", "Vale", "UnitNameUnmodified" }, { Safe.UnitName("party1") })
+  end)
+
   it("keeps the name when only the surname is secret", function()
     wow.unit("party1", { guid = "Player-1-00000002", name = "Mira", surname = wow.secret("Vale") })
     assert.same({ "Mira" }, { Safe.UnitName("party1") })

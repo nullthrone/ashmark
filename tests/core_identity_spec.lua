@@ -70,6 +70,28 @@ describe("Core Identity", function()
     assert.is_nil(Identity:Unit("party3"))
   end)
 
+  it("takes no Person from a member whose name has not arrived, so the group skips it", function()
+    wow.unit("party1", { guid = "Player-1-2", name = "Mira", classFile = "DRUID", loading = true })
+    wow.unit("party2", { guid = "Player-1-3", name = "Thalen" })
+    assert.is_nil(Identity:Unit("party1"))
+    local group = Identity:Group("party")
+    assert.is_nil(group["Player-1-2"])
+    assert.equal("Thalen", group["Player-1-3"].name)
+  end)
+
+  it("keeps the stored name and surname while the player's own name has not arrived", function()
+    wow.login()
+    local char = ns.DB:Char()
+    player.nameReturns = { UnitName = { "Unknown" }, UnitNameUnmodified = { "Unknown" },
+                           UnitFullName = { "Unknown", "Other" } }
+    Identity:Refresh()
+    assert.same({ "Aren", "Ashvale", "UnitNameUnmodified" }, { char.name, char.surname, char.surnameSource })
+    local p = Identity:Player()
+    assert.same({ "Other", "UnitFullName" }, { p.surname, p.surnameSource })
+    assert.is_nil(p.name)
+    assert.is_nil(p.full)
+  end)
+
   it("keeps a Person whose class is secret, without the class", function()
     wow.unit("party1", { guid = "Player-1-2", name = "Mira", classFile = wow.secret("MAGE"), sex = 3 })
     local p = Identity:Unit("party1")
