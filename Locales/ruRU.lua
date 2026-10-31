@@ -30,6 +30,7 @@ L.CORE_SV_MIGRATE_FAILED = "Ashmark не удалось обновить сох�
 L.CORE_MODULE_FAILED = "Модуль «{module}» остановлен после повторяющихся ошибок и останется отключенным до "
   .. "следующей перезагрузки интерфейса."
 L.CORE_UNAVAILABLE = "Требуется: {capability}"
+L.CORE_UNAVAILABLE_CLIENT = "В этом клиенте нет функции, которая нужна этому модулю."
 L.CORE_MISSING_EVENTS = "События, которых нет в этом клиенте: {events}"
 L.CORE_SETTING_CHAT_LINES = "Строки в чате"
 L.CORE_SETTING_CHAT_LINES_DESC = "Ashmark может выводить короткие строки в окно чата."
@@ -83,7 +84,7 @@ L.CORE_HELP_TOGGLE = "открыть или закрыть летопись"
 L.CORE_HELP_HELP = "вывести список этих команд"
 L.CORE_HELP_DEBUG = "включить или выключить отладочный вывод на этот сеанс"
 L.CORE_HELP_RESET = "стереть записи этого персонажа; «reset others» — стереть контакты, сведения о других "
-  .. "пользователях Ashmark и услышанные слухи"
+  .. "пользователях Ashmark и услышанные слухи; «reset <имя>» — забыть другого персонажа этой учетной записи"
 L.CORE_UNKNOWN_COMMAND = "Неизвестная команда: {command}"
 L.CORE_DEBUG_ON = "Отладочный вывод включен на этот сеанс."
 L.CORE_DEBUG_OFF = "Отладочный вывод выключен."
@@ -95,6 +96,13 @@ L.CORE_CANCEL = "Отмена"
 L.CORE_RESET_DONE = "Записи этого персонажа стерты."
 L.CORE_RESET_OTHERS_DONE = "Контакты, сведения о других пользователях Ashmark и услышанные слухи стерты."
 L.CORE_RESET_READONLY = "Сохраненные данные созданы более новой версией Ashmark, поэтому стереть ничего нельзя."
+L.CORE_RESET_CHAR_UNKNOWN = "На этой учетной записи не сохранено другого персонажа с именем {name}."
+L.CORE_RESET_CHAR_AMBIGUOUS = "Персонажей с именем {name} несколько. Введите /ashmark reset <GUID> с GUID одного "
+  .. "из них:"
+L.CORE_RESET_CHAR_LINE = "{name}, уровень {level}: {guid}"
+L.CORE_RESET_CHAR_CONFIRM = "Забыть персонажа {name}? Ashmark сотрет летопись, решения, профиль и встречи этого "
+  .. "персонажа. Делайте это только для персонажа, которого вы удалили или перенесли."
+L.CORE_RESET_CHAR_DONE = "Персонаж {name} забыт."
 
 -- UI shell (6.1, 6.2): main window tabs, the Chronicle tab and the Addon Compartment
 L.CORE_TAB_CHRONICLE = "Летопись"
@@ -167,7 +175,8 @@ L.CONFLICT_HOUSETURN_THEY_F = "{name} отвернулась от дома {hous
 
 -- Decisions tab (6.1)
 L.CONFLICT_TAB = "Решения"
-L.CONFLICT_TAB_SIDES = "{a} или {b}"
+L.CONFLICT_TAB_SIDES = "«{title}»: {a} или {b}"
+L.CONFLICT_TAB_SIDES_VOWEL = "«{title}»: {a} или {b}"
 L.CONFLICT_TAB_ALLIED = "Ваша сторона: {faction}, с {date}"
 L.CONFLICT_TAB_OPEN = "Сторона не выбрана"
 L.CONFLICT_TAB_BROKEN = "Нарушений: {count}"
@@ -205,11 +214,13 @@ L.PROFILE_TEST_CRITTER_OFF = "Этот клиент не различает зв
 -- Map ----------------------------------------------------------------------------------------------------
 
 L.MAP_MODULE_NAME = "Карта мира"
-L.MAP_MODULE_DESC = "Отмечает на карте мира вашу собственную историю: известные вам конфликты и выбранную "
-  .. "сторону, места, где вы нарушили слово, и места, где завершились ваши главы. Эти отметки видите только вы."
+L.MAP_MODULE_DESC = "Отмечает на карте мира вашу собственную историю: места, где вы нарушили слово, и места, где "
+  .. "завершились ваши главы. Эти отметки видите только вы. Отметки известных вам конфликтов и выбранной стороны "
+  .. "появятся в одной из следующих версий."
 
 -- Pin tooltips (7.3)
-L.MAP_PIN_SIDES = "{a} или {b}"
+L.MAP_PIN_SIDES = "«{title}»: {a} или {b}"
+L.MAP_PIN_SIDES_VOWEL = "«{title}»: {a} или {b}"
 L.MAP_PIN_OPEN = "Здесь вы не встали ни на чью сторону."
 L.MAP_PIN_ALLIED = "Ваша сторона: {faction}."
 L.MAP_PIN_BROKEN = "Ваша сторона: {faction}. Нарушений слова здесь: {count}."
@@ -280,8 +291,11 @@ L.ENC_LOG_OTHERS = "еще {count}"
 L.ENC_LOG_STRANGER = "незнакомец"
 L.ENC_LOG_STRANGERS = "незнакомцы ({count})"
 L.ENC_LOG_STRANGERS_ANY = "незнакомцы"
+L.ENC_LOG_COMPANION = "попутчик"
+L.ENC_LOG_COMPANIONS = "попутчики ({count})"
 L.ENC_LIST_SEP = ", "
 L.ENC_LIST_AND = "{list} и {last}"
+L.ENC_LIST_AND_VOWEL = "{list} и {last}"
 
 -- House --------------------------------------------------------------------------------------------------
 

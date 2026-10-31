@@ -28,6 +28,7 @@ L.CORE_SV_MIGRATE_FAILED = "Ashmark n'a pas pu mettre à jour ses données sauve
 L.CORE_MODULE_FAILED = "Le module {module} s'est arrêté après des erreurs répétées et reste désactivé jusqu'au "
   .. "prochain rechargement de l'interface."
 L.CORE_UNAVAILABLE = "Nécessite : {capability}"
+L.CORE_UNAVAILABLE_CLIENT = "Il manque à ce client une fonction dont ce module a besoin."
 L.CORE_MISSING_EVENTS = "Événements absents de ce client : {events}"
 L.CORE_SETTING_CHAT_LINES = "Lignes dans la discussion"
 L.CORE_SETTING_CHAT_LINES_DESC = "Ashmark peut écrire de courtes lignes dans la fenêtre de discussion."
@@ -73,8 +74,8 @@ L.CORE_HELP_HEADER = "Commandes :"
 L.CORE_HELP_TOGGLE = "ouvre ou ferme la chronique"
 L.CORE_HELP_HELP = "affiche ces commandes"
 L.CORE_HELP_DEBUG = "active ou désactive les messages de débogage pour cette session"
-L.CORE_HELP_RESET = "efface le registre de ce personnage ; « reset others » efface les contacts, les pairs et "
-  .. "les rumeurs entendues"
+L.CORE_HELP_RESET = "efface le registre de ce personnage ; « reset others » efface les contacts, les pairs et les "
+  .. "rumeurs entendues ; « reset <nom> » oublie un autre personnage de ce compte"
 L.CORE_UNKNOWN_COMMAND = "Commande inconnue : {command}"
 L.CORE_DEBUG_ON = "Les messages de débogage sont activés pour cette session."
 L.CORE_DEBUG_OFF = "Les messages de débogage sont désactivés."
@@ -87,6 +88,13 @@ L.CORE_RESET_DONE = "Le registre de ce personnage a été effacé."
 L.CORE_RESET_OTHERS_DONE = "Les contacts, les pairs et les rumeurs entendues ont été effacés."
 L.CORE_RESET_READONLY = "Les données sauvegardées proviennent d'une version plus récente d'Ashmark : rien ne peut "
   .. "être effacé."
+L.CORE_RESET_CHAR_UNKNOWN = "Aucun autre personnage nommé {name} n'est enregistré sur ce compte."
+L.CORE_RESET_CHAR_AMBIGUOUS = "Plusieurs personnages s'appellent {name}. Tapez /ashmark reset <GUID> avec le GUID "
+  .. "de l'un d'eux :"
+L.CORE_RESET_CHAR_LINE = "{name}, niveau {level} : {guid}"
+L.CORE_RESET_CHAR_CONFIRM = "Oublier {name} ? Ashmark efface la chronique, les décisions, le profil et les "
+  .. "rencontres de ce personnage. Ne le faites que pour un personnage que vous avez supprimé ou transféré."
+L.CORE_RESET_CHAR_DONE = "Ashmark a oublié {name}."
 
 -- UI shell (6.1, 6.2): main window tabs, the Chronicle tab and the Addon Compartment
 L.CORE_TAB_CHRONICLE = "Chronique"
@@ -150,7 +158,8 @@ L.CONFLICT_HOUSETURN_THEY = "{name} a tourné le dos à la maison {house} et pri
 
 -- Decisions tab (6.1)
 L.CONFLICT_TAB = "Décisions"
-L.CONFLICT_TAB_SIDES = "{a} ou {b}"
+L.CONFLICT_TAB_SIDES = "{title} : {a} ou {b}"
+L.CONFLICT_TAB_SIDES_VOWEL = "{title} : {a} ou {b}"
 L.CONFLICT_TAB_ALLIED = "Vous soutenez {faction} depuis le {date}"
 L.CONFLICT_TAB_OPEN = "Aucun camp choisi"
 L.CONFLICT_TAB_BROKEN = "Parole rompue {count} fois"
@@ -187,12 +196,13 @@ L.PROFILE_TEST_CRITTER_OFF = "Ce client ne sait pas reconnaître les bestioles :
 -- Map ----------------------------------------------------------------------------------------------------
 
 L.MAP_MODULE_NAME = "Carte du monde"
-L.MAP_MODULE_DESC = "Inscrit votre propre histoire sur la carte du monde : les conflits que vous connaissez et le "
-  .. "camp que vous avez choisi, les lieux où vous avez manqué à votre parole et ceux où vos chapitres se sont "
-  .. "clos. Personne d'autre que vous ne voit ces marques."
+L.MAP_MODULE_DESC = "Inscrit votre propre histoire sur la carte du monde : les lieux où vous avez manqué à votre "
+  .. "parole et ceux où vos chapitres se sont clos. Personne d'autre que vous ne voit ces marques. Les marques des "
+  .. "conflits que vous connaissez, et du camp que vous avez choisi, viendront dans une version ultérieure."
 
 -- Pin tooltips (7.3)
-L.MAP_PIN_SIDES = "{a} ou {b}"
+L.MAP_PIN_SIDES = "{title} : {a} ou {b}"
+L.MAP_PIN_SIDES_VOWEL = "{title} : {a} ou {b}"
 L.MAP_PIN_OPEN = "Vous n'avez choisi aucun camp ici."
 L.MAP_PIN_ALLIED = "Vous soutenez {faction}."
 L.MAP_PIN_BROKEN = "Vous soutenez {faction} ; ici, vous avez manqué {count} fois à votre parole."
@@ -263,8 +273,11 @@ L.ENC_LOG_OTHERS = "{count} autres"
 L.ENC_LOG_STRANGER = "un inconnu"
 L.ENC_LOG_STRANGERS = "{count} inconnus"
 L.ENC_LOG_STRANGERS_ANY = "des inconnus"
+L.ENC_LOG_COMPANION = "un compagnon"
+L.ENC_LOG_COMPANIONS = "{count} compagnons"
 L.ENC_LIST_SEP = ", "
 L.ENC_LIST_AND = "{list} et {last}"
+L.ENC_LIST_AND_VOWEL = "{list} et {last}"
 
 -- House --------------------------------------------------------------------------------------------------
 

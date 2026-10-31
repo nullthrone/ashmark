@@ -27,6 +27,7 @@ L.CORE_SV_MIGRATE_FAILED = "Ashmark no ha podido actualizar sus datos guardados 
 L.CORE_MODULE_FAILED = "El módulo {module} se ha detenido tras repetidos errores y seguirá desactivado hasta la "
   .. "próxima recarga."
 L.CORE_UNAVAILABLE = "Requiere {capability}"
+L.CORE_UNAVAILABLE_CLIENT = "A este cliente le falta una función que este módulo necesita."
 L.CORE_MISSING_EVENTS = "Eventos que le faltan a este cliente: {events}"
 L.CORE_SETTING_CHAT_LINES = "Líneas en el chat"
 L.CORE_SETTING_CHAT_LINES_DESC = "Ashmark puede escribir líneas breves en la ventana de chat."
@@ -72,7 +73,7 @@ L.CORE_HELP_TOGGLE = "abrir o cerrar la crónica"
 L.CORE_HELP_HELP = "mostrar estos comandos"
 L.CORE_HELP_DEBUG = "activar o desactivar los mensajes de depuración durante esta sesión"
 L.CORE_HELP_RESET = "borrar el registro de este personaje; «reset others» borra los contactos, los datos de otros "
-  .. "usuarios de Ashmark y los rumores oídos"
+  .. "usuarios de Ashmark y los rumores oídos; «reset <nombre>» olvida a otro personaje de esta cuenta"
 L.CORE_UNKNOWN_COMMAND = "Comando desconocido: {command}"
 L.CORE_DEBUG_ON = "Los mensajes de depuración están activados durante esta sesión."
 L.CORE_DEBUG_OFF = "Los mensajes de depuración están desactivados."
@@ -87,6 +88,13 @@ L.CORE_RESET_OTHERS_DONE = "Se han borrado los contactos, los datos de otros usu
   .. "oídos."
 L.CORE_RESET_READONLY = "Los datos guardados proceden de una versión más reciente de Ashmark, así que no se puede "
   .. "borrar nada."
+L.CORE_RESET_CHAR_UNKNOWN = "No hay ningún otro personaje llamado {name} guardado en esta cuenta."
+L.CORE_RESET_CHAR_AMBIGUOUS = "Hay varios personajes llamados {name}. Escribe /ashmark reset <GUID> con el GUID de "
+  .. "uno de ellos:"
+L.CORE_RESET_CHAR_LINE = "{name}, nivel {level}: {guid}"
+L.CORE_RESET_CHAR_CONFIRM = "¿Olvidar a {name}? Ashmark borra la crónica, las decisiones, el perfil y los "
+  .. "encuentros de este personaje. Hazlo solo con un personaje que hayas borrado o transferido."
+L.CORE_RESET_CHAR_DONE = "Ashmark ha olvidado a {name}."
 
 -- UI shell (6.1, 6.2). "Cerrado" and "Iniciado" agree with "capítulo".
 L.CORE_TAB_CHRONICLE = "Crónica"
@@ -149,7 +157,8 @@ L.CONFLICT_HOUSETURN_THEY = "{name} le dio la espalda a la Casa {house} y se pus
 
 -- Decisions tab (6.1). "×" keeps the counts free of singular and plural.
 L.CONFLICT_TAB = "Decisiones"
-L.CONFLICT_TAB_SIDES = "{a} o {b}"
+L.CONFLICT_TAB_SIDES = "{title}: {a} o {b}"
+L.CONFLICT_TAB_SIDES_VOWEL = "{title}: {a} u {b}"
 L.CONFLICT_TAB_ALLIED = "Del lado de {faction} desde el {date}"
 L.CONFLICT_TAB_OPEN = "Sin decidir"
 L.CONFLICT_TAB_BROKEN = "Palabra rota {count}×"
@@ -184,11 +193,13 @@ L.PROFILE_TEST_CRITTER_OFF = "Este cliente no distingue las alimañas, así que 
 -- Map ------------------------------------------------------------------------------------------------------------
 
 L.MAP_MODULE_NAME = "Mapa del mundo"
-L.MAP_MODULE_DESC = "Marca tu propia historia en el mapa del mundo: los conflictos que conoces y el bando que "
-  .. "tomaste, los lugares donde faltaste a tu palabra y donde se cerraron tus capítulos. Solo tú ves estas marcas."
+L.MAP_MODULE_DESC = "Marca tu propia historia en el mapa del mundo: los lugares donde faltaste a tu palabra y "
+  .. "donde se cerraron tus capítulos. Solo tú ves estas marcas. Las marcas de los conflictos que conoces, y del "
+  .. "bando que tomaste, llegarán en una versión posterior."
 
 -- Pin tooltips (7.3)
-L.MAP_PIN_SIDES = "{a} o {b}"
+L.MAP_PIN_SIDES = "{title}: {a} o {b}"
+L.MAP_PIN_SIDES_VOWEL = "{title}: {a} u {b}"
 L.MAP_PIN_OPEN = "Aquí no has tomado partido."
 L.MAP_PIN_ALLIED = "Estás del lado de {faction}."
 L.MAP_PIN_BROKEN = "Estás del lado de {faction} y aquí has faltado a tu palabra {count}×."
@@ -255,8 +266,11 @@ L.ENC_LOG_OTHERS = "otras {count} personas"
 L.ENC_LOG_STRANGER = "un desconocido"
 L.ENC_LOG_STRANGERS = "{count} desconocidos"
 L.ENC_LOG_STRANGERS_ANY = "desconocidos"
+L.ENC_LOG_COMPANION = "un compañero"
+L.ENC_LOG_COMPANIONS = "{count} compañeros"
 L.ENC_LIST_SEP = ", "
 L.ENC_LIST_AND = "{list} y {last}"
+L.ENC_LIST_AND_VOWEL = "{list} e {last}"
 
 -- House ----------------------------------------------------------------------------------------------------------
 

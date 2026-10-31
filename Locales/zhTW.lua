@@ -26,6 +26,7 @@ L.CORE_SV_MIGRATE_FAILED = "Ashmark 無法更新其已儲存的資料，本次�
 -- Modules and settings (3.2, 4.3)
 L.CORE_MODULE_FAILED = "模組「{module}」因多次出錯而停止運作，在下次重新載入介面前都會保持關閉。"
 L.CORE_UNAVAILABLE = "需要 {capability}"
+L.CORE_UNAVAILABLE_CLIENT = "此用戶端缺少此模組所需的功能。"
 L.CORE_MISSING_EVENTS = "此用戶端缺少的事件：{events}"
 L.CORE_SETTING_CHAT_LINES = "聊天視窗訊息"
 L.CORE_SETTING_CHAT_LINES_DESC = "Ashmark 可以在聊天視窗中寫下簡短的訊息。"
@@ -70,7 +71,8 @@ L.CORE_HELP_HEADER = "指令："
 L.CORE_HELP_TOGGLE = "開啟或關閉編年史"
 L.CORE_HELP_HELP = "列出這些指令"
 L.CORE_HELP_DEBUG = "在本次登入期間開啟或關閉偵錯訊息"
-L.CORE_HELP_RESET = "清除此角色的紀錄；「reset others」會清除相識者、同行者與聽來的傳聞"
+L.CORE_HELP_RESET = "清除此角色的紀錄；「reset others」會清除相識者、同行者與聽來的傳聞；「reset <名稱>」"
+  .. "會忘記此帳號的另一個角色"
 L.CORE_UNKNOWN_COMMAND = "未知的指令：{command}"
 L.CORE_DEBUG_ON = "本次登入期間已開啟偵錯訊息。"
 L.CORE_DEBUG_OFF = "偵錯訊息已關閉。"
@@ -82,6 +84,12 @@ L.CORE_CANCEL = "取消"
 L.CORE_RESET_DONE = "此角色的紀錄已清除。"
 L.CORE_RESET_OTHERS_DONE = "相識者、同行者與聽來的傳聞已清除。"
 L.CORE_RESET_READONLY = "已儲存的資料來自較新版本的 Ashmark，因此無法清除任何內容。"
+L.CORE_RESET_CHAR_UNKNOWN = "此帳號沒有儲存其他名為{name}的角色。"
+L.CORE_RESET_CHAR_AMBIGUOUS = "有數個角色都名為{name}。請以其中一個角色的 GUID 輸入 /ashmark reset <GUID>："
+L.CORE_RESET_CHAR_LINE = "{name}，等級 {level}：{guid}"
+L.CORE_RESET_CHAR_CONFIRM = "要忘記{name}嗎？Ashmark 會刪除此角色的編年史、抉擇、人物側寫與相遇紀錄。"
+  .. "請只對你已刪除或已轉移的角色這麼做。"
+L.CORE_RESET_CHAR_DONE = "已忘記{name}。"
 
 -- UI shell (6.1, 6.2)
 L.CORE_TAB_CHRONICLE = "編年史"
@@ -141,7 +149,8 @@ L.CONFLICT_HOUSETURN_THEY = "{name}背離了{house}家族，在{zone}站到了{f
 
 -- Decisions tab (6.1)
 L.CONFLICT_TAB = "抉擇"
-L.CONFLICT_TAB_SIDES = "{a}或{b}"
+L.CONFLICT_TAB_SIDES = "「{title}」：{a}或{b}"
+L.CONFLICT_TAB_SIDES_VOWEL = "「{title}」：{a}或{b}"
 L.CONFLICT_TAB_ALLIED = "自 {date} 起站在{faction}一邊"
 L.CONFLICT_TAB_OPEN = "尚未選擇"
 L.CONFLICT_TAB_BROKEN = "違諾 {count} 次"
@@ -172,11 +181,12 @@ L.PROFILE_TEST_CRITTER_OFF = "此用戶端無法辨識小動物，因此不會�
 -- Map ------------------------------------------------------------------------------------------------------------
 
 L.MAP_MODULE_NAME = "世界地圖"
-L.MAP_MODULE_DESC = "在世界地圖上標出你自己的故事：你所知的衝突與你選擇的立場、你違背諾言的地點，"
-  .. "以及你各章落幕之處。只有你能看見這些標記。"
+L.MAP_MODULE_DESC = "在世界地圖上標出你自己的故事：你違背諾言的地點，以及你各章落幕之處。只有你能看見這些標記。"
+  .. "你所知的衝突與你選擇的立場，將在日後的版本中標出。"
 
 -- Pin tooltips (7.3)
-L.MAP_PIN_SIDES = "{a}或{b}"
+L.MAP_PIN_SIDES = "「{title}」：{a}或{b}"
+L.MAP_PIN_SIDES_VOWEL = "「{title}」：{a}或{b}"
 L.MAP_PIN_OPEN = "你在此尚未選擇立場。"
 L.MAP_PIN_ALLIED = "你站在{faction}這一邊。"
 L.MAP_PIN_BROKEN = "你站在{faction}這一邊，並曾在此違背諾言 {count} 次。"
@@ -240,8 +250,11 @@ L.ENC_LOG_OTHERS = "另外 {count} 人"
 L.ENC_LOG_STRANGER = "一位陌生人"
 L.ENC_LOG_STRANGERS = "{count} 位陌生人"
 L.ENC_LOG_STRANGERS_ANY = "一些陌生人"
+L.ENC_LOG_COMPANION = "一位同伴"
+L.ENC_LOG_COMPANIONS = "{count} 位同伴"
 L.ENC_LIST_SEP = "、"
 L.ENC_LIST_AND = "{list}和{last}"
+L.ENC_LIST_AND_VOWEL = "{list}和{last}"
 
 -- House ----------------------------------------------------------------------------------------------------------
 

@@ -31,6 +31,7 @@ L.CORE_SV_MIGRATE_FAILED = "O Ashmark não conseguiu atualizar os dados salvos e
 L.CORE_MODULE_FAILED = "O módulo {module} parou após erros repetidos e fica desativado até a próxima recarga da "
   .. "interface."
 L.CORE_UNAVAILABLE = "Requer {capability}"
+L.CORE_UNAVAILABLE_CLIENT = "Este cliente não tem um recurso de que este módulo precisa."
 L.CORE_MISSING_EVENTS = "Eventos que faltam neste cliente: {events}"
 L.CORE_SETTING_CHAT_LINES = "Linhas no bate-papo"
 L.CORE_SETTING_CHAT_LINES_DESC = "O Ashmark pode escrever linhas curtas na janela de bate-papo."
@@ -76,7 +77,7 @@ L.CORE_HELP_TOGGLE = "abrir ou fechar a crônica"
 L.CORE_HELP_HELP = "listar estes comandos"
 L.CORE_HELP_DEBUG = "ativar ou desativar as mensagens de depuração nesta sessão"
 L.CORE_HELP_RESET = "apagar o registro deste personagem; \"reset others\" apaga contatos, dados de outros usuários "
-  .. "do Ashmark e rumores ouvidos"
+  .. "do Ashmark e rumores ouvidos; \"reset <nome>\" esquece outro personagem desta conta"
 L.CORE_UNKNOWN_COMMAND = "Comando desconhecido: {command}"
 L.CORE_DEBUG_ON = "As mensagens de depuração estão ativadas nesta sessão."
 L.CORE_DEBUG_OFF = "As mensagens de depuração estão desativadas."
@@ -88,6 +89,13 @@ L.CORE_CANCEL = "Cancelar"
 L.CORE_RESET_DONE = "O registro deste personagem foi apagado."
 L.CORE_RESET_OTHERS_DONE = "Contatos, dados de outros usuários do Ashmark e rumores ouvidos foram apagados."
 L.CORE_RESET_READONLY = "Os dados salvos vêm de uma versão mais recente do Ashmark, então nada pode ser apagado."
+L.CORE_RESET_CHAR_UNKNOWN = "Nenhum outro personagem chamado {name} está salvo nesta conta."
+L.CORE_RESET_CHAR_AMBIGUOUS = "Há vários personagens chamados {name}. Digite /ashmark reset <GUID> com o GUID de "
+  .. "um deles:"
+L.CORE_RESET_CHAR_LINE = "{name}, nível {level}: {guid}"
+L.CORE_RESET_CHAR_CONFIRM = "Esquecer {name}? O Ashmark apaga a crônica, as decisões, o perfil e os encontros "
+  .. "deste personagem. Faça isso apenas com um personagem que você excluiu ou transferiu."
+L.CORE_RESET_CHAR_DONE = "O Ashmark esqueceu {name}."
 
 -- UI shell (6.1, 6.2). "Encerrado", "Iniciado" and "escrito" agree with "capítulo".
 L.CORE_TAB_CHRONICLE = "Crônica"
@@ -152,7 +160,8 @@ L.CONFLICT_HOUSETURN_THEY = "{name} deu as costas à Casa {house} e se aliou com
 
 -- Decisions tab (6.1). "×" keeps the counts free of singular and plural.
 L.CONFLICT_TAB = "Decisões"
-L.CONFLICT_TAB_SIDES = "{a} ou {b}"
+L.CONFLICT_TAB_SIDES = "{title}: {a} ou {b}"
+L.CONFLICT_TAB_SIDES_VOWEL = "{title}: {a} ou {b}"
 L.CONFLICT_TAB_ALLIED = "Do lado de {faction} desde {date}"
 L.CONFLICT_TAB_OPEN = "Em aberto"
 L.CONFLICT_TAB_BROKEN = "Palavra quebrada {count}×"
@@ -189,11 +198,13 @@ L.PROFILE_TEST_CRITTER_OFF = "Este cliente não consegue identificar bichos, ent
 -- Map ------------------------------------------------------------------------------------------------------------
 
 L.MAP_MODULE_NAME = "Mapa-múndi"
-L.MAP_MODULE_DESC = "Marca sua própria história no mapa-múndi: os conflitos que você conhece e o lado que tomou, "
-  .. "os lugares onde quebrou sua palavra e onde seus capítulos se encerraram. Só você vê essas marcas."
+L.MAP_MODULE_DESC = "Marca sua própria história no mapa-múndi: os lugares onde você quebrou sua palavra e onde "
+  .. "seus capítulos se encerraram. Só você vê essas marcas. As marcas dos conflitos que você conhece, e do lado "
+  .. "que tomou, virão em uma versão futura."
 
 -- Pin tooltips (7.3). No word here agrees with the character's sex, so there are no _F forms.
-L.MAP_PIN_SIDES = "{a} ou {b}"
+L.MAP_PIN_SIDES = "{title}: {a} ou {b}"
+L.MAP_PIN_SIDES_VOWEL = "{title}: {a} ou {b}"
 L.MAP_PIN_OPEN = "Aqui você não tomou partido."
 L.MAP_PIN_ALLIED = "Você está do lado de {faction}."
 L.MAP_PIN_BROKEN = "Você está do lado de {faction} e aqui quebrou sua palavra {count}×."
@@ -260,8 +271,11 @@ L.ENC_LOG_OTHERS = "outras {count} pessoas"
 L.ENC_LOG_STRANGER = "um desconhecido"
 L.ENC_LOG_STRANGERS = "{count} desconhecidos"
 L.ENC_LOG_STRANGERS_ANY = "desconhecidos"
+L.ENC_LOG_COMPANION = "um companheiro"
+L.ENC_LOG_COMPANIONS = "{count} companheiros"
 L.ENC_LIST_SEP = ", "
 L.ENC_LIST_AND = "{list} e {last}"
+L.ENC_LIST_AND_VOWEL = "{list} e {last}"
 
 -- House ----------------------------------------------------------------------------------------------------------
 

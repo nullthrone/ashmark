@@ -27,6 +27,7 @@ L.CORE_SV_MIGRATE_FAILED = "Ashmark konnte seine gespeicherten Daten nicht aktua
 L.CORE_MODULE_FAILED = "Das Modul „{module}“ wurde nach wiederholten Fehlern angehalten und bleibt bis zum nächsten "
   .. "Neuladen deaktiviert."
 L.CORE_UNAVAILABLE = "Benötigt {capability}"
+L.CORE_UNAVAILABLE_CLIENT = "Diesem Client fehlt eine Funktion, die dieses Modul benötigt."
 L.CORE_MISSING_EVENTS = "Ereignisse, die diesem Client fehlen: {events}"
 L.CORE_SETTING_CHAT_LINES = "Zeilen im Chat"
 L.CORE_SETTING_CHAT_LINES_DESC = "Ashmark darf kurze Zeilen ins Chatfenster schreiben."
@@ -71,8 +72,8 @@ L.CORE_HELP_HEADER = "Befehle:"
 L.CORE_HELP_TOGGLE = "die Chronik öffnen oder schließen"
 L.CORE_HELP_HELP = "diese Befehle auflisten"
 L.CORE_HELP_DEBUG = "Debug-Ausgabe für diese Sitzung ein- oder ausschalten"
-L.CORE_HELP_RESET = "die Aufzeichnungen dieses Charakters löschen; „reset others“ löscht Kontakte, Mitspieler "
-  .. "und gehörte Gerüchte"
+L.CORE_HELP_RESET = "die Aufzeichnungen dieses Charakters löschen; „reset others“ löscht Kontakte, Mitspieler und "
+  .. "gehörte Gerüchte; „reset <Name>“ vergisst einen anderen Charakter dieses Accounts"
 L.CORE_UNKNOWN_COMMAND = "Unbekannter Befehl: {command}"
 L.CORE_DEBUG_ON = "Die Debug-Ausgabe ist für diese Sitzung eingeschaltet."
 L.CORE_DEBUG_OFF = "Die Debug-Ausgabe ist ausgeschaltet."
@@ -86,6 +87,13 @@ L.CORE_RESET_DONE = "Die Aufzeichnungen dieses Charakters wurden gelöscht."
 L.CORE_RESET_OTHERS_DONE = "Kontakte, Mitspieler und gehörte Gerüchte wurden gelöscht."
 L.CORE_RESET_READONLY = "Die gespeicherten Daten stammen aus einer neueren Version von Ashmark, daher kann nichts "
   .. "gelöscht werden."
+L.CORE_RESET_CHAR_UNKNOWN = "Auf diesem Account ist kein anderer Charakter namens {name} gespeichert."
+L.CORE_RESET_CHAR_AMBIGUOUS = "Mehrere Charaktere heißen {name}. Gebt /ashmark reset <GUID> mit der GUID eines von "
+  .. "ihnen ein:"
+L.CORE_RESET_CHAR_LINE = "{name}, Stufe {level}: {guid}"
+L.CORE_RESET_CHAR_CONFIRM = "{name} vergessen? Ashmark löscht Chronik, Entscheidungen, Profil und Begegnungen "
+  .. "dieses Charakters. Tut dies nur für einen Charakter, den Ihr gelöscht oder transferiert habt."
+L.CORE_RESET_CHAR_DONE = "{name} wurde vergessen."
 
 -- UI shell (6.1, 6.2)
 L.CORE_TAB_CHRONICLE = "Chronik"
@@ -154,7 +162,8 @@ L.CONFLICT_HOUSETURN_THEY = "{name} hat sich von Haus {house} abgewandt und im G
 
 -- Decisions tab (6.1)
 L.CONFLICT_TAB = "Entscheidungen"
-L.CONFLICT_TAB_SIDES = "{a} oder {b}"
+L.CONFLICT_TAB_SIDES = "{title}: {a} oder {b}"
+L.CONFLICT_TAB_SIDES_VOWEL = "{title}: {a} oder {b}"
 L.CONFLICT_TAB_ALLIED = "Seit {date} auf der Seite der Fraktion {faction}"
 L.CONFLICT_TAB_OPEN = "Offen"
 L.CONFLICT_TAB_BROKEN = "{count}× gebrochen"
@@ -192,12 +201,13 @@ L.PROFILE_TEST_CRITTER_OFF = "Dieser Client kann Kleintiere nicht erkennen, dahe
 -- Map ------------------------------------------------------------------------------------------------------------
 
 L.MAP_MODULE_NAME = "Weltkarte"
-L.MAP_MODULE_DESC = "Zeichnet Eure eigene Geschichte auf der Weltkarte ein: die Konflikte, die Ihr kennt, und die "
-  .. "Seite, die Ihr gewählt habt, die Orte, an denen Ihr Euer Wort gebrochen habt, und die, an denen Eure Kapitel "
-  .. "endeten. Nur Ihr seht diese Markierungen."
+L.MAP_MODULE_DESC = "Zeichnet Eure eigene Geschichte auf der Weltkarte ein: die Orte, an denen Ihr Euer Wort "
+  .. "gebrochen habt, und die, an denen Eure Kapitel endeten. Nur Ihr seht diese Markierungen. Markierungen für "
+  .. "die Konflikte, die Ihr kennt, und die Seite, die Ihr gewählt habt, folgen in einer späteren Version."
 
 -- Pin tooltips (7.3)
-L.MAP_PIN_SIDES = "{a} oder {b}"
+L.MAP_PIN_SIDES = "{title}: {a} oder {b}"
+L.MAP_PIN_SIDES_VOWEL = "{title}: {a} oder {b}"
 L.MAP_PIN_OPEN = "Hier habt Ihr keine Seite gewählt."
 L.MAP_PIN_ALLIED = "Ihr steht auf der Seite der Fraktion {faction}."
 L.MAP_PIN_BROKEN = "Ihr steht auf der Seite der Fraktion {faction} und habt hier {count}× Euer Wort gebrochen."
@@ -262,8 +272,11 @@ L.ENC_LOG_OTHERS = "{count} weiteren"
 L.ENC_LOG_STRANGER = "einem Fremden"
 L.ENC_LOG_STRANGERS = "{count} Fremden"
 L.ENC_LOG_STRANGERS_ANY = "Fremden"
+L.ENC_LOG_COMPANION = "einem Gefährten"
+L.ENC_LOG_COMPANIONS = "{count} Gefährten"
 L.ENC_LIST_SEP = ", "
 L.ENC_LIST_AND = "{list} und {last}"
+L.ENC_LIST_AND_VOWEL = "{list} und {last}"
 
 -- House ----------------------------------------------------------------------------------------------------------
 

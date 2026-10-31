@@ -30,6 +30,7 @@ L.CORE_SV_MIGRATE_FAILED = "Ashmark가 저장된 데이터를 업데이트하지
 L.CORE_MODULE_FAILED = "반복된 오류로 {module} 모듈이 중지되었으며, 다음에 UI를 재시작할 때까지 "
   .. "꺼져 있습니다."
 L.CORE_UNAVAILABLE = "필요한 기능: {capability}"
+L.CORE_UNAVAILABLE_CLIENT = "이 클라이언트에는 이 모듈에 필요한 기능이 없습니다."
 L.CORE_MISSING_EVENTS = "이 클라이언트에 없는 이벤트: {events}"
 L.CORE_SETTING_CHAT_LINES = "대화창 메시지"
 L.CORE_SETTING_CHAT_LINES_DESC = "Ashmark가 대화창에 짧은 글을 남기도록 허용합니다."
@@ -74,8 +75,8 @@ L.CORE_HELP_HEADER = "명령어:"
 L.CORE_HELP_TOGGLE = "연대기 열기 또는 닫기"
 L.CORE_HELP_HELP = "이 명령어 목록 보기"
 L.CORE_HELP_DEBUG = "이번 접속 동안 디버그 출력 켜기 또는 끄기"
-L.CORE_HELP_RESET = "이 캐릭터의 기록 지우기 (\"reset others\": 만남 기록, 다른 사용자 정보, 들은 "
-  .. "소문 지우기)"
+L.CORE_HELP_RESET = "이 캐릭터의 기록 지우기 (\"reset others\": 만남 기록, 다른 사용자 정보, 들은 소문 지우기, "
+  .. "\"reset <이름>\": 이 계정의 다른 캐릭터 잊기)"
 L.CORE_UNKNOWN_COMMAND = "알 수 없는 명령어: {command}"
 L.CORE_DEBUG_ON = "이번 접속 동안 디버그 출력이 켜졌습니다."
 L.CORE_DEBUG_OFF = "디버그 출력이 꺼졌습니다."
@@ -89,6 +90,13 @@ L.CORE_RESET_DONE = "이 캐릭터의 기록을 지웠습니다."
 L.CORE_RESET_OTHERS_DONE = "만남 기록, 다른 사용자 정보, 들은 소문을 지웠습니다."
 L.CORE_RESET_READONLY = "저장된 데이터가 더 새로운 버전의 Ashmark에서 만들어졌으므로 아무것도 지울 "
   .. "수 없습니다."
+L.CORE_RESET_CHAR_UNKNOWN = "이 계정에 저장된 다른 캐릭터 중 이름이 {name}인 캐릭터는 없습니다."
+L.CORE_RESET_CHAR_AMBIGUOUS = "이름이 {name}인 캐릭터가 여럿입니다. 그중 하나의 GUID로 /ashmark reset <GUID>를 "
+  .. "입력하십시오:"
+L.CORE_RESET_CHAR_LINE = "{name}, 레벨 {level}: {guid}"
+L.CORE_RESET_CHAR_CONFIRM = "{name}을(를) 잊으시겠습니까? Ashmark가 이 캐릭터의 연대기, 결정, 프로필, 만남 기록을 "
+  .. "지웁니다. 삭제했거나 다른 곳으로 이전한 캐릭터에만 사용하십시오."
+L.CORE_RESET_CHAR_DONE = "{name}을(를) 잊었습니다."
 
 -- UI shell (6.1, 6.2)
 L.CORE_TAB_CHRONICLE = "연대기"
@@ -155,7 +163,8 @@ L.CONFLICT_HOUSETURN_THEY = "{name}은(는) {house} 가문을 등지고 {zone}�
 
 -- Decisions tab (6.1)
 L.CONFLICT_TAB = "결정"
-L.CONFLICT_TAB_SIDES = "{a} 또는 {b}"
+L.CONFLICT_TAB_SIDES = "{title} 퀘스트: {a} 또는 {b}"
+L.CONFLICT_TAB_SIDES_VOWEL = "{title} 퀘스트: {a} 또는 {b}"
 L.CONFLICT_TAB_ALLIED = "{date}부터 {faction} 편에 서 있음"
 L.CONFLICT_TAB_OPEN = "미정"
 L.CONFLICT_TAB_BROKEN = "{count}회 어김"
@@ -187,11 +196,12 @@ L.PROFILE_TEST_CRITTER_OFF = "이 클라이언트는 동물을 식별할 수 없
 -- Map ------------------------------------------------------------------------------------------------------------
 
 L.MAP_MODULE_NAME = "세계 지도"
-L.MAP_MODULE_DESC = "세계 지도에 당신만의 이야기를 표시합니다. 당신이 아는 분쟁과 당신이 택한 편, "
-  .. "맹세를 어긴 곳, 연대기의 장이 막을 내린 곳을 보여 줍니다. 이 표시는 당신에게만 보입니다."
+L.MAP_MODULE_DESC = "세계 지도에 당신만의 이야기를 표시합니다. 맹세를 어긴 곳, 연대기의 장이 막을 내린 곳을 보여 "
+  .. "줍니다. 이 표시는 당신에게만 보입니다. 당신이 아는 분쟁과 당신이 택한 편은 이후 버전에서 표시됩니다."
 
 -- Pin tooltips (7.3)
-L.MAP_PIN_SIDES = "{a} 또는 {b}"
+L.MAP_PIN_SIDES = "{title} 퀘스트: {a} 또는 {b}"
+L.MAP_PIN_SIDES_VOWEL = "{title} 퀘스트: {a} 또는 {b}"
 L.MAP_PIN_OPEN = "이곳에서는 아직 어느 편에도 서지 않았습니다."
 L.MAP_PIN_ALLIED = "{faction} 편에 서 있습니다."
 L.MAP_PIN_BROKEN = "{faction} 편에 서 있으며, 이곳에서 맹세를 {count}번 어겼습니다."
@@ -257,8 +267,11 @@ L.ENC_LOG_OTHERS = "다른 {count}명"
 L.ENC_LOG_STRANGER = "낯선 이"
 L.ENC_LOG_STRANGERS = "낯선 이 {count}명"
 L.ENC_LOG_STRANGERS_ANY = "낯선 이들"
+L.ENC_LOG_COMPANION = "동료"
+L.ENC_LOG_COMPANIONS = "동료 {count}명"
 L.ENC_LIST_SEP = ", "
 L.ENC_LIST_AND = "{list}, {last}"
+L.ENC_LIST_AND_VOWEL = "{list}, {last}"
 
 -- House ----------------------------------------------------------------------------------------------------------
 
