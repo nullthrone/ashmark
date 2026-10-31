@@ -1,3 +1,5 @@
+<p align="center"><img src="docs/assets/ashmark-logo.png" width="160" alt="Ashmark logo: a burnt-out campfire seen from above, with one ember at its centre"></p>
+
 # 🔥 Ashmark
 
 **Decisions leave a mark.** Solo role-play for World of Warcraft Forever.
