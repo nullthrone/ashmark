@@ -65,7 +65,7 @@ enUS (also enGB), deDE, frFR, esES, esMX, ptBR, ruRU, koKR, zhTW and zhCN: the t
 - It only receives when "Share with other Ashmark users" is off, on Forever trial and veteran accounts, which cannot send addon messages, and for the rest of a session in which three sends in a row fail.
 - Everything is stored in one account-wide SavedVariable, `AshmarkDB` (`_forever_\WTF\Account\<ACCOUNT>\SavedVariables\Ashmark.lua`), with characters keyed by GUID.
 - `/ashmark reset` wipes this character's record and its share of contacts and peers (a contact no other character met and without a note goes); `/ashmark reset <name>` does the same for another character of the account. `/ashmark reset others` wipes contacts, peers and rumours this account did not start, whom your own rumours were told to, and in every character's record the first meetings and sightings in the log, the stored group sessions with their members, and the party's Ashmark senders of other characters.
-- A rumour carries no name, but the game names the sender of every addon message, so party members who hear your own rumour first know it is yours.
+- A rumour carries no name, but the game names the sender of every addon message, so party members who hear your own rumour first know it is yours. A copy keeps its id, content and age from hop to hop, and its hop count and vagueness show how far it is from the deed: anyone who knows whose deed a rumour is can tell from your copy whether you grouped with that player in the past week, or how many groups lie between you.
 
 ## Testing at launch
 

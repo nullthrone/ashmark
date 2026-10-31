@@ -26,7 +26,7 @@ A character's alliances are stored under the `conflict_id`, as the letter `A` or
 
 - `registry.csv` lists every id the generator has written, with the faction and the quests of each side. The generator adds new ids and new quests; it never changes a row. Edit it by hand only to record a deliberate change to a written side, and say why in the commit.
 - The generator refuses data in which a registered id is missing, a registered side has another faction, or a registered quest has moved to the other side of its conflict.
-- `renamed.csv` (`old_id,new_id,reason`) is the only way to rename or retire an id. With `new_id` set, the old id ships in `Data/Conflicts.lua` as `renamed = { ["old_id"] = "new_id" }` so stored alliances can follow it; the new id must keep the old id's sides, and two ids cannot be renamed to one. With `new_id` empty the id is retired. A renamed or retired id can never be used again.
+- `renamed.csv` (`old_id,new_id,reason`) is the only way to rename or retire an id. With `new_id` set, the old id ships in `Data/Conflicts.lua` as `renamed = { ["old_id"] = "new_id" }` so stored alliances can follow it; the new id must keep the old id's sides, and two ids cannot become one: neither two old ids renamed to one new id, nor an old id renamed to an id already generated under its own name. A new id enters `registry.csv` with every quest the old id was generated with. With `new_id` empty the id is retired. A renamed or retired id can never be used again.
 
 ## Contributing
 
