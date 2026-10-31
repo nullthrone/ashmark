@@ -164,6 +164,31 @@ describe("Dev probe", function()
       fact(record, "WELCOME C_UnitAuras.GetPlayerAuraBySpellID(1289723)").r)
   end)
 
+  it("records C_Map.GetMapInfo for every conflict zone and anchor map once, in data order", function()
+    start(SAVED, function()
+      ns.Data = ns.Data or {}
+      ns.Data.Conflicts = { count = 3, list = {
+        { id = "clan_choice", zone = 1443, anchor = { m = 1443, x = 0.5, y = 0.5 } },
+        { id = "valley", zone = 2652, anchor = { m = 1443, x = 0.1, y = 0.9 } },
+        { id = "lost", zone = 999999 },
+      } }
+      wow.data.maps[2652] = { mapID = 2652, name = "Shen'dralas", mapType = 3, parentMapID = 1414 }
+    end)
+    local record = probe()
+    assert.same({ "C_Map.GetMapInfo(1443)", "C_Map.GetMapInfo(2652)", "C_Map.GetMapInfo(999999)" },
+      calls(record, "C_Map.GetMapInfo("))
+    assert.same({ "{mapID=2652, mapType=3, name=Shen'dralas, parentMapID=1414}" },
+      fact(record, "C_Map.GetMapInfo(2652)").r)
+    assert.same({ "<nil>" }, fact(record, "C_Map.GetMapInfo(999999)").r)
+  end)
+
+  it("notes conflict data it cannot find", function()
+    start(SAVED, function() if ns.Data then ns.Data.Conflicts = nil end end)
+    local record = probe()
+    assert.same({ false, { "<missing>" } }, { fact(record, "ns.Data.Conflicts").ok, fact(record, "ns.Data.Conflicts").r })
+    assert.same({}, calls(record, "C_Map.GetMapInfo("))
+  end)
+
   it("records the bag indices and the Hearthstone tooltip line types", function()
     start(SAVED, function()
       wow.data.tooltips[6948] = { id = 6948, lines = {

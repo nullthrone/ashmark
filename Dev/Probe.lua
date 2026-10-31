@@ -179,6 +179,29 @@ local function auras(facts)
   end
 end
 
+-- Every zone and anchor map of the shipped conflicts once, in data order, with all of C_Map.GetMapInfo's
+-- returns, so the record shows whether the client knows Shen'dralas (2652) and the pilot zones.
+local function conflictMaps(facts)
+  local data = ns.Data and ns.Data.Conflicts
+  local list = type(data) == "table" and data.list
+  if type(list) ~= "table" then
+    add(facts, "ns.Data.Conflicts", false, { "<missing>" })
+    return
+  end
+  local get, seen = lookup("C_Map.GetMapInfo"), {}
+  for _, conflict in ipairs(list) do
+    local anchor = type(conflict) == "table" and conflict.anchor
+    local maps = { type(conflict) == "table" and conflict.zone, type(anchor) == "table" and anchor.m }
+    for i = 1, 2 do
+      local m = maps[i]
+      if type(m) == "number" and not seen[m] then
+        seen[m] = true
+        add(facts, label("C_Map.GetMapInfo", m), capture(get, m))
+      end
+    end
+  end
+end
+
 local function fieldText(t, key)
   local v, ok = Safe.Field(t, key)
   if not ok then return "<secret>" end
@@ -266,6 +289,7 @@ local function collect(facts)
     call(facts, "C_Reputation.GetFactionDataByID", f)
   end
   call(facts, "C_MajorFactions.GetMajorFactionData", LEGACY_FACTION)
+  conflictMaps(facts)
 
   call(facts, "UnitCreatureType", "target")
   call(facts, "C_CreatureInfo.GetCreatureTypeInfo", 8)
