@@ -76,9 +76,9 @@ describe("Core watchers", function()
         boot(function() wow.stub("C_QuestLog.SetAbandonQuest", nil) end)
       end)
 
-      it("writes an abandon one second after QUEST_REMOVED", function()
+      it("writes an abandon two seconds after QUEST_REMOVED", function()
         wow.fire("QUEST_REMOVED", 1382)
-        wow.advance(0.9)
+        wow.advance(1.9)
         assert.equal(0, count("quest.abandon"))
         wow.advance(0.1)
         assert.equal(1382, last("quest.abandon").q)
@@ -97,6 +97,14 @@ describe("Core watchers", function()
         wow.advance(0.5)
         wow.fire("QUEST_TURNED_IN", 1382, 0, 0)
         wow.advance(2)
+        assert.equal(0, count("quest.abandon"))
+      end)
+
+      it("writes none when the turn-in comes up to two seconds after the removal", function()
+        wow.fire("QUEST_REMOVED", 1382)
+        wow.advance(1.5)
+        wow.fire("QUEST_TURNED_IN", 1382, 0, 0)
+        wow.advance(1)
         assert.equal(0, count("quest.abandon"))
       end)
 
@@ -167,6 +175,27 @@ describe("Core watchers", function()
         if e.k == "gold" then golds[#golds + 1] = e.src .. ":" .. e.c end
       end
       assert.same({ "quest:1500", "quest:1000", "other:1000" }, golds)
+    end)
+
+    it("does not count quest money twice when PLAYER_MONEY comes first", function()
+      money(1500)
+      wow.fire("QUEST_TURNED_IN", 1382, 0, 1500)
+      money(200)
+      wow.fire("LOOT_OPENED")
+      money(700)
+      wow.advance(1)
+      wow.fire("QUEST_TURNED_IN", 1383, 0, 500)
+      wow.fire("LOOT_CLOSED")
+      money(400)
+      wow.advance(3)
+      money(50)
+      wow.fire("QUEST_TURNED_IN", 1384, 0, 50)
+      wow.advance(600)
+      local golds = {}
+      for _, e in ipairs(ns.DB:Char().log) do
+        if e.k == "gold" then golds[#golds + 1] = e.src .. ":" .. e.c end
+      end
+      assert.same({ "quest:1500", "quest:500", "loot:200", "quest:50", "other:600" }, golds)
     end)
 
     it("collects changes outside a context as other, every 10 minutes and at logout", function()

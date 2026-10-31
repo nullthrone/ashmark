@@ -51,7 +51,10 @@ local function write(kind, fields, opts, before)
   local entry = ns.Safe.Clean(fields or EMPTY)
   if not entry then
     ns.Core:Stat("secretDropped", 1)
-    ns:Report(ns.Core, "drop:" .. kind, "entry dropped: a field is secret or not a number, string or boolean")
+    -- A quiet kind (the test mode's secret check) drops on purpose: counted, not reported.
+    if not kinds[kind].quiet then
+      ns:Report(ns.Core, "drop:" .. kind, "entry dropped: a field is secret or not a number, string or boolean")
+    end
     return nil
   end
   for key in pairs(RESERVED) do

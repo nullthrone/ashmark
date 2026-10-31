@@ -97,6 +97,14 @@ describe("Core Log", function()
     assert.same({}, added)
   end)
 
+  it("counts but never reports drops of a quiet kind", function()
+    boot()
+    Log:RegisterKind("test.quiet", { fields = { "v" }, quiet = true })
+    assert.is_nil(Log:Add("test.quiet", { v = wow.secret(1) }))
+    assert.equal(1, ns.DB:Char().stats["Core.secretDropped"])
+    assert.same({}, wow.errors)
+  end)
+
   it("iterates ascending ranges by sequence number; compacted entries are absent", function()
     local log = {}
     for _, n in ipairs({ 1, 2, 5, 6, 9 }) do log[#log + 1] = { n = n, t = time(), k = "test.plain" } end

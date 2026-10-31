@@ -11,7 +11,7 @@ local MAX_TESTS = 10
 local LISTEN = 10                 -- seconds a run keeps collecting screenshot and blocked-action events
 local MAX_DETAIL = 400
 local LOCALE_KEYS_SHOWN = 10
-local TEST_KIND = "test.secret"   -- never written: the secret check proves Log:Add drops it
+local TEST_KIND = "test.secret"   -- never written: the secret check proves Log:Add drops it, quietly
 
 local TEMPLATES = {
   "ButtonFrameTemplate", "PanelTabButtonTemplate", "WowScrollBoxList", "MinimalScrollBar",
@@ -23,7 +23,7 @@ local FONTS = {
 }
 local SOUNDS = { "IG_QUEST_LOG_OPEN", "IG_QUEST_LOG_CLOSE", "IG_ABILITY_PAGE_TURN" }
 local PARCHMENT = { "QuestBG-Parchment" }
-local SERVICES = { "Core", "Combat", "Identity", "Names", "Watch", "Comm", "TestMode", "Probe" }
+local SERVICES = { "Core", "Combat", "Identity", "Names", "Watch", "Comm", "MainFrame", "TestMode", "Probe" }
 -- Read when C_Console cannot list them; names from the 12.0.5 CVar list, unverified on Forever.
 local RESTRICTION_CVARS = {
   "addonChatRestrictionsForced", "addonCombatRestrictionsForced", "addonEncounterRestrictionsForced",
@@ -31,7 +31,7 @@ local RESTRICTION_CVARS = {
 }
 local LATE_EVENTS = { "SCREENSHOT_SUCCEEDED", "SCREENSHOT_FAILED", "ADDON_ACTION_BLOCKED", "ADDON_ACTION_FORBIDDEN" }
 
-ns.Log:RegisterKind(TEST_KIND, { fields = { "v" } })
+ns.Log:RegisterKind(TEST_KIND, { fields = { "v" }, quiet = true })
 
 -- Saved data ---------------------------------------------------------------
 

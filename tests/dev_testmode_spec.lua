@@ -385,6 +385,7 @@ describe("Dev test mode", function()
                     detail = "every Safe function, Log:Add and Comm:Decode refuse secrets" }, check)
       assert.equal(0, char.seq)
       assert.equal(0, char.stats["Core.secretDropped"] or 0)
+      assert.same({}, wow.errors)
     end)
 
     it("names the Safe function that lets a secret through", function()

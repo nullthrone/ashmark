@@ -54,7 +54,7 @@ Log:RegisterKind("gold", { fields = { "src", "c" } })
 
 local turnedIn = {}              -- [questID] = GetTime() of its QUEST_TURNED_IN
 local abandoning
-local questGold, questGoldUntil = 0, 0
+local questMoney                 -- defined with the gold contexts below
 
 local function onAccepted(_, _, ...)
   local n = select("#", ...)
@@ -74,9 +74,7 @@ local function onTurnedIn(_, _, questID, _, money)
   Log:Add("quest.turnin", { q = questID })
   if type(money) == "number" and money > 0 then
     Log:Add("gold", { src = "quest", c = money })
-    if GetTime() > questGoldUntil then questGold = 0 end
-    questGold = questGold + money
-    questGoldUntil = GetTime() + QUEST_GOLD_WINDOW
+    questMoney(money)
   end
 end
 
@@ -92,11 +90,12 @@ local function abandonedAfterRemoval(questID, removedAt)
   Log:Add("quest.abandon", { q = questID })
 end
 
+-- Waits the whole window, so a turn-in that arrives after the removal is still seen.
 local function onRemoved(_, _, questID)
   questID = Safe.Value(questID)
   if type(questID) ~= "number" then return end
   local removedAt = GetTime()
-  C_Timer.After(1, function()
+  C_Timer.After(ABANDON_WINDOW, function()
     ns:Call(Watch, "QUEST_REMOVED", abandonedAfterRemoval, questID, removedAt)
   end)
 end
@@ -225,6 +224,27 @@ local open = {}                  -- open contexts, most recent last
 local sums = {}                  -- [src] = copper gathered while that context is open
 local other = 0
 
+-- Quest money is logged from QUEST_TURNED_IN. Its PLAYER_MONEY can come up to QUEST_GOLD_WINDOW
+-- before or after it and is not counted a second time.
+local questGold, questGoldUntil = 0, 0              -- logged, PLAYER_MONEY not seen yet
+local gained, gainedSrc, gainedUntil = 0, nil, 0    -- seen, QUEST_TURNED_IN not yet; nil source: other
+
+function questMoney(money)
+  local now = GetTime()
+  if gained > 0 and now <= gainedUntil then
+    local used = math.min(gained, money)
+    gained, money = gained - used, money - used
+    if not gainedSrc then
+      other = other - used
+    elseif sums[gainedSrc] then
+      sums[gainedSrc] = sums[gainedSrc] - used
+    end
+  end
+  if now > questGoldUntil then questGold = 0 end
+  questGold = questGold + money
+  questGoldUntil = now + QUEST_GOLD_WINDOW
+end
+
 local function readMoney()
   local ok, money = Safe.Call(GetMoney)
   if ok and type(money) == "number" then return money end
@@ -257,6 +277,11 @@ local function onMoney()
   else
     other = other + delta
     ns.Util.Debounce("Core.goldOther", OTHER_GOLD_EVERY, flushOther)
+  end
+  if delta > 0 then
+    local now = GetTime()
+    if now > gainedUntil or gainedSrc ~= src then gained = 0 end
+    gained, gainedSrc, gainedUntil = gained + delta, src, now + QUEST_GOLD_WINDOW
   end
 end
 

@@ -20,17 +20,10 @@ local function help()
   end
 end
 
--- The main window belongs to UI/MainFrame.lua; it is shown and hidden only through Combat.Run.
+-- The main window belongs to UI/MainFrame.lua, which shows and hides it through Combat.Run.
 local function toggle()
   local main = ns.UI and ns.UI.MainFrame
-  if not main then return end
-  ns.Combat.Run("frame:toggle", function()
-    if AshmarkFrame and AshmarkFrame:IsShown() then
-      AshmarkFrame:Hide()
-    else
-      main:Show()
-    end
-  end)
+  if main then main:Toggle() end
 end
 
 local function confirm(textKey, onAccept)

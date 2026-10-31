@@ -52,14 +52,11 @@ describe("Core Slash", function()
   end)
 
   it("toggles the main window without arguments", function()
-    local shown = 0
-    ns.UI.MainFrame = { Show = function() shown = shown + 1 end }
+    local toggled = 0
+    ns.UI.MainFrame = { Toggle = function() toggled = toggled + 1 end }
     SlashCmdList.ASHMARK("")
-    assert.equal(1, shown)
-    local frame = CreateFrame("Frame", "AshmarkFrame")
     SlashCmdList.ASHMARK()
-    assert.is_false(frame:IsShown())
-    assert.equal(1, shown)
+    assert.equal(2, toggled)
   end)
 
   it("wipes this character's record after confirmation", function()
