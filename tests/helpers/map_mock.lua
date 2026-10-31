@@ -24,6 +24,9 @@ function mock.data()
   }
 end
 
+-- What Conflicts:Title gives for each conflict: the title of its first side-A quest.
+mock.TITLES = { clan_choice = "Gelkis Alliance", grove = "Grove Keepers", coast = "Pirate Hats Ahoy!", bare = "Bare" }
+
 -- Rectangles [child][parent] = { minX, maxX, minY, maxY }: Desolace on Kalimdor, Stranglethorn on the
 -- Eastern Kingdoms, the micro map 9002 inside Desolace.
 function mock.rects(wow)
@@ -40,6 +43,7 @@ function mock.conflicts(ns, list)
   ns.Conflicts = {
     All = function() return list end,
     Get = function(_, id) return byId[id] end,
+    Title = function(_, c) return mock.TITLES[c.id] end,
     InZone = function(_, m)
       local out = {}
       for _, c in ipairs(list) do

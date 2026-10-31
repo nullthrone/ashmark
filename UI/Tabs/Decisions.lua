@@ -57,7 +57,8 @@ local function conflictRow(char, conflict)
   local a, b = Conflicts:SideName(conflict, "A"), Conflicts:SideName(conflict, "B")
   return {
     id = conflict.id,
-    sides = ns.Format(L.CONFLICT_TAB_SIDES, { title = Conflicts:Title(conflict), a = a, b = b }),
+    sides = ns.Format(ns.Util.StartsWithSound(b, "o") and L.CONFLICT_TAB_SIDES_VOWEL or L.CONFLICT_TAB_SIDES,
+      { title = Conflicts:Title(conflict), a = a, b = b }),
     status = status,
     open = side == nil,
     broken = broken > 0 and ns.Format(L.CONFLICT_TAB_BROKEN, { count = broken }) or "",

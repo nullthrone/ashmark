@@ -62,7 +62,10 @@ end
 
 local function anchorTooltip(info, char)
   local conflict, sex = info.conflict, char and char.sex
-  title(ns.Format(L.MAP_PIN_SIDES, { a = sideName(conflict, "A"), b = sideName(conflict, "B") }), HIGHLIGHT_FONT_COLOR)
+  local a, b = sideName(conflict, "A"), sideName(conflict, "B")
+  local sides = ns.Util.StartsWithSound(b, "o") and L.MAP_PIN_SIDES_VOWEL or L.MAP_PIN_SIDES
+  title(ns.Format(sides, { title = conflicts("Title", conflict) or L.CORE_UNKNOWN_QUEST, a = a, b = b }),
+    HIGHLIGHT_FONT_COLOR)
   if info.state == "open" then
     line(ns.Gender("MAP_PIN_OPEN", sex), NORMAL_FONT_COLOR)
     return

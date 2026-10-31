@@ -32,6 +32,9 @@ L.CONFLICT_HOUSETURN_THEY = "{name} turned from House {house} and sided with {fa
 -- the two sides, {date} a short date from the client.
 L.CONFLICT_TAB = "Decisions"
 L.CONFLICT_TAB_SIDES = "{title}: {a} or {b}"
+-- Used instead of CONFLICT_TAB_SIDES when {b} begins with the sound /o/ (O-, Ó-, Ho-). Spanish writes
+-- "{a} u {b}" here; every other language repeats its CONFLICT_TAB_SIDES.
+L.CONFLICT_TAB_SIDES_VOWEL = "{title}: {a} or {b}"
 L.CONFLICT_TAB_ALLIED = "Sided with {faction} since {date}"
 L.CONFLICT_TAB_OPEN = "Open"
 L.CONFLICT_TAB_BROKEN = "Broken {count}×"

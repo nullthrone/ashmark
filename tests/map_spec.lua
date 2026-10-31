@@ -324,18 +324,30 @@ describe("Map", function()
       pin:OnMouseEnter()
       assert.equal(pin, GameTooltip:GetOwner())
       assert.is_true(GameTooltip:IsShown())
-      assert.same({ "Gelkis Clan Centaur or Magram Clan Centaur", "You have taken no side here." }, mock.tooltip())
+      assert.same({ "Gelkis Alliance: Gelkis Clan Centaur or Magram Clan Centaur", "You have taken no side here." },
+        mock.tooltip())
       pin:OnMouseLeave()
       assert.is_false(GameTooltip:IsShown())
       mock.ally(char, "clan_choice", "A")
       mock.ally(char, "grove", "B", 2)
       mock.open(wow, DESOLACE)
       mock.pin(1):OnMouseEnter()
-      assert.same({ "Gelkis Clan Centaur or Magram Clan Centaur", "You stand with Gelkis Clan Centaur." },
-        mock.tooltip())
+      assert.same({ "Gelkis Alliance: Gelkis Clan Centaur or Magram Clan Centaur",
+                    "You stand with Gelkis Clan Centaur." }, mock.tooltip())
       mock.pin(2):OnMouseEnter()
-      assert.same({ "Gelkis Clan Centaur or those without a banner",
+      assert.same({ "Grove Keepers: Gelkis Clan Centaur or those without a banner",
                     "You stand with those without a banner, and broke your word here 2×." }, mock.tooltip())
+    end)
+
+    it("join the sides with MAP_PIN_SIDES_VOWEL before the sound /o/, and name an untitled conflict", function()
+      boot({ setup = function(n) n.Locale:Base().MAP_PIN_SIDES_VOWEL = "{title}: {a} u {b}" end })
+      wow.data.factions[93].name = "Orden de Magram"
+      ns.Conflicts.Title = function(_, c) if c.id ~= "grove" then return mock.TITLES[c.id] end end
+      mock.open(wow, DESOLACE)
+      mock.pin(1):OnMouseEnter()
+      assert.equal("Gelkis Alliance: Gelkis Clan Centaur u Orden de Magram", mock.tooltip()[1])
+      mock.pin(2):OnMouseEnter()
+      assert.equal("a quest: Gelkis Clan Centaur or those without a banner", mock.tooltip()[1])
     end)
 
     it("tell the chronicle's sentence for a violation and the date for a chapter", function()

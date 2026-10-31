@@ -26,6 +26,7 @@ describe("Conflicts Decisions tab", function()
     ns = mock.boot(wow, { files = FILES, data = opts.data, setup = function(n)
       fakeWidgets(n)
       wow.stub("ScrollBoxConstants", { RetainScrollPosition = "retain", DiscardScrollPosition = "discard" })
+      if opts.setup then opts.setup(n) end
     end })
     return ns.DB:Char()
   end
@@ -103,6 +104,14 @@ describe("Conflicts Decisions tab", function()
     assert.equal("Gelkis Alliance: Gelkis Clan Centaur or Magram Clan Centaur", row("clan_choice").sides)
     assert.equal("Raid on the Kolkar: Gelkis Clan Centaur or Magram Clan Centaur", row("clan_raid").sides)
     assert.equal("Saving Our Own: Magram Clan Centaur or Gelkis Clan Centaur", row("far_raid").sides)
+  end)
+
+  it("joins the sides with CONFLICT_TAB_SIDES_VOWEL when the second begins with the sound /o/", function()
+    boot({ setup = function(n) n.Locale:Base().CONFLICT_TAB_SIDES_VOWEL = "{title}: {a} u {b}" end })
+    wow.data.factions[93].name = "Hordas de Magram"
+    show()
+    assert.equal("Gelkis Alliance: Gelkis Clan Centaur u Hordas de Magram", row("clan_choice").sides)
+    assert.equal("Bloodsail Correspondence: Booty Bay or Bloodsail Buccaneers", row("coast_raid").sides)
   end)
 
   it("names a conflict whose first quest the client has not loaded yet, and asks for it", function()
