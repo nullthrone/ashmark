@@ -481,6 +481,9 @@ end
 function M:OnEnable()
   self:Subscribe("LOG_ADDED", onLogAdded)
   self:Subscribe("REP_CHANGED", checkReputation)
+  -- /ashmark reset hands over a new record through LOG_COMPACTED (5.9) and no standing changes, so rule 2
+  -- forms its alliances again here; after a compaction of the same record every one is already formed.
+  self:Subscribe("LOG_COMPACTED", checkReputation)
   self.QuestDialog:Enable()
 end
 

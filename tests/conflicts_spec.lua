@@ -269,6 +269,23 @@ describe("Conflicts", function()
       assert.equal("Your standing with Gelkis Clan Centaur decided your side in Shen'dralas.", render(shendralas))
     end)
 
+    it("forms again for the new record after /ashmark reset, and nothing more on a compaction", function()
+      local char = boot(function() faction(93, 6) end)
+      assert.equal("B", ns.Conflicts:Alliance(char, "clan_choice"))
+      ns.UI = ns.UI or {}
+      ns.UI.Dialog = { Show = function(_, opts) opts.onAccept() end }
+      SlashCmdList.ASHMARK("reset")
+      local fresh = ns.DB:Char()
+      assert.are_not.equal(char, fresh)
+      assert.equal("B", ns.Conflicts:Alliance(fresh, "clan_choice"))
+      assert.same({ "alliance" }, mock.kinds(fresh))
+      assert.same({ "clan_choice", "B", true }, { fresh.log[1].c, fresh.log[1].side, fresh.log[1].rep })
+      assert.equal(2, #topics)
+      ns.Bus:Fire("LOG_COMPACTED", fresh)
+      assert.same({ "alliance" }, mock.kinds(fresh))
+      assert.equal(2, #topics)
+    end)
+
     it("leaves a conflict that already has an alliance alone", function()
       local char = boot()
       mock.accept(wow, 2001)
