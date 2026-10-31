@@ -86,12 +86,31 @@ describe("Conflicts Decisions tab", function()
     local ids = {}
     for _, data in ipairs(rows()) do ids[#ids + 1] = data.header and "-" or data.id end
     assert.same({ "-", "clan_choice", "-", "grove", "-", "coast_raid" }, ids)
-    assert.same({ sides = "Gelkis Clan Centaur or Magram Clan Centaur", status = "Open", open = true, broken = "",
-                  id = "clan_choice" }, row("clan_choice"))
-    assert.equal("Gelkis Clan Centaur or those without a banner", row("grove").sides)
+    assert.same({ sides = "Gelkis Alliance: Gelkis Clan Centaur or Magram Clan Centaur", status = "Open", open = true,
+                  broken = "", id = "clan_choice" }, row("clan_choice"))
+    assert.equal("Grove Keepers: Gelkis Clan Centaur or those without a banner", row("grove").sides)
     assert.equal("You have not broken your word.", tab.Total:GetText())
     assert.is_false(tab.Empty:IsShown())
     assert.equal("retain", lists[1].box.retain)
+  end)
+
+  it("tells conflicts between the same two factions in one zone apart by the title of their first quest", function()
+    boot({ data = mock.twins() })
+    show()
+    local ids = {}
+    for _, data in ipairs(rows()) do ids[#ids + 1] = data.header and "-" or data.id end
+    assert.same({ "-", "clan_choice", "clan_raid", "-", "grove", "far_raid", "-", "coast_raid" }, ids)
+    assert.equal("Gelkis Alliance: Gelkis Clan Centaur or Magram Clan Centaur", row("clan_choice").sides)
+    assert.equal("Raid on the Kolkar: Gelkis Clan Centaur or Magram Clan Centaur", row("clan_raid").sides)
+    assert.equal("Saving Our Own: Magram Clan Centaur or Gelkis Clan Centaur", row("far_raid").sides)
+  end)
+
+  it("names a conflict whose first quest the client has not loaded yet, and asks for it", function()
+    wow.data.quests[3001].title = nil
+    boot()
+    show()
+    assert.equal("a quest: Booty Bay or Bloodsail Buccaneers", row("coast_raid").sides)
+    assert.same({ 3001 }, wow.requests.quest)
   end)
 
   it("shows the side taken and since when, the broken count per conflict and the total", function()
@@ -130,7 +149,7 @@ describe("Conflicts Decisions tab", function()
     local sides, status, broken = button.sides, button.status, button.broken
     assert.same({ "GameFontHighlight", "GameFontHighlightSmall", "GameFontHighlightSmall" },
                 { sides.__template, status.__template, broken.__template })
-    assert.equal("Booty Bay or Bloodsail Buccaneers", sides:GetText())
+    assert.equal("Bloodsail Correspondence: Booty Bay or Bloodsail Buccaneers", sides:GetText())
     assert.same({ GRAY_FONT_COLOR:GetRGB() }, { status:GetTextColor() })
     lists[1].opts.init(button, row("clan_choice"))
     assert.equal(sides, button.sides)

@@ -26,11 +26,25 @@ function mock.data()
   }
 end
 
+-- The fixture plus two conflicts between the same two factions as others in their zones, as the shipped
+-- data has them: clan_raid beside clan_choice in Desolace, and far_raid in Shen'dralas with Gelkis on
+-- side B and a lower threshold than grove.
+function mock.twins()
+  local data = mock.data()
+  table.insert(data.list, { id = "clan_raid", zone = 1443, theme = "feud",
+    A = { faction = 92, quests = { 1003 } }, B = { faction = 93, quests = { 2003 } }, honored = 6, verified = false })
+  table.insert(data.list, { id = "far_raid", zone = 2652, theme = "feud",
+    A = { faction = 93, quests = { 5101 } }, B = { faction = 92, quests = { 6101 } }, honored = 5, verified = false })
+  data.count = #data.list
+  return data
+end
+
 -- Titles for every fixture quest, so renderers and the data check find them.
 mock.TITLES = {
   [1001] = "Gelkis Alliance", [1002] = "Stones of Binding", [2001] = "Magram Alliance", [2002] = "Broken Tears",
   [3001] = "Bloodsail Correspondence", [4001] = "Pirate Hats Ahoy", [5001] = "Grove Keepers",
-  [6001] = "Ash in the Grove",
+  [6001] = "Ash in the Grove", [1003] = "Raid on the Kolkar", [2003] = "Assault on the Kolkar",
+  [5101] = "Saving Our Own", [6101] = "No Mercy for the Weak",
 }
 
 function mock.titles(wow)

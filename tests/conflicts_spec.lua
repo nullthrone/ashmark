@@ -8,8 +8,8 @@ local COUSIN = "Player-1-0000000a"
 describe("Conflicts", function()
   local ns, topics
 
-  local function boot(setup)
-    ns = mock.boot(wow, { setup = function(n)
+  local function boot(setup, data)
+    ns = mock.boot(wow, { data = data, setup = function(n)
       ns = n
       topics = {}
       for _, topic in ipairs({ "ALLIANCE_FORMED", "ALLIANCE_BROKEN" }) do
@@ -213,6 +213,22 @@ describe("Conflicts", function()
       assert.same({ "rep", "alliance", "rep", "rep", "alliance" }, mock.kinds(char))
     end)
 
+    it("tells once of the conflicts one standing decides for one faction in one zone", function()
+      local char = boot(function() faction(92, 6) end, mock.twins())
+      assert.same({ "alliance", "alliance" }, mock.kinds(char))
+      local desolace, shendralas = char.log[1], char.log[2]
+      assert.same({ "clan_choice", "A", true }, { desolace.c, desolace.side, desolace.rep })
+      assert.same({ "far_raid", "B", true }, { shendralas.c, shendralas.side, shendralas.rep })
+      local rec = char.conflicts
+      assert.same({ clan_choice = "A", clan_raid = "A", far_raid = "B" }, rec.allied)
+      assert.same({ clan_choice = desolace.n, clan_raid = desolace.n, far_raid = shendralas.n }, rec.began)
+      assert.same({ clan_choice = desolace.t, clan_raid = desolace.t, far_raid = shendralas.t }, rec.since)
+      assert.same({ { "ALLIANCE_FORMED", "clan_choice", "A", true }, { "ALLIANCE_FORMED", "clan_raid", "A", true },
+                    { "ALLIANCE_FORMED", "far_raid", "B", true } }, topics)
+      assert.equal("Your standing with Gelkis Clan Centaur decided your side in Desolace.", render(desolace))
+      assert.equal("Your standing with Gelkis Clan Centaur decided your side in Shen'dralas.", render(shendralas))
+    end)
+
     it("leaves a conflict that already has an alliance alone", function()
       local char = boot()
       mock.accept(wow, 2001)
@@ -407,6 +423,27 @@ describe("Conflicts", function()
       end)
       assert.same({ "alliance", "houseturn" }, mock.kinds(char))
       assert.is_nil(last("houseturn").q)
+    end)
+
+    it("records it once for conflicts formed together, in the first one the house stands against", function()
+      local char = boot(function(n)
+        mock.house(n, "Ashvale", { clan_raid = { B = { SISTER } }, far_raid = { A = { SISTER } } })
+        faction(92, 6)
+      end, mock.twins())
+      assert.same({ "alliance", "houseturn", "alliance", "houseturn" }, mock.kinds(char))
+      assert.same({ "clan_raid", "A" }, { char.log[2].c, char.log[2].side })
+      assert.same({ "far_raid", "B" }, { char.log[4].c, char.log[4].side })
+      assert.same({ clan_raid = true, far_raid = true }, char.conflicts.turned)
+    end)
+
+    it("marks every conflict of the group the house stands against as turned", function()
+      local char = boot(function(n)
+        mock.house(n, "Ashvale", { clan_choice = { B = { SISTER } }, clan_raid = { B = { COUSIN } } })
+        faction(92, 6)
+      end, mock.twins())
+      assert.same({ "alliance", "houseturn", "alliance" }, mock.kinds(char))
+      assert.same({ "clan_choice", "A", "Ashvale" }, { char.log[2].c, char.log[2].side, char.log[2].h })
+      assert.same({ clan_choice = true, clan_raid = true }, char.conflicts.turned)
     end)
 
     it("records nothing when the siblings are split, agree, or the house has no key", function()

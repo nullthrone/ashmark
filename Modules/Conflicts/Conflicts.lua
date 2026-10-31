@@ -104,6 +104,14 @@ end
 
 -- For this unit's dialog line, renderers and tab ---------------------------------
 
+-- A conflict's title: the client's title of the first quest on side A. The data gives conflicts no
+-- name, and one zone can hold several conflicts between the same two factions.
+function M:Title(conflict)
+  local s = type(conflict) == "table" and conflict.A
+  local quests = type(s) == "table" and s.quests
+  return ns.Names.Quest(type(quests) == "table" and quests[1] or nil)
+end
+
 -- A side's faction name from the client, or CONFLICT_UNNAMED for a side without a faction.
 function M:SideName(conflict, side)
   local s = type(conflict) == "table" and conflict[side]
@@ -168,18 +176,30 @@ local function houseAgainst(char, id, side)
   if type(key) == "string" and key ~= "" then return key end
 end
 
--- Rules 1, 2 and 5: the first alliance in a conflict, by quest (q) or by reputation.
-local function form(char, conflict, side, q, viaRep)
-  local id = conflict.id
+-- Rules 1, 2 and 5: the first alliance in each conflict of `group` ({ { conflict, side }, ... }, one
+-- zone and one faction taken), by quest (q) or by reputation. One alliance entry and at most one
+-- houseturn tell of the whole group, so the chronicle and the rumours say it once.
+local function form(char, group, q, viaRep)
   local rec = record(char)
-  local house = not rec.turned[id] and houseAgainst(char, id, side)
-  local entry = ns.Log:Add("alliance", { c = id, side = side, rep = viaRep or nil })
-  if not entry then return end
-  rec.allied[id], rec.since[id], rec.began[id] = side, entry.t, entry.n
-  if house and ns.Log:Add("houseturn", { c = id, side = side, q = q, h = house }) then
-    rec.turned[id] = true
+  local houses, turn = {}, nil
+  for i, hit in ipairs(group) do
+    houses[i] = not rec.turned[hit.conflict.id] and houseAgainst(char, hit.conflict.id, hit.side)
+    if houses[i] and not turn then turn = i end
   end
-  M:Fire("ALLIANCE_FORMED", id, side, viaRep)
+  local first = group[1]
+  local entry = ns.Log:Add("alliance", { c = first.conflict.id, side = first.side, rep = viaRep or nil })
+  if not entry then return end
+  for _, hit in ipairs(group) do
+    local id = hit.conflict.id
+    rec.allied[id], rec.since[id], rec.began[id] = hit.side, entry.t, entry.n
+  end
+  local by = turn and group[turn]
+  if by and ns.Log:Add("houseturn", { c = by.conflict.id, side = by.side, q = q, h = houses[turn] }) then
+    for i, hit in ipairs(group) do
+      if houses[i] then rec.turned[hit.conflict.id] = true end
+    end
+  end
+  for _, hit in ipairs(group) do M:Fire("ALLIANCE_FORMED", hit.conflict.id, hit.side, viaRep) end
 end
 
 -- Rule 4: a turn-in for the other side breaks the alliance; the violation is the record.
@@ -203,7 +223,7 @@ local function onLogAdded(_, _, entry, char)
   local conflict = index().byId[hit.id]
   local side = M:Alliance(char, hit.id)
   if not side then
-    form(char, conflict, hit.side, entry.q, false)
+    form(char, { { conflict = conflict, side = hit.side } }, entry.q, false)
   elseif side ~= hit.side and entry.k == "quest.turnin" then
     violate(char, conflict, hit.side, entry.q)
   end
@@ -221,11 +241,12 @@ end
 
 local onFaction                  -- the retry, defined below
 
--- Rule 2: exactly one side at or above `honored` forms the alliance; both at it form none.
+-- Rule 2: exactly one side at or above `honored` forms the alliance; both at it form none. The
+-- conflicts one pass decides for the same faction in the same zone form together (see form).
 local function checkReputation()
   local char = M:Char()
   if not char then return end
-  local unread = false
+  local unread, groups, order = false, {}, {}
   for _, conflict in ipairs(index().list) do
     local honored = conflict.honored
     if type(honored) == "number" and not M:Alliance(char, conflict.id) then
@@ -234,10 +255,19 @@ local function checkReputation()
         unread = true
       else
         local reachA, reachB = a and a >= honored, b and b >= honored
-        if reachA ~= reachB then form(char, conflict, reachA and "A" or "B", nil, true) end
+        if reachA ~= reachB then
+          local side = reachA and "A" or "B"
+          local key = conflict.zone .. ":" .. conflict[side].faction
+          if not groups[key] then
+            groups[key] = {}
+            order[#order + 1] = groups[key]
+          end
+          table.insert(groups[key], { conflict = conflict, side = side })
+        end
       end
     end
   end
+  for _, group in ipairs(order) do form(char, group, nil, true) end
   -- A faction read as nil is retried on the next UPDATE_FACTION (3.3); Core's REP_CHANGED stays
   -- silent for it, because Core takes its first read as a baseline.
   if unread then

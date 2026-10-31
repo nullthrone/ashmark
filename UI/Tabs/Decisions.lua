@@ -1,8 +1,8 @@
 local _, ns = ...
 
 -- The Decisions tab (6.1, 7.1), in the reputation frame's pattern: collapsible zone headers and under
--- each one row per conflict with both sides, the side taken and since when (or open) and how often
--- the word was broken there. The total of broken words sits above the list.
+-- each one row per conflict with its title and both sides, the side taken and since when (or open) and
+-- how often the word was broken there. The total of broken words sits above the list.
 
 local UI = ns.UI
 local Conflicts = ns.Conflicts
@@ -57,7 +57,7 @@ local function conflictRow(char, conflict)
   local a, b = Conflicts:SideName(conflict, "A"), Conflicts:SideName(conflict, "B")
   return {
     id = conflict.id,
-    sides = ns.Format(L.CONFLICT_TAB_SIDES, { a = a, b = b }),
+    sides = ns.Format(L.CONFLICT_TAB_SIDES, { title = Conflicts:Title(conflict), a = a, b = b }),
     status = status,
     open = side == nil,
     broken = broken > 0 and ns.Format(L.CONFLICT_TAB_BROKEN, { count = broken }) or "",

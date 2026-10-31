@@ -28,9 +28,10 @@ L.CONFLICT_SWITCHED_THEY = "{name} changed sides once more: {quest} for {faction
 L.CONFLICT_HOUSETURN = "You turned from House {house} and sided with {faction} in {zone}."
 L.CONFLICT_HOUSETURN_THEY = "{name} turned from House {house} and sided with {faction} in {zone}."
 
--- Decisions tab (6.1). {a} and {b} are the two sides, {date} a short date from the client.
+-- Decisions tab (6.1). {title} is the conflict's title (a quest title from the client), {a} and {b} are
+-- the two sides, {date} a short date from the client.
 L.CONFLICT_TAB = "Decisions"
-L.CONFLICT_TAB_SIDES = "{a} or {b}"
+L.CONFLICT_TAB_SIDES = "{title}: {a} or {b}"
 L.CONFLICT_TAB_ALLIED = "Sided with {faction} since {date}"
 L.CONFLICT_TAB_OPEN = "Open"
 L.CONFLICT_TAB_BROKEN = "Broken {count}×"
