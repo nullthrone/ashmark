@@ -21,4 +21,6 @@ L.MAP_PIN_BROKEN = "You stand with {faction}, and broke your word here {count}×
 L.MAP_PIN_VIOLATION = "Here you broke your word"
 L.MAP_PIN_CHAPTER = "Chapter {roman}"
 L.MAP_PIN_CHAPTER_CLOSED = "Closed here on {date}"
+-- Below the newest of several chapters closed on the same spot; {count} is how many closed there (2 or more).
+L.MAP_PIN_CHAPTER_COUNT = "Chapters closed here: {count}"
 

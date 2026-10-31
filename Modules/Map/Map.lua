@@ -85,10 +85,12 @@ local function violationTooltip(info, char)
   if when then line(when, GRAY_FONT_COLOR) end
 end
 
+-- The newest chapter closed on the pin's spot, and how many closed there.
 local function chapterTooltip(info)
   title(ns.Format(L.MAP_PIN_CHAPTER, { roman = ns.Util.Roman(info.source.no) }), HIGHLIGHT_FONT_COLOR)
   local when = day(info.source.closed)
   if when then line(ns.Format(L.MAP_PIN_CHAPTER_CLOSED, { date = when }), NORMAL_FONT_COLOR) end
+  if (info.count or 1) > 1 then line(ns.Format(L.MAP_PIN_CHAPTER_COUNT, { count = info.count }), GRAY_FONT_COLOR) end
 end
 
 local TOOLTIPS = { anchor = anchorTooltip, violation = violationTooltip, chapter = chapterTooltip }
@@ -131,15 +133,18 @@ end
 
 -- Positions ------------------------------------------------------------------
 
--- [mapId] = { { kind, m, x, y, source }, ... }: violation entries and chapter records that have a
--- position, filed under their own map and under its zone; x, y are 0..1 on m. Built on first use.
+-- maps[mapId] = { { kind, m, x, y, source, count }, ... }: violation entries and chapter records that have
+-- a position, filed under their own map and under its zone; x, y are 0..1 on m. Chapters closed on one
+-- spot (the same m, x, y: Where keeps whole percent) share an item, so years of camp rests at one fire
+-- draw one pin: source is the newest record, count how many closed there; spots finds that item.
+-- Built on first use.
 local cache
 
 local function positioned(kind, source)
   if type(source) ~= "table" then return nil end
   local m, x, y = source.m, source.x, source.y
   if type(m) ~= "number" or type(x) ~= "number" or type(y) ~= "number" then return nil end
-  return { kind = kind, m = m, x = x / 100, y = y / 100, source = source }
+  return { kind = kind, m = m, x = x / 100, y = y / 100, source = source, count = 1 }
 end
 
 local function file(t, m, item)
@@ -155,13 +160,22 @@ end
 local function remember(t, kind, source)
   local item = positioned(kind, source)
   if not item or (kind == "violation" and conflicts("Get", source.c) == nil) then return end
-  file(t, item.m, item)
+  if kind == "chapter" then
+    local key = item.m .. ":" .. source.x .. ":" .. source.y
+    local spot = t.spots[key]
+    if spot then
+      spot.source, spot.count = source, spot.count + 1
+      return
+    end
+    t.spots[key] = item
+  end
+  file(t.maps, item.m, item)
   local zone = ns.Where.Zone(item.m)
-  if zone and zone ~= item.m then file(t, zone, item) end
+  if zone and zone ~= item.m then file(t.maps, zone, item) end
 end
 
 local function build(char)
-  local t = {}
+  local t = { maps = {}, spots = {} }
   if type(char) ~= "table" then return t end
   for entry in ns.Log:Iter(char, 1) do
     if entry.k == "violation" then remember(t, "violation", entry) end
@@ -235,9 +249,12 @@ local function pinsFor(shown)
     end
   end
   if continent then return out end
-  for _, item in ipairs(positions()[shown] or EMPTY) do
+  for _, item in ipairs(positions().maps[shown] or EMPTY) do
     local x, y = onMap(item.m, shown, item.x, item.y)
-    if x then out[#out + 1] = { x = x, y = y, atlas = M.ATLAS[item.kind], kind = item.kind, source = item.source } end
+    if x then
+      out[#out + 1] = { x = x, y = y, atlas = M.ATLAS[item.kind], kind = item.kind, source = item.source,
+                        count = item.count }
+    end
   end
   return out
 end
