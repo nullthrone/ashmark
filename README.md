@@ -2,7 +2,7 @@
 
 Decisions leave a mark. Solo role-play for World of Warcraft Forever.
 
-Ashmark keeps a chronicle of one character's decisions and lets them have consequences. Some quests set one side against another: Ashmark remembers the side you take, marks quests that contradict it under the quest dialog and records it when you break your word. What you do shapes an archetype, alts on your account who share a surname form a house with one family history, and party members who also run Ashmark learn your archetype and origin without a word in chat.
+Ashmark keeps a chronicle of one character's decisions and lets them have consequences. Some quests set one side against another: Ashmark remembers the side you take, marks quests that contradict it under the quest dialog and records it when you break your word. What you do shapes an archetype, alts on your account who share a surname form a house with one family history, and party members who also run Ashmark learn your archetype and origin through addon messages, with nothing shown in chat.
 
 Ashmark runs on World of Warcraft Forever only. Retail and Classic Era are not supported. It never reads the combat log, automates nothing, never uses StaticPopup and ships no libraries.
 
@@ -10,7 +10,7 @@ The full guide is [docs/index.html](docs/index.html).
 
 ## Status
 
-Pre-release. Ashmark was written against the Forever beta and test clients and has run only against the mock client of its test suite. Forever launches on 4 November 2026 at 23:00 UTC; until the test mode has run in the live client, the platform facts in [docs/research/forever-platform.md](docs/research/forever-platform.md) and every conflict in the dataset are unverified. `## Interface: 16001` is the beta and test value.
+Pre-release. Ashmark has run only against the mock client of its test suite. Forever launches on 4 November 2026 at 23:00 UTC; until the test mode has run in the live client, the platform facts in [docs/research/forever-platform.md](docs/research/forever-platform.md) and every conflict in the dataset are unverified. `## Interface: 16001` is the beta and test value.
 
 ## Modules
 
@@ -20,19 +20,20 @@ Pre-release. Ashmark was written against the Forever beta and test clients and h
 | Conflicts | a line under the quest dialog; Decisions tab |
 | Profile | House tab: three axes (fidelity, habitat, mercy) and the archetype |
 | World map | world-map pins for conflicts, broken words and closed chapters |
-| Encounters | a unit tooltip line, the Encounters tab, chat lines when people you know join |
+| Encounters | a unit tooltip line, the Encounters tab, chat lines when people you know join your group |
 | House | House tab; a hint under the quest dialog |
 | Campfire | a centre-screen notice when a rest at a camp closes a chapter |
 | Character knowledge | item tooltips hide what this character has never held |
-| Rumours | chat lines about what other Ashmark users did in a conflict |
-| Shared fiction | no surface of its own; feeds the tooltip line and the chronicle |
+| Rumours | chat lines about what other Ashmark users did in a conflict; needs Shared fiction |
+| Shared fiction | no surface of its own; feeds the tooltip line and the chronicle with other Ashmark users' archetype and origin |
 
-Mercy is an approximation: without the combat log, a kill counts when you target a calm neutral creature out of combat, combat starts with it as your target and it dies. The test mode measures its accuracy at launch. Traces and a companion app are planned for v2; v1 only reserves their store.
+Mercy is an approximation: without the combat log, a kill counts when you target a calm neutral creature out of combat, combat starts with it as your target, and it dies with no one else having tapped it. The test mode measures its accuracy at launch. Traces and a companion app are planned for v2; v1 only reserves their store.
 
 ## Install
 
-- CurseForge: once the project is published there. It is not published yet.
-- By hand: extract the zip of a tagged [release](https://github.com/nullthrone/ashmark/releases) into `World of Warcraft\_forever_\Interface\AddOns\`, so that `Interface\AddOns\Ashmark\Ashmark_Forever.toc` exists, and restart the game.
+- CurseForge: not published yet.
+- From a release: extract the zip of a tagged [release](https://github.com/nullthrone/ashmark/releases) into `World of Warcraft\_forever_\Interface\AddOns\`, so that `Interface\AddOns\Ashmark\Ashmark_Forever.toc` exists, and restart the game. No release is tagged yet.
+- From the source: until then, download the repository as a zip, extract it into the same `AddOns` folder and rename the extracted folder to `Ashmark`.
 
 Open the window with `/ashmark`, `/amk` or the Addon Compartment (left click: window, right click: settings). The settings are under Options, AddOns, Ashmark: one switch per module, plus Lines in chat, Sounds, Share with other Ashmark users and Quest rewards in full. All start on.
 
@@ -42,12 +43,12 @@ Open the window with `/ashmark`, `/amk` or the Addon Compartment (left click: wi
 | --- | --- |
 | `/ashmark`, `/amk` | open or close the main window |
 | `/ashmark help` | list the commands |
-| `/ashmark house` | name your house |
+| `/ashmark house` | show the house this character belongs to |
 | `/ashmark house <name>` | join the house of that name |
 | `/ashmark house reset` | follow your surname again |
 | `/ashmark test` | run the self-test, show the chronicle next to the quest dialog, take a screenshot |
 | `/ashmark probe` | record raw client facts for the developers |
-| `/ashmark debug` | debug mode for the session: a malformed log entry raises a Lua error |
+| `/ashmark debug` | turn debug mode on or off for the session; in it a malformed log entry raises a Lua error |
 | `/ashmark reset` | after a confirmation, wipe this character's record |
 | `/ashmark reset others` | after a confirmation, wipe contacts, peers and heard rumours on the account |
 
@@ -57,10 +58,10 @@ enUS (also enGB), deDE, frFR, esES, esMX, ptBR, ruRU, koKR, zhTW and zhCN: the t
 
 ## Privacy
 
-- Ashmark sends addon messages with the prefix `Ashmark` on the `PARTY` channel only: `HI` (your GUID, archetype, origin zone ID, ruleset, addon version), `PR` (your GUID and three axis values) and `RU` (a rumour: random id, template, hops, strength, age, archetype, faction ID, map ID). Names, contacts, notes and free text are never sent.
-- It only receives when "Share with other Ashmark users" is off and on Forever trial and veteran accounts, which cannot send addon messages.
+- Ashmark sends addon messages with the prefix `Ashmark` on the `PARTY` channel only (in a raid, `PARTY` should reach only your subgroup; the probe checks this at launch): `HI` (your GUID, archetype, origin zone ID, ruleset, addon version), `PR` (your GUID and three axis values) and `RU` (a rumour: random id, template, hops, strength, age, archetype, faction ID, map ID). Names, contacts, notes and free text are never sent.
+- It only receives when "Share with other Ashmark users" is off, on Forever trial and veteran accounts, which cannot send addon messages, and for the rest of a session in which three sends in a row fail.
 - Everything is stored in one account-wide SavedVariable, `AshmarkDB` (`_forever_\WTF\Account\<ACCOUNT>\SavedVariables\Ashmark.lua`), with characters keyed by GUID.
-- `/ashmark reset` wipes this character's record; `/ashmark reset others` wipes contacts, peers and rumours this account did not start.
+- `/ashmark reset` wipes this character's record; contacts keep its meeting counts. `/ashmark reset others` wipes contacts, peers and rumours this account did not start.
 
 ## Testing at launch
 
