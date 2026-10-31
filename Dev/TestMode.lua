@@ -1,5 +1,4 @@
 local ADDON, ns = ...
--- luacheck: read globals C_Console
 
 -- /ashmark test (7.10): runs every registered check, stores the record, takes the screenshot.
 local TestMode = ns:NewService("TestMode")

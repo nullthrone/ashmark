@@ -15,8 +15,8 @@ globals = {
   SlashCmdList = { fields = { ASHMARK = { read_only = false } }, other_fields = true, read_only = true },
 }
 
--- Everything the spec reads from the client. A unit that needs more declares it at the top of its
--- own file with `-- luacheck: read globals X, Y`.
+-- Everything Ashmark reads from the client. Integration moves a unit's inline
+-- `-- luacheck: read globals X, Y` declarations here.
 read_globals = {
   -- Lua extensions of the WoW environment
   "tinsert", "tremove", "wipe", "sort", "strsplit", "strtrim", "strjoin", "format", "strlower", "strupper",
@@ -58,7 +58,8 @@ read_globals = {
   "QuestFrameDetailPanel", "GameTooltip", "ItemRefTooltip", "ShoppingTooltip1", "ShoppingTooltip2",
   "TooltipDataProcessor", "TooltipUtil", "MapCanvasDataProviderMixin", "MapCanvasPinMixin",
   "Settings", "SettingsPanel", "CreateSettingsListSectionHeaderInitializer",
-  "CreateScrollBoxListLinearView", "CreateDataProvider", "ScrollUtil",
+  "CreateScrollBoxListLinearView", "CreateDataProvider", "ScrollUtil", "ScrollBoxConstants",
+  "ButtonFrameTemplate_HideButtonBar", "FormatShortDate", "C_Console",
   "PanelTemplates_SetNumTabs", "PanelTemplates_SetTab", "PanelTemplates_TabResize", "PanelTemplates_UpdateTabs",
   "QuestTitleFont", "QuestFont", "GameFontNormal", "GameFontHighlight", "GameFontHighlightSmall",
   "GameFontDisable", "GameFontNormalHuge",

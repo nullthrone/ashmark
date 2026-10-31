@@ -1,5 +1,4 @@
 local ADDON, ns = ...
--- luacheck: read globals ScrollBoxConstants
 
 -- Shared widgets (6.1): the scrolling list with collapsible headers, the parchment, class colours
 -- and the status bar. Every piece is a Blizzard template or client texture.

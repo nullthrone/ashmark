@@ -1,5 +1,4 @@
 local _, ns = ...
--- luacheck: read globals ScrollBoxConstants
 
 -- The House tab (6.1, 7.5): the house's name and the account's Legacy, this character's three axes
 -- with the archetypes at their ends, then one list with collapsible sections: the members by level,

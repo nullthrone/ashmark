@@ -1,5 +1,4 @@
 local _, ns = ...
--- luacheck: read globals FormatShortDate ScrollBoxConstants
 
 -- The Encounters tab (6.1, 7.4), in the friends list's pattern: one row per person this character has met,
 -- the most recent meeting first. A row shows the class icon, the name in class colour with the marker for a

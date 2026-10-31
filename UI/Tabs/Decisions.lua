@@ -1,5 +1,4 @@
 local _, ns = ...
--- luacheck: read globals FormatShortDate ScrollBoxConstants
 
 -- The Decisions tab (6.1, 7.1), in the reputation frame's pattern: collapsible zone headers and under
 -- each one row per conflict with both sides, the side taken and since when (or open) and how often

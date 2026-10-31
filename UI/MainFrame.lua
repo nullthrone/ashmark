@@ -1,5 +1,4 @@
 local ADDON, ns = ...
--- luacheck: read globals ButtonFrameTemplate_HideButtonBar
 
 local UI = ns.UI or {}
 ns.UI = UI

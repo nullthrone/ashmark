@@ -1,5 +1,4 @@
 local _, ns = ...
--- luacheck: read globals FormatShortDate
 
 -- Module 3 (7.3): a private layer on the world map, drawn through a map data provider. Conflict anchors
 -- in the state this character left them, the places where it broke its word and where its chapters

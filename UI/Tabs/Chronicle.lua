@@ -1,5 +1,4 @@
 local ADDON, ns = ...
--- luacheck: read globals FormatShortDate ScrollBoxConstants
 
 -- The Chronicle tab (6.1): the quest log's layout, chapters on the left and the selected
 -- chapter's sentences on a parchment page on the right.
