@@ -187,9 +187,12 @@ local function queueRefresh()
   ns.Combat.Run("ui:refresh", refreshShown)
 end
 
--- At most one refresh per REFRESH_DELAY, and none while the window is closed (3.9).
-local function onChange()
-  if shownTab() then ns.Util.Debounce("ui:refresh", REFRESH_DELAY, queueRefresh) end
+-- At most one refresh per REFRESH_DELAY, and none while the window is closed or the visible tab
+-- ignores the topic (3.9).
+local function onChange(_, topic, ...)
+  local tab = shownTab()
+  if not tab or (tab.ignore and tab.ignore(topic, ...)) then return end
+  ns.Util.Debounce("ui:refresh", REFRESH_DELAY, queueRefresh)
 end
 
 for _, topic in ipairs(TOPICS) do
@@ -204,10 +207,12 @@ end)
 
 -- API (6.1) ----------------------------------------------------------------
 
--- def = { label = localeKey, order = n, module = name|nil, build = function(parent) return tab end }
+-- def = { label = localeKey, order = n, module = name|nil, build = function(parent) return tab end,
+--         ignore = function(topic, ...) return true to skip the refresh end|nil }
 function MainFrame:AddTab(id, def)
   assert(not tabs[id], "tab added twice: " .. tostring(id))
-  local tab = { id = id, label = def.label, order = def.order or 0, module = def.module, build = def.build }
+  local tab = { id = id, label = def.label, order = def.order or 0, module = def.module, build = def.build,
+                ignore = def.ignore }
   tabs[id] = tab
   sorted[#sorted + 1] = tab
   table.sort(sorted, function(a, b)

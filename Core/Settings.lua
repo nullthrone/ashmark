@@ -51,11 +51,35 @@ function Options:Set(key, value)
   return true
 end
 
+local function moduleName(M)
+  return L[(M.opts.locale or M.name:upper()) .. "_MODULE_NAME"]
+end
+
+-- M.unavailable holds internal ids (3.2); the player reads a needed module by its name and one
+-- line for any missing client feature (the test report names the capabilities).
+local function reasons(M)
+  local lines, client = {}, false
+  for _, reason in ipairs(M.unavailable) do
+    local D = ns:GetModule(reason)
+    if D then
+      lines[#lines + 1] = ns.Format(L.CORE_UNAVAILABLE, { capability = moduleName(D) })
+    elseif reason == "error" then
+      lines[#lines + 1] = ns.Format(L.CORE_MODULE_FAILED, { module = moduleName(M) })
+    elseif reason == "schema" then
+      lines[#lines + 1] = L.CORE_SV_NEWER
+    elseif not client then
+      client = true
+      lines[#lines + 1] = L.CORE_UNAVAILABLE_CLIENT
+    end
+  end
+  return table.concat(lines, "\n")
+end
+
 local function tooltip(key, def)
   local text = L[def.tooltip or key]
   local M = ns:GetModule(key:match("^(%w+)%.enabled$") or "")
-  if M and M.unavailable then
-    text = text .. "\n" .. ns.Format(L.CORE_UNAVAILABLE, { capability = table.concat(M.unavailable, ", ") })
+  if M and M.unavailable and #M.unavailable > 0 then
+    text = text .. "\n" .. reasons(M)
   end
   if M and M.missingEvents and #M.missingEvents > 0 then
     text = text .. "\n" .. ns.Format(L.CORE_MISSING_EVENTS, { events = table.concat(M.missingEvents, ", ") })

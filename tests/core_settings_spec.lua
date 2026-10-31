@@ -56,12 +56,37 @@ describe("Core Settings", function()
     for _, box in ipairs(wow.panel.checkboxes) do names[#names + 1] = box.setting.key end
     assert.same({ "Core.chatLines", "Core.sounds", "Comm.share", "Alpha.enabled" }, names)
     local alpha = wow.panel.checkboxes[4]
-    assert.equal("ALPHA_MODULE_DESC\nNeeds nothing", alpha.tooltip)
+    assert.equal("ALPHA_MODULE_DESC\nThis client lacks a feature it needs.", alpha.tooltip)
     assert.equal("Lines in chat", wow.panel.checkboxes[1].setting.name)
     assert.equal(_G.AshmarkDB.settings, alpha.setting.tbl)
     wow.panel.settings["Ashmark_Core.chatLines"]:SetValue(false)
     assert.same({ { "Core.chatLines", false } }, changes)
     assert.is_false(ns.Settings:Get("Core.chatLines"))
+  end)
+
+  it("names an unavailable module's reasons in the player's words", function()
+    boot(function()
+      ns:NewModule("Alpha", { locale = "ALPHA", requires = { "nothing", "nothing2" }, modules = { "Beta" } })
+      ns:NewModule("Beta", { locale = "BETA", requires = { "nothing" } })
+      ns.Locale:Base().BETA_MODULE_NAME = "Beta stories"
+      ns.Locale:Base().ALPHA_MODULE_NAME = "Alpha tales"
+    end)
+    assert.same({ "nothing", "nothing2", "Beta" }, ns:GetModule("Alpha").unavailable)
+    assert.equal("ALPHA_MODULE_DESC\nThis client lacks a feature it needs.\nNeeds Beta stories",
+      wow.panel.checkboxes[4].tooltip)
+  end)
+
+  it("names a module stopped by errors or a newer record in the player's words", function()
+    boot(function()
+      ns.Locale:Base().ALPHA_MODULE_NAME = "Alpha tales"
+      local M = ns:NewModule("Alpha", { locale = "ALPHA" })
+      function M:OnEnable()
+        for _ = 1, 10 do ns:Report(self, "x", "boom") end
+      end
+    end)
+    assert.same({ "error" }, ns:GetModule("Alpha").unavailable)
+    assert.equal("ALPHA_MODULE_DESC\nAlpha tales stopped after repeated errors and stays off until the next reload.",
+      wow.panel.checkboxes[4].tooltip)
   end)
 
   it("names missing events in a module's tooltip", function()

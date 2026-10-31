@@ -16,6 +16,7 @@ local TITLE_HIGHLIGHT = "Interface\\QuestFrame\\UI-QuestTitleHighlight"
 
 local selected                   -- chapter number the reader picked; nil follows the open chapter
 local shown                      -- chapter number on the page
+local turning                    -- a chapter click waits for the refresh that turns the page
 local parchment                  -- the page has the client's parchment; otherwise light text on the Inset
 
 local function day(t)
@@ -48,10 +49,11 @@ end
 
 -- Rows ---------------------------------------------------------------------
 
+-- The refresh waits for combat to end (3.9); the page-turn sound plays when the page turns.
 local function onChapterClick(button)
-  if button.no == shown then return end
+  if button.no == shown and not turning then return end
   selected = button.no
-  UI:Sound("IG_ABILITY_PAGE_TURN")
+  turning = true
   UI.MainFrame:Refresh("chronicle")
 end
 
@@ -132,6 +134,8 @@ local function refresh(tab)
   fill(tab.Chapters, rows, true)
   local no = chapter and chapter.no
   local lines = chapter and Chronicle:Lines(char, chapter, { char = char, own = true }) or {}
+  if turning and no ~= shown then UI:Sound("IG_ABILITY_PAGE_TURN") end
+  turning = nil
   fill(tab.Lines, lines, no == shown)
   shown = no
   tab.Heading:SetText(chapter and title(chapter) or "")
@@ -180,4 +184,13 @@ local function build(parent)
   return parent
 end
 
-UI.MainFrame:AddTab("chronicle", { label = "CORE_TAB_CHRONICLE", order = 10, build = build })
+-- An entry the page never shows (gold, quest.accept, item.held, ...) redraws nothing, unless it
+-- begins the open chapter, whose date heads the page.
+local function ignore(topic, entry, char)
+  if topic ~= "LOG_ADDED" or type(entry) ~= "table" or ns.Log:Shown(entry) then return false end
+  local chapters = type(char) == "table" and char.chapters
+  local last = type(chapters) == "table" and chapters[#chapters]
+  return entry.n ~= (last and last.to or 0) + 1
+end
+
+UI.MainFrame:AddTab("chronicle", { label = "CORE_TAB_CHRONICLE", order = 10, build = build, ignore = ignore })

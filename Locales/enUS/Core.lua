@@ -16,6 +16,7 @@ L.CORE_SV_MIGRATE_FAILED = "Ashmark could not update its saved data and only rea
 -- Modules and settings (3.2, 4.3)
 L.CORE_MODULE_FAILED = "{module} stopped after repeated errors and stays off until the next reload."
 L.CORE_UNAVAILABLE = "Needs {capability}"
+L.CORE_UNAVAILABLE_CLIENT = "This client lacks a feature it needs."
 L.CORE_MISSING_EVENTS = "Events this client lacks: {events}"
 L.CORE_SETTING_CHAT_LINES = "Lines in chat"
 L.CORE_SETTING_CHAT_LINES_DESC = "Ashmark may write short lines into the chat window."
@@ -29,7 +30,7 @@ L.CORE_SETTING_SHARE_DESC = "Send your archetype, origin and rumours to group me
 L.CORE_UNKNOWN_QUEST = "a quest"
 L.CORE_UNKNOWN_ITEM = "an item"
 L.CORE_UNKNOWN_FACTION = "a faction"
-L.CORE_UNKNOWN_PLACE = "somewhere"
+L.CORE_UNKNOWN_PLACE = "an unknown place"
 L.CORE_UNKNOWN_PLAYER = "someone"
 L.CORE_UNKNOWN_CLASS = "adventurer"
 L.CORE_UNKNOWN_RACE = "unknown folk"

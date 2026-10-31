@@ -95,7 +95,7 @@ describe("UI Chronicle tab", function()
     wow.sounds = {}
     wow.script(first, "OnClick")
     assert.same({ SOUNDKIT.IG_ABILITY_PAGE_TURN }, wow.sounds)
-    assert.same({ "You reached level 2.", "Chapter I closes in somewhere." }, texts(2))
+    assert.same({ "You reached level 2.", "Chapter I closes in an unknown place." }, texts(2))
     assert.is_false(lists[2].box.retain)
     assert.is_true(button(1, rows(1)[2]).locked)
 
@@ -105,6 +105,54 @@ describe("UI Chronicle tab", function()
     assert.is_true(lists[2].box.retain)
     wow.script(first, "OnClick")
     assert.equal(1, #wow.sounds)
+  end)
+
+  it("turns the page and plays the sound together once combat ends", function()
+    ns.Log:Add("level", { l = 2 })
+    ns.Log:CloseChapter({})
+    ns.Log:Add("level", { l = 3 })
+    local t = show()
+    local first = button(1, rows(1)[2])
+    wow.sounds = {}
+    wow.combat(true)
+    wow.script(first, "OnClick")
+    wow.script(first, "OnClick")
+    assert.same({}, wow.sounds)
+    assert.equal("Chapter II", t.Heading:GetText())
+    wow.combat(false)
+    assert.equal("Chapter I", t.Heading:GetText())
+    assert.same({ SOUNDKIT.IG_ABILITY_PAGE_TURN }, wow.sounds)
+
+    wow.combat(true)
+    wow.script(button(1, rows(1)[1]), "OnClick")
+    wow.script(first, "OnClick")
+    wow.combat(false)
+    assert.equal("Chapter I", t.Heading:GetText())
+    assert.equal(1, #wow.sounds)
+  end)
+
+  it("redraws for entries it shows and for the one that begins the open chapter, not for the rest", function()
+    local t = show()
+    local box = lists[2].box
+    local fills = 0
+    local set = box.SetDataProvider
+    box.SetDataProvider = function(self, ...)
+      fills = fills + 1
+      return set(self, ...)
+    end
+    ns.Log:Add("quest.accept", { q = 1 })
+    wow.advance(0.5)
+    assert.equal(1, fills)
+    assert.matches("^Begun ", t.Subtitle:GetText())
+    ns.Log:Add("gold", { src = "loot", c = 5 })
+    ns.Log:Add("quest.accept", { q = 2 })
+    ns.Log:Add("zone", { z = 1443 })
+    wow.advance(0.5)
+    assert.equal(1, fills)
+    ns.Log:Add("level", { l = 5 })
+    wow.advance(0.5)
+    assert.equal(2, fills)
+    assert.same({ "You reached level 5." }, texts(2))
   end)
 
   it("plays no page-turn sound with Core.sounds off", function()
