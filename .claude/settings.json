@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(luarocks --lua-version=5.1 install *)",
+      "Bash(luarocks --lua-version=5.1 make *)",
+      "Bash(git clone --depth 1 --branch * https://github.com/hoelzro/lua-term *)"
+    ]
+  }
+}
