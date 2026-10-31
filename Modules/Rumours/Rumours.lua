@@ -2,7 +2,8 @@ local _, ns = ...
 
 -- Rumours (7.8): what this character does in a conflict becomes a rumour that travels from one Ashmark party to
 -- the next, weaker and vaguer with every hop. A rumour names an archetype, a place and a faction, never a
--- character, and its id is random. Without canSend the module only listens.
+-- character, and its id is random; but party members who hear an own rumour first (hops 0) know whose deed it is,
+-- as they know the sender of every addon message. Without canSend the module only listens.
 local M = ns:NewModule("Rumours", {
   requires = { "addonMessages" },
   optional = { "canSend" },
@@ -27,6 +28,8 @@ local TOLD_FOR = 30 * 86400
 local PEER_DELAY = 5
 local ROUND_EVERY = 120
 local PER_ROUND = 3
+local NEW_PER_SENDER = 2 * PER_ROUND   -- new rumours one sender may bring per ROUND_EVERY: an honest client sends
+                                       -- one round at most, the second absorbs queue delays
 local SHOWN_FOR = 86400
 local LINES_PER_HOUR = 5
 local HOUR = 3600
@@ -36,6 +39,7 @@ local SEEDS = { alliance = "ALLIANCE", violation = "BROKE", houseturn = "TURNED"
 local OTHER = { A = "B", B = "A" }
 
 local lastRound                  -- time() of the last round that sent something
+local fresh = {}                 -- [senderGuid] = { start, count }: new rumours in the sender's current window
 
 -- Stores --------------------------------------------------------------------------------
 
@@ -78,7 +82,8 @@ local function pruneTold(peers, now)
   for i = 1, #list - MAX_TOLD do peers[list[i].guid] = nil end
 end
 
--- Rumours below MIN_STRENGTH go, then the weakest beyond MAX_HEARD; each takes its told list with it.
+-- Rumours below MIN_STRENGTH go, then the weakest beyond MAX_HEARD, received copies before own rumours, so what
+-- others send can never push out this character's own; each takes its told list with it.
 local function prune(now)
   local heard, told = stores()
   if not heard then return end
@@ -88,11 +93,12 @@ local function prune(now)
     if s < MIN_STRENGTH then
       heard[id] = nil
     else
-      alive[#alive + 1] = { id = id, s = s }
+      alive[#alive + 1] = { id = id, s = s, own = r.own == true }
     end
   end
   if #alive > MAX_HEARD then
     table.sort(alive, function(a, b)
+      if a.own ~= b.own then return b.own end
       if a.s ~= b.s then return a.s < b.s end
       return tostring(a.id) < tostring(b.id)
     end)
@@ -241,12 +247,29 @@ local function fromWire(fields, now)
                       heard = now })
 end
 
+-- True if this new rumour is beyond what one sender may bring: NEW_PER_SENDER per ROUND_EVERY. Starting a window
+-- also forgets the windows of other senders that have ended.
+local function flooding(guid, now)
+  local window = fresh[guid]
+  if not window or now - window.start >= ROUND_EVERY then
+    for other, w in pairs(fresh) do
+      if now - w.start >= ROUND_EVERY then fresh[other] = nil end
+    end
+    window = { start = now, count = 0 }
+    fresh[guid] = window
+  end
+  window.count = window.count + 1
+  return window.count > NEW_PER_SENDER
+end
+
 -- RU, which Comm accepts only from senders an HI has validated. A known id keeps the stronger copy and prints
--- nothing; a new rumour is stored, then the rumour entry, RUMOUR_HEARD and one chat line follow. Either way the
--- sender knows it, so it is never told back.
+-- nothing; either way the sender knows it, so it is never told back. A new rumour beyond the sender's budget
+-- (flooding) is dropped; otherwise it is stored, then RUMOUR_HEARD and one chat line within the line limits
+-- follow, and the rumour entry is written only with a printed line, so other players can add at most
+-- LINES_PER_HOUR entries an hour to this character's log.
 local function onRumour(from, fields)
   local heard, told = stores()
-  if not heard then return end
+  if not heard or type(from.guid) ~= "string" then return end
   local now = time()
   local r = fromWire(fields, now)
   if not r then return end
@@ -256,11 +279,11 @@ local function onRumour(from, fields)
     tell(told, r.id, from.guid, now)
     return
   end
+  if flooding(from.guid, now) then return end
   heard[r.id] = r
   tell(told, r.id, from.guid, now)
-  ns.Log:Add("rumour", { r = r.id })
   M:Fire("RUMOUR_HEARD", r)
-  say(r, now)
+  if say(r, now) then ns.Log:Add("rumour", { r = r.id }) end
   prune(now)
 end
 

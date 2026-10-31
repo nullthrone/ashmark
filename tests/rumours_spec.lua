@@ -238,6 +238,55 @@ describe("Rumours", function()
       mock.ru(wow, "mira")
       assert.is_table(heard().deadbeef)
     end)
+
+    it("takes at most 6 new rumours per sender in 2 minutes and drops the rest unstored", function()
+      start()
+      mock.peers(wow, "mira", "thalen")
+      wow.advance(5)
+      seen = mock.listen(ns, { "RUMOUR_HEARD" }, {})
+      local t0 = wow.state.epoch
+      for i = 1, 8 do mock.ru(wow, "mira", { id = string.format("%08x", i) }) end
+      mock.ru(wow, "mira", { id = "00000001", strength = 100 })
+      for i = 9, 14 do mock.ru(wow, "thalen", { id = string.format("%08x", i) }) end
+      assert.same({ "00000001", "00000002", "00000003", "00000004", "00000005", "00000006", "00000009", "0000000a",
+                    "0000000b", "0000000c", "0000000d", "0000000e" }, mock.heardIds())
+      assert.is_nil(told()["00000007"])
+      assert.equal(12, #seen)
+      wow.advance(t0 + 119 - wow.state.epoch)
+      mock.ru(wow, "mira", { id = "00000007" })
+      assert.is_nil(heard()["00000007"])
+      wow.advance(1)
+      mock.ru(wow, "mira", { id = "00000007" })
+      assert.is_table(heard()["00000007"])
+    end)
+
+    it("writes the rumour entry only with a printed line, so a flood adds at most 5 entries an hour", function()
+      start()
+      for minute = 1, 120 do
+        for i = 1, 20 do mock.ru(wow, "mira", { id = string.format("%04x%04x", minute, i) }) end
+        wow.advance(60)
+      end
+      assert.equal(10, #mock.entries(ns, "rumour"))
+      assert.equal(10, #mock.lines(wow))
+      assert.equal(200, #mock.heardIds())
+    end)
+
+    it("never lets received copies push an own rumour out of the store", function()
+      local now = wow.state.epoch
+      local list = { mine = mock.rumour("mine", now - 2 * DAY, { strength = 100, hops = 0, own = true }) }
+      for i = 1, 199 do
+        local id = string.format("%08x", i)
+        list[id] = mock.rumour(id, now)
+      end
+      mock.saved(wow, list)
+      start()
+      assert.equal(62, ns.Rumours:Strength(heard().mine))
+      mock.ru(wow, "mira", { id = "ffffffff", strength = 100 })
+      assert.is_table(heard().mine)
+      assert.is_table(heard().ffffffff)
+      assert.is_nil(heard()["00000001"])
+      assert.equal(200, #mock.heardIds())
+    end)
   end)
 
   describe("caps", function()
@@ -275,6 +324,25 @@ describe("Rumours", function()
       assert.is_nil(kept["Player-1-0000ffff"])
       assert.is_nil(kept["Player-1-00000001"])
       assert.is_number(kept["Player-1-00000002"])
+    end)
+
+    it("leave the player's own log alone through four hours of RU floods and archetype flips", function()
+      boot()
+      for i = 1, 1500 do ns.Log:Add("quest.turnin", { q = i }) end
+      mock.peers(wow, "mira", "thalen")
+      for minute = 1, 240 do
+        for i = 1, 20 do
+          mock.ru(wow, "mira", { id = string.format("%04x%04x", minute, i) })
+          mock.hi(wow, "thalen", i % 2 == 0 and "RUTHLESS" or "GENTLE")
+        end
+        wow.advance(60)
+      end
+      local char = ns.DB:Char()
+      assert.is_true(ns.Log:Count(char) < 1600)
+      ns.Log:Compact(char)
+      assert.equal(1500, #mock.entries(ns, "quest.turnin"))
+      assert.equal(20, #mock.entries(ns, "rumour"))
+      assert.equal(2, #mock.entries(ns, "peer"))
     end)
   end)
 
@@ -422,9 +490,13 @@ describe("Rumours", function()
     it("print at most 5 rumour lines an hour in total", function()
       boot()
       mock.peers(wow, "mira")
-      for i = 1, 7 do mock.ru(wow, "mira", { id = string.format("%08x", i), strength = 30 + 10 * i }) end
+      for i = 1, 7 do
+        mock.ru(wow, "mira", { id = string.format("%08x", i), strength = 30 + 10 * i })
+        wow.advance(20)
+      end
       assert.equal(7, #mock.heardIds())
       assert.equal(5, #mock.lines(wow))
+      assert.equal(5, #mock.entries(ns, "rumour"))
       enter(1443)
       assert.equal(5, #mock.lines(wow))
       wow.advance(HOUR)
@@ -442,6 +514,7 @@ describe("Rumours", function()
       mock.ru(wow, "mira")
       assert.same({}, mock.lines(wow))
       assert.same({}, ns.DB:Char().state.lines)
+      assert.same({}, mock.entries(ns, "rumour"))
       ns.Settings:Set("Core.chatLines", true)
       enter(1443)
       assert.equal(1, #mock.lines(wow))

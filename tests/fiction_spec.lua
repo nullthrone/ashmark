@@ -4,6 +4,7 @@ local mock = require("tests.helpers.fiction_mock")
 local ME = mock.ME
 local MIRA, THALEN = mock.guid("mira"), mock.guid("thalen")
 local ALT = "Player-1-0000000b"
+local DAY = 86400
 local HI = "1|HI|" .. ME .. "|OATHKEEPER|1443|Normal|1.0.0-test"
 local PR = "1|PR|" .. ME .. "|41|-7|12"
 
@@ -222,7 +223,7 @@ describe("Fiction", function()
       mock.hi(wow, "mira", "WANDERER", 1429, "RP", "1.2.0")
       local peer = ns.Fiction:Peer(MIRA)
       assert.same({ guid = MIRA, archetype = "WANDERER", origin = 1429, ruleset = "RP", version = "1.2.0",
-                    first = t, last = t, seenBy = { [char.guid] = "WANDERER" } }, peer)
+                    first = t, last = t, seenBy = { [char.guid] = "WANDERER" }, logged = { [char.guid] = t } }, peer)
       assert.equal(peer, _G.AshmarkDB.peers[MIRA])
       local entries = mock.entries(ns, "peer")
       assert.equal(1, #entries)
@@ -242,13 +243,52 @@ describe("Fiction", function()
       assert.same({ "PEER_SEEN", MIRA, peer, false }, seen[2])
     end)
 
-    it("writes another entry when the archetype changes", function()
+    it("writes another entry when the archetype changes a day after the last one", function()
       local char = start()
       mock.hi(wow, "mira", "WANDERER")
+      wow.advance(DAY)
       mock.hi(wow, "mira", "RUTHLESS")
       local entries = mock.entries(ns, "peer")
       assert.same({ "WANDERER", "RUTHLESS" }, { entries[1].a, entries[2].a })
       assert.same({ [char.guid] = "RUTHLESS" }, ns.Fiction:Peer(MIRA).seenBy)
+      assert.same({ [char.guid] = wow.state.epoch }, ns.Fiction:Peer(MIRA).logged)
+    end)
+
+    it("writes at most one archetype change a day, so a peer flipping archetypes cannot flood the log", function()
+      local char = start()
+      local t = wow.state.epoch
+      mock.hi(wow, "mira", "WANDERER")
+      for i = 1, 200 do
+        mock.hi(wow, "mira", i % 2 == 1 and "RUTHLESS" or "GENTLE")
+        wow.advance(5)
+      end
+      local peer = ns.Fiction:Peer(MIRA)
+      assert.equal(1, #mock.entries(ns, "peer"))
+      assert.equal("GENTLE", peer.archetype)
+      assert.same({ [char.guid] = "WANDERER" }, peer.seenBy)
+      assert.equal(201, #seen)
+      -- The change held back is written by the first HI after the day that still carries one.
+      wow.advance(t + DAY - 1 - wow.state.epoch)
+      mock.hi(wow, "mira", "RUTHLESS")
+      assert.equal(1, #mock.entries(ns, "peer"))
+      wow.advance(1)
+      mock.hi(wow, "mira", "WANDERER")
+      assert.equal(1, #mock.entries(ns, "peer"))
+      mock.hi(wow, "mira", "RUTHLESS")
+      mock.hi(wow, "mira", "GENTLE")
+      local entries = mock.entries(ns, "peer")
+      assert.same({ "WANDERER", "RUTHLESS" }, { entries[1].a, entries[2].a })
+      assert.same({ [char.guid] = "RUTHLESS" }, ns.Fiction:Peer(MIRA).seenBy)
+    end)
+
+    it("writes the first change of a peer stored before changes were limited", function()
+      wow.saved({ schema = 1, peers = {
+        [MIRA] = { guid = MIRA, archetype = "WANDERER", origin = 1429, ruleset = "RP", version = "1.0.0",
+                   first = 100, last = 200, seenBy = { [mock.ME] = "WANDERER" } },
+      } })
+      start()
+      mock.hi(wow, "mira", "RUTHLESS")
+      assert.same({ "RUTHLESS" }, { mock.entries(ns, "peer")[1].a })
     end)
 
     it("writes the first sight of every character on the account and keeps the others in seenBy", function()

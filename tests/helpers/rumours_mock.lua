@@ -109,6 +109,7 @@ function mock.lines(wow)
 end
 
 mock.entries = fiction.entries
+mock.hi = fiction.hi
 mock.listen = fiction.listen
 mock.check = fiction.check
 mock.join = fiction.join

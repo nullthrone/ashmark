@@ -17,6 +17,7 @@ local MAX_PEERS = 500
 local ROSTER_DELAY = 2
 local GREET_EVERY = 30
 local VERSION_MAX = 20
+local CHANGE_EVERY = 86400       -- at most one archetype-change entry per peer per day for this character
 
 local lastGreet                  -- time() of the last greeting; after a /reload, seeded from state.greeted
 
@@ -144,17 +145,27 @@ end
 
 -- Receiving ---------------------------------------------------------------------------
 
-local function seenByOf(old)
+-- A copy of a per-character map in an old peer record (seenBy, logged).
+local function mapOf(old, key)
   local out = {}
-  local list = old and old.seenBy
+  local list = old and old[key]
   if type(list) == "table" then
-    for guid, archetype in pairs(list) do out[guid] = archetype end
+    for k, v in pairs(list) do out[k] = v end
   end
   return out
 end
 
+-- Whether this HI earns a peer entry: the first sight by this character always does; an archetype change only
+-- CHANGE_EVERY after the last entry for this peer, so a party member flipping archetypes in its HI cannot flood
+-- the log. A change held back stays out of seenBy, which holds the archetype this character's log last recorded,
+-- and is written by the first HI after the window that still carries it.
+local function noted(before, archetype, last, now)
+  if before == nil then return true end
+  return before ~= archetype and not (type(last) == "number" and now - last < CHANGE_EVERY)
+end
+
 -- HI (validated by Comm against the party units): the whole record is built, then stored, then the peer entry
--- on first sight by this character or an archetype change, then PEER_SEEN.
+-- (see noted), then PEER_SEEN.
 local function onHello(from, fields)
   local guid = fields[1]
   if from.guid ~= guid then return end
@@ -164,19 +175,20 @@ local function onHello(from, fields)
   if not (seen and char and type(char.guid) == "string" and all) then return end
   local old = M:Peer(guid)
   local now = time()
-  local seenBy = seenByOf(old)
-  local before = seenBy[char.guid]
-  seenBy[char.guid] = seen.archetype
+  local seenBy, logged = mapOf(old, "seenBy"), mapOf(old, "logged")
+  local write = noted(seenBy[char.guid], seen.archetype, logged[char.guid], now)
+  if write then seenBy[char.guid], logged[char.guid] = seen.archetype, now end
   local peer = {
     guid = guid, archetype = seen.archetype, origin = seen.origin, ruleset = seen.ruleset, version = seen.version,
     profile = old and type(old.profile) == "table" and old.profile or nil,
     first = old and type(old.first) == "number" and old.first or now,
     last = now,
     seenBy = seenBy,
+    logged = logged,
   }
   all[guid] = peer
   if not old then prune(all) end
-  if before ~= seen.archetype then ns.Log:Add("peer", { p = guid, a = seen.archetype }) end
+  if write then ns.Log:Add("peer", { p = guid, a = seen.archetype }) end
   M:Fire("PEER_SEEN", guid, peer, old == nil)
 end
 
