@@ -35,6 +35,7 @@ local WEIGHTS = {
     critter = -2,
   },
 }
+local W = WEIGHTS
 
 -- Stormwind, Orgrimmar, Ironforge, Thunder Bluff, Darnassus, Undercity
 local CAPITAL_MAPS = { 1453, 1454, 1455, 1456, 1457, 1458 }
@@ -57,7 +58,6 @@ local NEUTRAL = 4                 -- UnitReaction
 local CRITTER = 8                 -- creature type ID
 local DAY_COUNTS = { "kills", "loot", "quest" }
 
-local W = WEIGHTS
 local capital = {}
 for _, m in ipairs(CAPITAL_MAPS) do capital[m] = true end
 
@@ -68,7 +68,8 @@ local function newDay()
 end
 
 local function number(t, key)
-  if type(t[key]) ~= "number" then t[key] = 0 end
+  local v = t[key]
+  if type(v) ~= "number" or v ~= v then t[key] = 0 end
 end
 
 -- char.profile (4.1), repaired field by field on every use, so a wiped or partial record starts over.
@@ -249,7 +250,8 @@ end
 
 -- Days and the ticker -------------------------------------------------------------------
 
--- Alliances held 7 days since since[C] or the last award, whichever is later; each is awarded once.
+-- Alliances held 7 days since since[C] or the last award, whichever is later; at most one award each per day.
+-- kept[C] marks the end of the 7 days awarded, not the roll, so a late day roll never stretches the next ones.
 local function keptAlliances(char, p, now)
   local rec = type(char.conflicts) == "table" and char.conflicts
   local allied = rec and type(rec.allied) == "table" and rec.allied
@@ -262,7 +264,7 @@ local function keptAlliances(char, p, now)
       local last = p.kept[id]
       if type(last) == "number" and last > from then from = last end
       if now - from >= KEPT_AFTER then
-        p.kept[id] = now
+        p.kept[id] = from + math.floor((now - from) / KEPT_AFTER) * KEPT_AFTER
         count = count + 1
       end
     end
