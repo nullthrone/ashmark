@@ -25,6 +25,9 @@ describe("Core Log", function()
       Log:RegisterKind("test.plain", { fields = { "v" } })
       Log:RegisterKind("contact", { fields = { "p" }, keep = true })
       Log:RegisterKind("peer", { fields = { "p", "a" }, keep = true })
+      Log:RegisterKind("test.shown", { fields = { "v" }, render = function() return "shown" end })
+      Log:RegisterKind("test.some", { fields = { "v" }, shown = function(e) return e.v == 1 end,
+                                      render = function(e) if e.v == 1 then return "some" end end })
     end
     function M:OnEnable()
       self:Subscribe("LOG_ADDED", function(_, _, entry, char) added[#added + 1] = { entry = entry, char = char } end)
@@ -178,23 +181,101 @@ describe("Core Log", function()
       assert.same({ no = 1, from = 1, to = 20, closed = time() }, char.chapters[1])
     end)
 
-    it("drops the oldest contact and peer entries first when keep kinds exceed 2,000", function()
-      local log = {}
+    local function pusher(log)
       local n = 0
-      local function push(count, kind)
+      return function(count, kind, fields)
         for _ = 1, count do
           n = n + 1
           log[n] = { n = n, t = time(), k = kind }
+          for key, v in pairs(fields or {}) do log[n][key] = v end
         end
+        return n
       end
+    end
+
+    it("drops the oldest peer and then contact entries first when keep kinds exceed 2,000", function()
+      local log = {}
+      local push = pusher(log)
       push(1500, "contact")
       push(400, "test.keep")
       push(300, "peer")
-      push(100, "test.plain")
+      local n = push(100, "test.plain")
       boot(log, n, { { no = 1, from = 1, to = n, closed = time() } })
       local char = ns.DB:Char()
-      assert.same({ contact = 1300, ["test.keep"] = 400, peer = 300, ["test.plain"] = 100 }, kinds(char))
-      assert.equal(201, char.log[1].n)
+      assert.same({ contact = 1500, ["test.keep"] = 400, peer = 100, ["test.plain"] = 100 }, kinds(char))
+      assert.equal(1, char.log[1].n)
+      assert.equal(2101, char.log[1901].n)
+
+      wow.reset()
+      log = {}
+      push = pusher(log)
+      push(1800, "contact")
+      push(100, "peer")
+      push(300, "test.keep")
+      n = push(10, "test.plain")
+      boot(log, n, { { no = 1, from = 1, to = n, closed = time() } })
+      assert.same({ contact = 1700, ["test.keep"] = 300, ["test.plain"] = 10 }, kinds(ns.DB:Char()))
+      assert.equal(101, ns.DB:Char().log[1].n)
+    end)
+
+    it("drops entries the chronicle never shows before older ones it shows", function()
+      local log = {}
+      local push = pusher(log)
+      push(1000, "test.shown")
+      push(500, "test.some", { v = 1 })
+      push(1000, "test.some", { v = 2 })
+      push(500, "test.keep")
+      local n = push(1500, "test.plain")
+      boot(log, n, { { no = 1, from = 1, to = n, closed = time() } })
+      local char = ns.DB:Char()
+      assert.equal(3000, #char.log)
+      assert.same({ ["test.shown"] = 1000, ["test.some"] = 500, ["test.keep"] = 500, ["test.plain"] = 1000 },
+        kinds(char))
+      assert.equal(1, char.log[1].n)
+      assert.equal(3501, char.log[2001].n)
+      assert.is_true(Log:Shown({ k = "test.shown" }))
+      assert.is_true(Log:Shown({ k = "test.some", v = 1 }))
+      assert.is_false(Log:Shown({ k = "test.some", v = 2 }))
+      assert.is_false(Log:Shown({ k = "test.plain" }))
+      assert.is_false(Log:Shown({ k = "nope" }))
+      assert.is_true(Log:Shown({ k = "zone", z = 1443, first = true }))
+      assert.is_false(Log:Shown({ k = "zone", z = 1443 }))
+      assert.is_false(Log:Shown({ k = "gold", src = "loot", c = 5 }))
+    end)
+
+    it("then drops the oldest shown entries", function()
+      local log = {}
+      local push = pusher(log)
+      push(500, "test.plain")
+      push(3000, "test.shown")
+      local n = push(600, "test.keep")
+      boot(log, n, { { no = 1, from = 1, to = n, closed = time() } })
+      local char = ns.DB:Char()
+      assert.same({ ["test.shown"] = 2400, ["test.keep"] = 600 }, kinds(char))
+      assert.equal(1101, char.log[1].n)
+    end)
+
+    it("ages entries by the server clock, so a system date set ahead deletes nothing", function()
+      local log = entries(10, "test.plain", 10 * DAY)
+      wow.stub("time", function() return math.floor(wow.state.epoch) + 365 * DAY end)
+      boot(log, 10, { { no = 1, from = 1, to = 10, closed = 1 } })
+      assert.equal(10, #ns.DB:Char().log)
+    end)
+
+    it("never ages an entry beyond one written before it, so a clock set back deletes nothing", function()
+      -- n 1..5 are 10 days old and n 6..10 a session stamped 400 days back by a wrong clock: all stay. Entries
+      -- 200 days old by their own date and by every entry before them still go.
+      local log = entries(5, "test.plain", 10 * DAY)
+      for i, e in ipairs(entries(5, "test.plain", 400 * DAY, 5)) do log[5 + i] = e end
+      boot(log, 10, { { no = 1, from = 1, to = 10, closed = time() } })
+      assert.equal(10, #ns.DB:Char().log)
+
+      wow.reset()
+      log = entries(5, "test.plain", 200 * DAY)
+      for i, e in ipairs(entries(5, "test.plain", 0, 5)) do log[5 + i] = e end
+      boot(log, 10, { { no = 1, from = 1, to = 10, closed = time() } })
+      assert.equal(5, #ns.DB:Char().log)
+      assert.equal(6, ns.DB:Char().log[1].n)
     end)
 
     it("does not disturb an Iter in progress", function()

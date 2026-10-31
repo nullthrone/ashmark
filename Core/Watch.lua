@@ -33,6 +33,7 @@ Log:RegisterKind("quest.turnin", { fields = { "q" }, render = say("CORE_LOG_TURN
 Log:RegisterKind("quest.abandon", { fields = { "q" }, render = say("CORE_LOG_ABANDON", quest) })
 Log:RegisterKind("zone", {
   fields = { "z", "first" },
+  shown = function(entry) return entry.first == true end,
   render = function(entry, ctx)
     if entry.first then
       return ns.Chronicle:Text("CORE_LOG_ZONE_FIRST", ctx, { zone = ns.Names.Map(entry.z) })

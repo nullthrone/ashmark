@@ -6,7 +6,7 @@ ns.Log = Log
 local RESERVED = { n = true, t = true, k = true, m = true, x = true, y = true, i = true }
 local COMPACT_AT = 4000          -- an Add above this schedules a compaction
 local KEEP_TOTAL = 3000          -- entries left after a compaction
-local KEEP_KINDS_MAX = 2000      -- beyond this, the oldest contact and peer entries go
+local KEEP_KINDS_MAX = 2000      -- beyond this, the oldest peer and then contact entries go
 local MAX_AGE = 180 * 86400      -- non-keep entries older than this go
 local AUTO_CHAPTER_SIZE = 1000
 local AUTO_CHAPTER_AGE = 7 * 86400
@@ -21,6 +21,15 @@ end
 
 function Log:Kind(kind)
   return kinds[kind]
+end
+
+-- True when the chronicle can show the entry: its kind has a renderer and, if the kind has a
+-- shown(entry) test (zone shows only first visits), the entry passes it.
+function Log:Shown(entry)
+  local spec = type(entry) == "table" and kinds[entry.k]
+  if not (spec and spec.render) then return false end
+  if spec.shown then return spec.shown(entry) and true or false end
+  return true
 end
 
 -- Debug mode raises; otherwise the caller drops or strips.
@@ -146,32 +155,60 @@ local function isKeep(entry)
   return spec and spec.keep and true or false
 end
 
+-- Compaction ages entries by the server's clock where the client offers it, so a wrong system
+-- date cannot delete history (4.2).
+local function clock()
+  local ok, now = ns.Safe.Call(GetServerTime)
+  if ok and type(now) == "number" and now > 0 then return now end
+  return time()
+end
+
+-- Drops stay[i] for the oldest entries that pass test(i), until count(dropped) reaches excess.
+local function dropOldest(log, stay, excess, test)
+  local dropped = 0
+  for i = 1, #log do
+    if dropped >= excess then break end
+    if stay[i] and test(i, log[i]) then
+      stay[i] = nil
+      dropped = dropped + 1
+    end
+  end
+  return dropped
+end
+
 function Log:Compact(char)
   if ns.DB.readOnly or type(char) ~= "table" or type(char.log) ~= "table" then return end
-  local log, now = char.log, time()
+  local log, now = char.log, clock()
   local stay, keepKind = {}, {}
   local nKeep, nOther = 0, 0
+  -- An entry is never younger than one written before it: a session stamped by a clock set back
+  -- ages from the entries before it, not from its own date.
+  local newest = 0
   for i, entry in ipairs(log) do
+    local t = tonumber(entry.t) or 0
+    if t > newest then newest = t end
     if isKeep(entry) then
       stay[i], keepKind[i] = true, true
       nKeep = nKeep + 1
-    elseif now - (entry.t or 0) <= MAX_AGE then
+    elseif now - newest <= MAX_AGE then
       stay[i] = true
       nOther = nOther + 1
     end
   end
-  for i, entry in ipairs(log) do
-    if nKeep <= KEEP_KINDS_MAX then break end
-    if stay[i] and (entry.k == "contact" or entry.k == "peer") then
-      stay[i] = nil
-      nKeep = nKeep - 1
+  -- Keep kinds beyond 2,000: peer entries (written on other clients' word) go before the
+  -- player's own first meetings.
+  for _, kind in ipairs({ "peer", "contact" }) do
+    if nKeep > KEEP_KINDS_MAX then
+      nKeep = nKeep - dropOldest(log, stay, nKeep - KEEP_KINDS_MAX, function(_, entry) return entry.k == kind end)
     end
   end
-  for i = 1, #log do
-    if nKeep + nOther <= KEEP_TOTAL then break end
-    if stay[i] and not keepKind[i] then
-      stay[i] = nil
-      nOther = nOther - 1
+  -- Then non-keep entries down to 3,000 in all: first those the chronicle never shows (gold,
+  -- quest.accept, kills, rests, rumours, item.held, revisited zones), then the shown ones.
+  for _, shown in ipairs({ false, true }) do
+    if nKeep + nOther > KEEP_TOTAL then
+      nOther = nOther - dropOldest(log, stay, nKeep + nOther - KEEP_TOTAL, function(i, entry)
+        return not keepKind[i] and self:Shown(entry) == shown
+      end)
     end
   end
   if nKeep + nOther == #log then return end
@@ -191,7 +228,7 @@ function Log:WorldReady()
   local first = firstIndex(log, lastTo(char) + 1)
   local held = #log - first + 1
   local began = log[first] and log[first].t
-  if held > AUTO_CHAPTER_SIZE or (began and time() - began > AUTO_CHAPTER_AGE) then
+  if held > AUTO_CHAPTER_SIZE or (began and clock() - began > AUTO_CHAPTER_AGE) then
     self:CloseChapter(nil, { auto = true })
   end
   self:Compact(char)
