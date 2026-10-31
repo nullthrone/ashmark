@@ -185,12 +185,19 @@ local function copyFields(source, keys)
   return Safe.Clean(fields)
 end
 
--- Up to MAX_PEOPLE Persons, refreshed on every snapshot; only outside instances and chat lockdown.
+-- luacheck: read globals UNKNOWNOBJECT UKNOWNBEING
+-- The client's stand-in for a name that has not loaded yet ("Unknown"; no character may take it) is no name.
+local function placeholder(name)
+  return name == UNKNOWNOBJECT or name == UKNOWNBEING
+end
+
+-- Up to MAX_PEOPLE Persons, refreshed on every snapshot; only outside instances and chat lockdown. A member
+-- whose name reads as the placeholder keeps the Person of an earlier snapshot, or has none yet.
 local function snapshot(session, index)
   local people, n = session.people, 0
   for _ in pairs(people) do n = n + 1 end
   for guid, person in pairs(ns.Identity:Group("all")) do
-    local rec = (people[guid] or n < MAX_PEOPLE) and copyFields(person, PERSON)
+    local rec = not placeholder(person.name) and (people[guid] or n < MAX_PEOPLE) and copyFields(person, PERSON)
     if rec then
       rec.locale = ns.Locale.active
       if not people[guid] then n = n + 1 end
