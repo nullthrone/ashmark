@@ -59,11 +59,17 @@ local function finish(owner, source, ok, ...)
   return true, ...
 end
 
--- Lua 5.1 xpcall forwards no arguments, so the call closes over them.
+-- Stock Lua 5.1 xpcall forwards no arguments, so the call closes over them (3.6). The client's
+-- xpcall may forward them; checked once at load, the call then allocates nothing.
+local forwards = select(2, xpcall(function(v) return v end, trace, true)) == true
+
 function ns:Call(owner, source, fn, ...)
   local n = select("#", ...)
   if n == 0 then
     return finish(owner, source, xpcall(fn, trace))
+  end
+  if forwards then
+    return finish(owner, source, xpcall(fn, trace, ...))
   end
   local args = { ... }
   return finish(owner, source, xpcall(function() return fn(unpack(args, 1, n)) end, trace))

@@ -23,6 +23,38 @@ describe("Core error wrapper", function()
     assert.same({ 1, nil, 3 }, { got[1], got[2], got[3] })
   end)
 
+  it("hands the arguments to xpcall itself on a client whose xpcall forwards them", function()
+    local stock = _G.xpcall
+    local forwarded = 0
+    _G.xpcall = function(f, handler, ...)
+      local n = select("#", ...)
+      if n > 0 then forwarded = forwarded + 1 end
+      local args = { ... }
+      return stock(function() return f(unpack(args, 1, n)) end, handler)
+    end
+    local ok, err = pcall(function()
+      wow.reset()
+      ns = wow.load()
+      M = ns:NewModule("Alpha", { locale = "ALPHA" })
+      wow.login()
+      forwarded = 0
+      local got
+      local called, a = ns:Call(M, "src", function(...)
+        got = { n = select("#", ...), ... }
+        return "x"
+      end, 1, nil, 3, nil)
+      assert.is_true(called)
+      assert.equal("x", a)
+      assert.equal(4, got.n)
+      assert.same({ 1, nil, 3 }, { got[1], got[2], got[3] })
+      assert.equal(1, forwarded)
+      assert.is_false(ns:Call(M, "boom", function(v) error("boom " .. v) end, "now"))
+      assert.truthy(wow.errors[1]:find("boom now", 1, true))
+    end)
+    _G.xpcall = stock
+    assert(ok, err)
+  end)
+
   it("reports once per (module, source) and keeps other handlers running", function()
     local other = 0
     M:RegisterEvent("BAG_UPDATE", function() error("boom") end)
