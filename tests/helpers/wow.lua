@@ -7,6 +7,7 @@
 --   wow.login()                          -- ADDON_LOADED, PLAYER_LOGIN, PLAYER_ENTERING_WORLD(true, false)
 --   wow.fire("QUEST_ACCEPTED", 1382); wow.advance(1); wow.combat(true)
 --   wow.reload()                         -- logout, SavedVariables round trip, same files, login as a /reload
+--   wow.saved({ schema = 1 })            -- AshmarkDB before ADDON_LOADED (specs have their own globals: use _G)
 --
 -- World fixtures live in wow.state (units, map, money, auras, ...) and wow.data (quests, items, factions,
 -- maps, ...); edit them directly or replace any API with wow.stub("C_Map.GetMapInfo", fn). Records of what
@@ -1078,6 +1079,13 @@ function wow.reset()
   resetClient()
   wow.loaded = nil
   return wow.ns
+end
+
+-- Sets the SavedVariable before ADDON_LOADED. Busted gives each spec file its own global
+-- environment, so a plain `AshmarkDB = x` in a spec never reaches the addon: use this or _G.
+function wow.saved(db)
+  _G.AshmarkDB = db
+  return db
 end
 
 -- Replaces a global or a field of a global table ("UnitReaction", "C_Map.GetMapInfo").
