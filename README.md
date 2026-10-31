@@ -109,7 +109,7 @@ python3 tools/toc_check.py --strict
 
 ## 🚀 Release
 
-Push a tag that starts with `v`. The release workflow runs the BigWigs packager, which builds the zip from `.pkgmeta` and creates a GitHub release. Uploading to CurseForge needs the `CF_API_KEY` repository secret; both TOCs carry the project ID (`## X-Curse-Project-ID: 1777037`); Wago is optional and uses `WAGO_API_TOKEN`.
+Add the release notes to the top of [CHANGELOG.md](CHANGELOG.md), then push a tag that starts with `v`. The release workflow runs the BigWigs packager, which builds the zip from `.pkgmeta` and creates a GitHub release with those notes. Uploading to CurseForge needs the `CF_API_KEY` repository secret; both TOCs carry the project ID (`## X-Curse-Project-ID: 1777037`); Wago is optional and uses `WAGO_API_TOKEN`.
 
 ## ☕ Support
 
