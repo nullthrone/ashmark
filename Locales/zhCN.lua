@@ -18,13 +18,13 @@ L.CORE_NOT_FOREVER = "Ashmark仅能在World of Warcraft Forever上运行，在�
 L.CORE_SV_NEW = "已开始一份新记录。如果此账号以前使用过Ashmark，说明已保存的数据未能载入："
   .. "请勿再次/reload或登出。请退出游戏，并在下次登录前，于WTF\\Account\\<账号名>\\SavedVariables\\中"
   .. "用Ashmark.lua.bak替换Ashmark.lua。"
-L.CORE_SV_NEWER = "这些已保存的数据来自更新版本的Ashmark。在你更新之前，Ashmark只会读取这些数据。"
-L.CORE_SV_RECOVERED = "已保存的数据格式无法被Ashmark识别。已开始一份新记录；旧数据原封不动地保存在"
+L.CORE_SV_NEWER = "这些已保存的数据来自较新版本的Ashmark。在你更新Ashmark之前，它只会读取这些数据。"
+L.CORE_SV_RECOVERED = "Ashmark无法识别已保存数据的格式。已开始一份新记录；旧数据原封不动地保存在"
   .. "AshmarkDB.recovered中。"
 L.CORE_SV_MIGRATE_FAILED = "Ashmark无法更新其已保存的数据，本次登录期间只会读取这些数据。"
 
 -- Modules and settings (3.2, 4.3)
-L.CORE_MODULE_FAILED = "{module}模块因反复出错而停止运行，在下次重载界面之前将保持关闭。"
+L.CORE_MODULE_FAILED = "“{module}”模块因反复出错而停止运行，在下次重载界面之前将保持关闭。"
 L.CORE_UNAVAILABLE = "需要：{capability}"
 L.CORE_MISSING_EVENTS = "此客户端缺少的事件：{events}"
 L.CORE_SETTING_CHAT_LINES = "聊天消息"
@@ -47,7 +47,7 @@ L.CORE_RULESET_NORMAL = "普通"
 L.CORE_RULESET_PVP = "PvP"
 L.CORE_RULESET_RP = "角色扮演"
 L.CORE_RULESET_RPPVP = "角色扮演PvP"
-L.CORE_RULESET_HARDCORE = "硬核"
+L.CORE_RULESET_HARDCORE = "专家模式"
 
 -- Chronicle sentences
 L.CORE_LOG_TURNIN = "你完成了{quest}任务。"
@@ -81,7 +81,7 @@ L.CORE_RESET_ACCEPT = "清除"
 L.CORE_CANCEL = "取消"
 L.CORE_RESET_DONE = "此角色的记录已清除。"
 L.CORE_RESET_OTHERS_DONE = "相识记录、其他用户资料和听到的传闻已清除。"
-L.CORE_RESET_READONLY = "已保存的数据来自更新版本的Ashmark，因此无法清除任何内容。"
+L.CORE_RESET_READONLY = "已保存的数据来自较新版本的Ashmark，因此无法清除任何内容。"
 
 -- UI shell (6.1, 6.2)
 L.CORE_TAB_CHRONICLE = "编年史"
@@ -107,7 +107,7 @@ L.TEST_FAIL = "失败"
 L.TEST_SKIP = "跳过"
 L.TEST_OPEN_QUEST_DIALOG = "截图前请先与一位任务发布者对话。"
 L.TEST_RELOAD = "输入/reload以保存结果。"
-L.TEST_NOT_STORED = "已保存的数据来自更新版本的Ashmark，因此不会储存任何内容。完整报告如下。"
+L.TEST_NOT_STORED = "已保存的数据来自较新版本的Ashmark，因此不会保存任何内容。完整报告如下。"
 L.TEST_LATE = "后续结果：{what}"
 L.TEST_PROBE_DONE = "探测共记录了{count}条信息。"
 L.TEST_PROBE_NEXT = "请在本次登录期间接受一个任务并发起一场战斗：探测会将两者都记录下来。"
@@ -115,7 +115,7 @@ L.TEST_PROBE_NEXT = "请在本次登录期间接受一个任务并发起一场�
 -- Conflicts ------------------------------------------------------------------------------------------------------
 
 L.CONFLICT_MODULE_NAME = "纷争"
-L.CONFLICT_MODULE_DESC = "有些任务会让一方与另一方对立。Ashmark会记住你所选择的一方，在任务窗口下方"
+L.CONFLICT_MODULE_DESC = "有些任务会让两方势力彼此对立。Ashmark会记住你所选择的一方，在任务窗口下方"
   .. "标出与之相悖的任务，并在你食言时记录下来。"
 
 -- A side without a reputation faction; stands where a faction name would ("站到{faction}一边", "{a}或{b}").
@@ -130,8 +130,8 @@ L.CONFLICT_TEST_DIALOG = "Ashmark在任务窗口下方的提示文字会显示�
 -- Chronicle sentences
 L.CONFLICT_ALLIED = "你在{zone}站到了{faction}一边。"
 L.CONFLICT_ALLIED_THEY = "{name}在{zone}站到了{faction}一边。"
-L.CONFLICT_ALLIED_REP = "在{zone}，你的立场由你在{faction}中的声望决定。"
-L.CONFLICT_ALLIED_REP_THEY = "在{zone}，{name}的立场由其在{faction}中的声望决定。"
+L.CONFLICT_ALLIED_REP = "你在{faction}中的声望决定了你在{zone}的立场。"
+L.CONFLICT_ALLIED_REP_THEY = "{name}在{faction}中的声望决定了其在{zone}的立场。"
 L.CONFLICT_BROKE_WORD = "你背弃了{broken}，为{faction}完成了{quest}任务。"
 L.CONFLICT_BROKE_WORD_THEY = "{name}背弃了{broken}，为{faction}完成了{quest}任务。"
 L.CONFLICT_SWITCHED = "你再次改换了立场：为{faction}完成{quest}任务，将{broken}抛在身后。"
@@ -151,7 +151,7 @@ L.CONFLICT_TAB_EMPTY = "Ashmark尚不知晓这个世界中的任何纷争。"
 
 -- Profile --------------------------------------------------------------------------------------------------------
 
-L.PROFILE_MODULE_NAME = "品性"
+L.PROFILE_MODULE_NAME = "人物侧写"
 L.PROFILE_MODULE_DESC = "Ashmark会从你的所作所为中解读你的角色：你是否信守诺言，是栖身荒野还是城镇，"
   .. "以及你如何对待无害的生物。"
 
@@ -166,9 +166,9 @@ L.PROFILE_RUTHLESS = "冷酷之人"
 L.PROFILE_PRAGMATIST = "务实者"
 
 -- Test mode (7.10)
-L.PROFILE_TEST_MERCY_HOWTO = "击杀3只小动物和3只温顺的中立野兽，然后再次输入/ashmark test。"
+L.PROFILE_TEST_MERCY_HOWTO = "击杀3只小动物和3只未处于战斗状态的中立野兽，然后再次输入/ashmark test。"
 L.PROFILE_TEST_CRITTER_TARGET = "将任意生物选为目标，然后再次输入/ashmark test。"
-L.PROFILE_TEST_CRITTER_OFF = "此客户端无法分辨小动物，因此不会统计击杀小动物的次数。"
+L.PROFILE_TEST_CRITTER_OFF = "此客户端无法识别小动物，因此不会统计击杀小动物的次数。"
 
 -- Map ------------------------------------------------------------------------------------------------------------
 
@@ -180,7 +180,7 @@ L.MAP_MODULE_DESC = "在世界地图上标出你自己的故事：你所知的�
 L.MAP_PIN_SIDES = "{a}或{b}"
 L.MAP_PIN_OPEN = "你在此地尚未选择立场。"
 L.MAP_PIN_ALLIED = "你站在{faction}一边。"
-L.MAP_PIN_BROKEN = "你站在{faction}一边，并在此食言{count}次。"
+L.MAP_PIN_BROKEN = "你站在{faction}一边，并曾在此食言{count}次。"
 L.MAP_PIN_VIOLATION = "你在此食言"
 L.MAP_PIN_CHAPTER = "第{roman}章"
 L.MAP_PIN_CHAPTER_CLOSED = "于{date}在此落幕"
@@ -246,7 +246,7 @@ L.ENC_LIST_AND = "{list}和{last}"
 -- House ----------------------------------------------------------------------------------------------------------
 
 L.HOUSE_MODULE_NAME = "家族"
-L.HOUSE_MODULE_DESC = "此账号上姓氏相同的角色组成一个家族。“家族”标签页会显示家族成员、亲族卷入的宿怨、"
+L.HOUSE_MODULE_DESC = "此账号上姓氏相同的角色组成一个家族。“家族”标签页会显示家族成员、亲族结下的世仇、"
   .. "家族编年史，以及他们认识的人。"
 
 -- /ashmark house (5.9)
@@ -255,7 +255,7 @@ L.HOUSE_SLASH_CURRENT = "你属于{house}家族。"
 L.HOUSE_SLASH_NONE = "你不属于任何家族。输入/ashmark house <名称>以加入一个家族。"
 L.HOUSE_SLASH_SET = "你现在属于{house}家族。"
 L.HOUSE_SLASH_RESET = "你的家族重新以你的姓氏为准：{house}家族。"
-L.HOUSE_SLASH_RESET_NONE = "你的家族重新以你的姓氏为准。由于没有姓氏，你不属于任何家族。"
+L.HOUSE_SLASH_RESET_NONE = "你的家族重新以你的姓氏为准。由于你没有姓氏，你不属于任何家族。"
 L.HOUSE_SLASH_OFF = "“家族”模块已关闭或不可用，因此现在无法更改你的家族。"
 
 -- House tab (6.1, 7.5)
@@ -281,8 +281,8 @@ L.HOUSE_LEGACY_STANDING = "{faction}：{standing}"
 -- Campfire -------------------------------------------------------------------------------------------------------
 
 L.CAMP_MODULE_NAME = "篝火"
-L.CAMP_MODULE_DESC = "在营地休息，直至其效果生效；若自上一章以来已发生了足够多的事，Ashmark可能会让你"
-  .. "编年史中的一章在那里落幕。"
+L.CAMP_MODULE_DESC = "在营地休息，直到营地的增益效果生效；若自上一章以来已发生了足够多的事，Ashmark"
+  .. "可能会让你编年史中的一章在那里落幕。"
 
 -- Centre-screen notice (7.6)
 L.CAMP_CHAPTER_CLOSED = "第{roman}章落幕 · {place}"
@@ -323,7 +323,7 @@ L.RUMOUR_HEARD_BROKE = "有传言说，来自{place}的{archetype}背弃了{fact
 L.RUMOUR_HEARD_TURNED = "有传言说，来自{place}的{archetype}背离了自己的家族，转而站到{faction}一边。"
 
 -- Without a faction
-L.RUMOUR_HEARD_ALLIANCE_VAGUE = "有传言说，来自{place}的{archetype}已选定了立场。"
+L.RUMOUR_HEARD_ALLIANCE_VAGUE = "有传言说，来自{place}的{archetype}已选定立场。"
 L.RUMOUR_HEARD_BROKE_VAGUE = "有传言说，来自{place}的{archetype}食言了。"
 L.RUMOUR_HEARD_TURNED_VAGUE = "有传言说，来自{place}的{archetype}背离了自己的家族。"
 
