@@ -43,6 +43,17 @@ describe("Core Util", function()
     assert.equal(time(), ns.Util.Now())
   end)
 
+  it("folds A to Z and the capitals of Latin-1, Latin Extended-A and Cyrillic, and nothing else", function()
+    local Fold = ns.Util.Fold
+    assert.equal("élodie ashvale", Fold("ÉLODIE Ashvale"))
+    assert.equal("øðþàö", Fold("ØÐÞÀÖ"))
+    assert.equal("żółty-ÿĳ", Fold("ŻÓŁTY-ŸĲ"))
+    assert.equal("брайтвейл ёжов ђ", Fold("БРАЙТВЕЙЛ Ёжов Ђ"))
+    assert.equal("×İı", Fold("×İı"))
+    assert.equal("", Fold(nil))
+    assert.equal("", Fold(7))
+  end)
+
   it("tells names that begin with the sounds /i/ and /o/, for Spanish e and u", function()
     local S = ns.Util.StartsWithSound
     for _, name in ipairs({ "Ira", "isla", "\195\141caro", "Hilda", "h\195\173gado", "|cffff0000Ines|r" }) do

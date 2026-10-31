@@ -241,6 +241,39 @@ describe("Core Slash", function()
       assert.is_table(_G.AshmarkDB.chars[THALEN1])
     end)
 
+    it("finds a name ignoring the case of accented and Cyrillic capitals", function()
+      local ALINA, ELODIE = "Player-1-0000000f", "Player-1-00000010"
+      _G.AshmarkDB.chars[ALINA] = { guid = ALINA, name = "Алина", surname = "Ёжова", level = 9, log = {} }
+      _G.AshmarkDB.chars[ELODIE] = { guid = ELODIE, name = "Élodie", level = 9, log = {} }
+      SlashCmdList.ASHMARK("reset алина")
+      assert.equal(ns.Format(ns.L.CORE_RESET_CHAR_CONFIRM, { name = "Алина Ёжова" }), dialog.text)
+      dialog = nil
+      SlashCmdList.ASHMARK("reset АЛИНА ЁЖОВА")
+      assert.equal(ns.Format(ns.L.CORE_RESET_CHAR_CONFIRM, { name = "Алина Ёжова" }), dialog.text)
+      dialog = nil
+      SlashCmdList.ASHMARK("reset élodie")
+      dialog.onAccept()
+      assert.is_nil(_G.AshmarkDB.chars[ELODIE])
+      assert.is_true(printed(ns.Format(ns.L.CORE_RESET_CHAR_DONE, { name = "Élodie" })))
+    end)
+
+    it("names a record without a name by its GUID, which alone finds it", function()
+      local NAMELESS = "Player-1-00000011"
+      _G.AshmarkDB.chars[NAMELESS] = { guid = NAMELESS, surname = "Ashvale", level = 3, log = {} }
+      _G.AshmarkDB.chars[THALEN2].name = ""
+      SlashCmdList.ASHMARK("reset ashvale")
+      assert.is_nil(dialog)
+      assert.is_true(printed(ns.Format(ns.L.CORE_RESET_CHAR_UNKNOWN, { name = "ashvale" })))
+      SlashCmdList.ASHMARK("reset thalen")
+      assert.equal(ns.Format(ns.L.CORE_RESET_CHAR_CONFIRM, { name = "Thalen Ashvale" }), dialog.text)
+      dialog = nil
+      SlashCmdList.ASHMARK("reset " .. NAMELESS)
+      assert.equal(ns.Format(ns.L.CORE_RESET_CHAR_CONFIRM, { name = NAMELESS }), dialog.text)
+      dialog.onAccept()
+      assert.is_nil(_G.AshmarkDB.chars[NAMELESS])
+      assert.is_true(printed(ns.Format(ns.L.CORE_RESET_CHAR_DONE, { name = NAMELESS })))
+    end)
+
     it("never names the current character", function()
       local me = _G.AshmarkDB.chars[ns.playerGUID]
       SlashCmdList.ASHMARK("reset " .. me.name)

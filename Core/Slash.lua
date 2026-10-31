@@ -126,22 +126,28 @@ local function wipeOthers()
   ns.Print(L.CORE_RESET_OTHERS_DONE)
 end
 
+local function named(char)
+  return type(char.name) == "string" and char.name ~= ""
+end
+
+-- A record without a name (written while the client still called the player Unknown) reads as someone.
 local function fullName(char)
-  local name = type(char.name) == "string" and char.name or ""
+  local name = named(char) and char.name or L.CORE_UNKNOWN_PLAYER
   if type(char.surname) == "string" and char.surname ~= "" then return name .. " " .. char.surname end
   return name
 end
 
 -- Other stored characters that `query` names: the GUID exactly, else the full name or the first name,
--- ignoring ASCII case. Never the current character. Sorted by name, then GUID.
+-- ignoring case (Util.Fold: A-Z and the capitals of Latin-1, Latin Extended-A and Cyrillic). Never the
+-- current character; a record without a name only by its GUID. Sorted by name, then GUID.
 local function others(query)
-  local chars, me = type(AshmarkDB.chars) == "table" and AshmarkDB.chars or {}, ns.playerGUID
+  local chars, me, Fold = type(AshmarkDB.chars) == "table" and AshmarkDB.chars or {}, ns.playerGUID, ns.Util.Fold
   local own = chars[query]
   if query ~= me and type(own) == "table" then return { { guid = query, char = own } } end
-  local wanted, out = query:lower(), {}
+  local wanted, out = Fold(query), {}
   for guid, char in pairs(chars) do
-    if guid ~= me and type(char) == "table" and type(char.name) == "string"
-      and (char.name:lower() == wanted or fullName(char):lower() == wanted) then
+    if guid ~= me and type(char) == "table" and named(char)
+      and (Fold(char.name) == wanted or Fold(fullName(char)) == wanted) then
       out[#out + 1] = { guid = guid, char = char }
     end
   end
@@ -177,8 +183,9 @@ local function resetOther(query)
       }))
     end
   else
-    local name = fullName(found[1].char)
-    confirm("CORE_RESET_CHAR_CONFIRM", forgetOther(found[1].guid, name), { name = name })
+    local hit = found[1]
+    local name = named(hit.char) and fullName(hit.char) or hit.guid
+    confirm("CORE_RESET_CHAR_CONFIRM", forgetOther(hit.guid, name), { name = name })
   end
 end
 

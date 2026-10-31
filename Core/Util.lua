@@ -54,6 +54,37 @@ function Util.Now()
   return time()
 end
 
+-- string.lower folds only A-Z. FOLD maps the capitals of Latin-1, Latin Extended-A and Cyrillic, as UTF-8,
+-- to their small letters, so names of EU and Russian realms fold too ("Élodie", "Брайтвейл"). Dotted İ and
+-- dotless ı stay as they are (their case pairs depend on the language), and × has no small letter.
+local FOLD = {}
+
+local function twoByte(cp)       -- the UTF-8 form of a code point from U+0080 to U+07FF
+  return string.char(0xC0 + math.floor(cp / 64), 0x80 + cp % 64)
+end
+
+local function capitals(first, last, step, offset)
+  for cp = first, last, step do FOLD[twoByte(cp)] = twoByte(cp + offset) end
+end
+
+capitals(0xC0, 0xD6, 1, 0x20)    -- À-Ö
+capitals(0xD8, 0xDE, 1, 0x20)    -- Ø-Þ
+capitals(0x100, 0x12E, 2, 1)     -- Ā-Į
+capitals(0x132, 0x136, 2, 1)     -- Ĳ-Ķ
+capitals(0x139, 0x147, 2, 1)     -- Ĺ-Ň
+capitals(0x14A, 0x176, 2, 1)     -- Ŋ-Ŷ
+capitals(0x179, 0x17D, 2, 1)     -- Ź-Ž
+capitals(0x400, 0x40F, 1, 0x50)  -- Ѐ-Џ
+capitals(0x410, 0x42F, 1, 0x20)  -- А-Я
+FOLD[twoByte(0x178)] = twoByte(0xFF) -- Ÿ
+
+-- s with A-Z and the capitals in FOLD made small, for comparing names ignoring case. Every capital in FOLD
+-- starts with byte C3, C4, C5 or D0. Not a string (or a secret): "".
+function Util.Fold(s)
+  if type(s) ~= "string" or (ns.Safe and ns.Safe.IsSecret(s)) then return "" end
+  return (s:lower():gsub("[\195-\197\208][\128-\191]", FOLD))
+end
+
 -- The first letters, in UTF-8, of each sound a conjunction changes before (Spanish "y" -> "e" before /i/,
 -- "o" -> "u" before /o/). A leading "h" is silent; a plain "hi" before another vowel ("hie-", "hia-") is /j/.
 local SOUND_LETTERS = {

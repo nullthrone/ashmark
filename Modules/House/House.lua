@@ -195,33 +195,7 @@ end
 
 -- /ashmark house (5.9) ---------------------------------------------------------------
 
--- string.lower folds only A-Z. FOLD maps the capitals of Latin-1, Latin Extended-A and Cyrillic, as
--- UTF-8, to their small letters, so names of EU and Russian realms fold too ("Élodie", "Брайтвейл").
-local FOLD = {}
-
-local function twoByte(cp)       -- the UTF-8 form of a code point from U+0080 to U+07FF
-  return string.char(0xC0 + math.floor(cp / 64), 0x80 + cp % 64)
-end
-
-local function capitals(first, last, step, offset)
-  for cp = first, last, step do FOLD[twoByte(cp)] = twoByte(cp + offset) end
-end
-
-capitals(0xC0, 0xD6, 1, 0x20)    -- À-Ö
-capitals(0xD8, 0xDE, 1, 0x20)    -- Ø-Þ
-capitals(0x100, 0x12E, 2, 1)     -- Ā-Į
-capitals(0x132, 0x136, 2, 1)     -- Ĳ-Ķ
-capitals(0x139, 0x147, 2, 1)     -- Ĺ-Ň
-capitals(0x14A, 0x176, 2, 1)     -- Ŋ-Ŷ
-capitals(0x179, 0x17D, 2, 1)     -- Ź-Ž
-capitals(0x400, 0x40F, 1, 0x50)  -- Ѐ-Џ
-capitals(0x410, 0x42F, 1, 0x20)  -- А-Я
-FOLD[twoByte(0x178)] = twoByte(0xFF) -- Ÿ
-
--- Every capital in FOLD starts with byte C3, C4, C5 or D0.
-local function fold(s)
-  return (s:lower():gsub("[\195-\197\208][\128-\191]", FOLD))
-end
+local fold = ns.Util.Fold
 
 -- The house name already on the account that equals name ignoring case (fold): the stored surname
 -- of any character, or the override of another one, so two alts that type the same house in
