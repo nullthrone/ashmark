@@ -1165,5 +1165,5 @@ Every file in the repository belongs to exactly one unit.
 | Dataset | `data/conflicts/*` (the CSV files, `registry.csv`, `renamed.csv` and `README.md`), `tools/conflicts.py`, `tools/test_conflicts.py`, `Data/Conflicts.lua` |
 | Localization | `Locales/deDE.lua`, `frFR.lua`, `esES.lua`, `esMX.lua`, `ptBR.lua`, `ruRU.lua`, `koKR.lua`, `zhTW.lua`, `zhCN.lua`; delivers the TOC `## Notes-<locale>` texts in its report, Core inserts them |
 | Packaging | `.pkgmeta`, `.github/workflows/*`, `tools/toc_check.py` |
-| Docs | `README.md`, `docs/index.html` |
+| Docs | `README.md`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `docs/index.html`, `.github/ISSUE_TEMPLATE/*`, `.github/FUNDING.yml` |
 | Lead | `docs/ARCHITECTURE.md`, `docs/DECISIONS.md`, `docs/research/*`, `LICENSE`, `.claude/*` |
