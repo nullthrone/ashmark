@@ -1,0 +1,14 @@
+package-as: Ashmark
+
+enable-nolib-creation: no
+
+ignore:
+  - .claude
+  - .github
+  - data
+  - docs
+  - tests
+  - tools
+  - .busted
+  - .luacheckrc
+  - README.md
