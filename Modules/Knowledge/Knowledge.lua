@@ -171,6 +171,16 @@ end
 
 -- Item tooltip (7.7) --------------------------------------------------------------------------
 
+-- Step 3: held by the record, or in the bags right now. The bag scan runs a second after BAG_UPDATE_DELAYED,
+-- so an item just looted, bought or taken from the mail is there before held has it; the post-call writes
+-- nothing (3.9), the scan notes it. C_Item.GetItemCount counts the bags without the bank; a client
+-- without it leaves the record alone to answer.
+local function holds(id)
+  if heldAt(M:Char(), id) then return true end
+  local count = number(Safe.Call(C_Item.GetItemCount, id))
+  return count ~= nil and count > 0
+end
+
 local function isRevealed(id)
   local known = revealed[id]
   if known == nil then
@@ -271,7 +281,7 @@ local kept = {}                   -- scratch for one tooltip, reused: the post-c
 local function conceal(tooltip, data)
   local id, ok = Safe.Field(data, "id")
   if not ok or type(id) ~= "number" then return nil end
-  if heldAt(M:Char(), id) or questReward(tooltip) or not isRevealed(id) then return nil end
+  if holds(id) or questReward(tooltip) or not isRevealed(id) then return nil end
   local n, name = Safe.Value(tooltip:NumLines()), tooltip:GetName()
   local lines, readable = Safe.Field(data, "lines")
   if type(n) ~= "number" or type(name) ~= "string" or not readable then return nil end
@@ -321,9 +331,8 @@ end
 
 -- The first sample this character has not held whose data the client has revealed.
 local function sample()
-  local char = M:Char()
   for _, id in ipairs(SAMPLES) do
-    if not heldAt(char, id) and isRevealed(id) then return id end
+    if not holds(id) and isRevealed(id) then return id end
   end
 end
 

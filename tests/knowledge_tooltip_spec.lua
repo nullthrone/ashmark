@@ -155,6 +155,29 @@ describe("Knowledge tooltip", function()
       assert.is_false(GameTooltip:IsShown())
     end)
 
+    it("for an item in the bags that the bag scan has not noted yet, noting nothing itself", function()
+      boot()
+      wow.advance(30)
+      mock.put(wow, mock.BACKPACK, SPEAR)
+      wow.fire("BAG_UPDATE_DELAYED")
+      wow.advance(0.5)
+      local before = wow.deepcopy(_G.AshmarkDB)
+      assert.same(SPEAR_LINES, hover(SPEAR))
+      assert.is_false(GameTooltip:IsShown())
+      assert.same(SPEAR_LINES, hover(SPEAR, { tip = ItemRefTooltip }))
+      assert.same(before, wow.deepcopy(_G.AshmarkDB))
+      wow.advance(0.5)
+      assert.equal(wow.state.epoch, ns.DB:Char().knowledge.held[SPEAR])
+      -- Without a readable count only the record answers: the hauberk in the bags is not on it yet.
+      mock.put(wow, mock.BACKPACK, HAUBERK)
+      wow.fire("BAG_UPDATE_DELAYED")
+      for _, count in ipairs({ false, function() return wow.secret(1) end, function() error("no count") end }) do
+        wow.stub("C_Item.GetItemCount", count or nil)
+        assert.equal(UNKNOWN, hover(HAUBERK)[8])
+        assert.same(SPEAR_LINES, hover(SPEAR))
+      end
+    end)
+
     it("for an item the server still hides, asking the client cache once per item until its data arrives", function()
       boot(function()
         wow.data.items[SPEAR].cached = false
@@ -267,6 +290,18 @@ describe("Knowledge tooltip", function()
       local ok, detail = check("Knowledge.sample")
       assert.is_true(ok)
       assert.matches("^item 2092: 1 of 3 lines hidden", detail)
+    end)
+
+    it("pass over samples in the bags that the bag scan has not noted yet", function()
+      mock.item(wow, SHORTSWORD)
+      mock.item(wow, DAGGER)
+      boot()
+      mock.put(wow, mock.BACKPACK, SHORTSWORD)
+      wow.fire("BAG_UPDATE_DELAYED")
+      local ok, detail = check("Knowledge.sample")
+      assert.is_true(ok)
+      assert.equal("item 2092: 1 of 3 lines hidden, kept Worn Dagger | One-Hand / Dagger | Item Level 2; held 1, "
+        .. "bags scanned true, bank scanned false", detail)
     end)
 
     it("skip without a revealed sample and fail when the sample keeps every line", function()
