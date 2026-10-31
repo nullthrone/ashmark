@@ -168,6 +168,8 @@ wow.newFrame = newFrame
 
 -- Unknown methods are no-ops; Create* methods return new stub frames.
 frameMeta.__index = function(self, key)
+  local removed = rawget(self, "__removed")
+  if removed and removed[key] then return nil end
   local m = methods[key]
   if m then return m end
   if type(key) ~= "string" or key:sub(1, 2) == "__" then return nil end
@@ -1100,8 +1102,15 @@ function wow.stub(path, value)
     end
     t = rawget(t, key)
   end
-  if #parts == 1 then installed[parts[1]] = true end
-  rawset(t, parts[#parts], value)
+  local key = parts[#parts]
+  if #parts == 1 then installed[key] = true end
+  if getmetatable(t) == frameMeta then
+    -- A frame answers every method; a removed one must read as nil for feature detection.
+    local removed = rawget(t, "__removed") or {}
+    removed[key] = value == nil or nil
+    rawset(t, "__removed", removed)
+  end
+  rawset(t, key, value)
   return value
 end
 
