@@ -240,6 +240,18 @@ local function collect(facts)
 
   call(facts, "IsTrialAccount")
   call(facts, "IsVeteranTrialAccount")
+  -- Whether a battleground puts the player into an instance group, which Identity never counts (5.3).
+  custom(facts, "IsInGroup, GetNumGroupMembers (home, instance)", function()
+    local out = {}
+    for _, key in ipairs({ "LE_PARTY_CATEGORY_HOME", "LE_PARTY_CATEGORY_INSTANCE" }) do
+      local category = lookup(key)
+      local okGroup, grouped = pcall(IsInGroup, category)
+      local okSize, size = pcall(GetNumGroupMembers, category)
+      out[#out + 1] = string.format("%s=%s: %s %s", key, scalar(category), okGroup and scalar(grouped) or "<error>",
+        okSize and scalar(size) or "<error>")
+    end
+    return out
+  end)
 
   for _, key in ipairs(RULES) do
     local path = "Enum.GameRule." .. key
@@ -396,6 +408,13 @@ local function sayHello(facts)
   local what = 'ns.Comm:Send("HI")'
   if not ns.Identity:InGroup() then
     add(facts, what, false, { "<not grouped>" })
+    return
+  end
+  -- The HI is Fiction's (7.9): with Shared fiction off it never leaves, and Comm would drop a queued one
+  -- unsent once Fiction had been on, which would read as a missing echo.
+  local fiction = ns:GetModule("Fiction")
+  if fiction and not fiction.enabled then
+    add(facts, what, false, { "<Shared fiction off>" })
     return
   end
   local before = {}

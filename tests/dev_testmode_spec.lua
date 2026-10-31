@@ -89,8 +89,9 @@ describe("Dev test mode", function()
     assert.equal(18, record.project)
     assert.equal("Forever", record.tocVariant)
     assert.same({ created = 7, fresh = false, readOnly = false, entries = 0, seq = 0 }, record.db)
-    assert.same({ sent = 0, rejected = 0, dropped = 0, results = {} }, record.comm)
+    assert.same({ sent = 0, rejected = 0, dropped = 0, limited = 0, results = {} }, record.comm)
     assert.are_not.equal(ns.Comm.stats, record.comm)
+    assert.are_not.equal(ns.Comm.stats.results, record.comm.results)
     for _, r in ipairs(record.results) do
       assert.is_string(r.id)
       assert.is_true(r.ok == nil or type(r.ok) == "boolean")
@@ -419,8 +420,20 @@ describe("Dev test mode", function()
       start(SAVED)
       local check = result(run(), "Core.comm")
       assert.is_true(check.ok)
-      assert.equal("canSend=true addonMessages=true share=true sent=0 rejected=0 dropped=0 queued=0 results=none",
-        check.detail)
+      assert.equal("canSend=true addonMessages=true share=true sent=0 rejected=0 dropped=0 limited=0 queued=0 "
+        .. "results=none", check.detail)
+    end)
+
+    it("keeps the messages the receive budgets dropped in the report and the record", function()
+      start(SAVED)
+      wow.unit("party1", { guid = "Player-1-00000002", name = "Mira" })
+      ns.Comm.RECEIVE.HI = { burst = 1, every = 30 }
+      for _ = 1, 3 do
+        wow.fire("CHAT_MSG_ADDON", "Ashmark", "1|HI|Player-1-00000002|GENTLE|0|Normal|1", "PARTY", "Mira")
+      end
+      local record = run()
+      assert.equal(2, record.comm.limited)
+      assert.truthy(result(record, "Core.comm").detail:find(" limited=2 ", 1, true))
     end)
 
     it("lists blocked actions since the last run", function()

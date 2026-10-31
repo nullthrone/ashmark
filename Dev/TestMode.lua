@@ -74,11 +74,19 @@ local function dbState()
   }
 end
 
+-- Every counter of ns.Comm.stats (7.10 step 3), so one added later reaches the record too.
 local function commStats()
-  local stats = ns.Comm.stats
-  local results = {}
-  for code, n in pairs(stats.results) do results[code] = n end
-  return { sent = stats.sent, rejected = stats.rejected, dropped = stats.dropped, results = results }
+  local out = {}
+  for key, v in pairs(ns.Comm.stats) do
+    if type(v) == "table" then
+      local copy = {}
+      for k, n in pairs(v) do copy[k] = n end
+      out[key] = copy
+    else
+      out[key] = v
+    end
+  end
+  return out
 end
 
 -- The newest record that came through SavedVariables rather than from this session.
@@ -304,10 +312,10 @@ check("Core.comm", function()
   table.sort(codes)
   local reason = ns.Compat.disabled.canSend
   return ns.Compat.Has.canSend == true, string.format(
-    "canSend=%s%s addonMessages=%s share=%s sent=%s rejected=%s dropped=%s queued=%s results=%s",
+    "canSend=%s%s addonMessages=%s share=%s sent=%s rejected=%s dropped=%s limited=%s queued=%s results=%s",
     str(ns.Compat.Has.canSend), reason and (" (" .. str(reason) .. ")") or "", str(ns.Compat.Has.addonMessages),
     str(ns.Settings:Get("Comm.share")), str(stats.sent), str(stats.rejected), str(stats.dropped),
-    str(ns.Comm:Queued()), #codes > 0 and join(codes) or "none")
+    str(stats.limited), str(ns.Comm:Queued()), #codes > 0 and join(codes) or "none")
 end)
 
 check("Core.blocked", function()

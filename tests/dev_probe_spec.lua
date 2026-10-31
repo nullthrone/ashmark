@@ -282,12 +282,39 @@ describe("Dev probe", function()
       assert.equal(1, ns.Events:Count("CHAT_MSG_ADDON"))
     end)
 
+    it("sends no HI while Shared fiction is off, from login or switched off later, and says so", function()
+      local fiction = ns:NewModule("Fiction")
+      local fromLogin = probe()
+      ns.Comm:Register("HI", function() end, fiction)   -- on earlier in the session: its handler stays
+      local later = probe()
+      wow.advance(30)
+      for _, record in ipairs({ fromLogin, later }) do
+        assert.same({ call = 'ns.Comm:Send("HI")', ok = false, r = { "<Shared fiction off>" } },
+          fact(record, 'ns.Comm:Send("HI")'))
+        assert.is_nil(fact(record, "CHAT_MSG_ADDON own HI"))
+      end
+      assert.same({}, wow.sent)
+      assert.equal(0, ns.Comm.stats.dropped)
+    end)
+
     it("records why Comm refused", function()
       ns.Settings:Set("Comm.share", false)
       local record = probe()
       assert.same({}, wow.sent)
       assert.same({ "false", "share" }, fact(record, 'ns.Comm:Send("HI")').r)
     end)
+  end)
+
+  it("records the home and instance group a battleground leaves, and sends no HI there alone", function()
+    start(SAVED, function()
+      wow.state.instanceGroup = true
+      for i = 1, 15 do wow.unit("raid" .. i, { guid = "Player-1-1" .. i, name = "Fighter" .. i }) end
+    end)
+    local record = probe()
+    assert.same({ "LE_PARTY_CATEGORY_HOME=1: false 0", "LE_PARTY_CATEGORY_INSTANCE=2: true 15" },
+      fact(record, "IsInGroup, GetNumGroupMembers (home, instance)").r)
+    assert.same({ "<not grouped>" }, fact(record, 'ns.Comm:Send("HI")').r)
+    assert.same({}, wow.sent)
   end)
 
   it("sends nothing outside a group", function()
