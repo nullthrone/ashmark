@@ -107,7 +107,7 @@ end
 
 local function sideName(conflict, side)
   local f = type(conflict[side]) == "table" and conflict[side].faction
-  if f == 0 then return L.HOUSE_UNNAMED end
+  if f == 0 then return L.CONFLICT_UNNAMED end
   return ns.Names.Faction(f)
 end
 
@@ -264,7 +264,7 @@ local function build(parent)
   empty:SetJustifyH("LEFT")
   empty:SetText(L.HOUSE_TAB_NONE)
 
-  parent.List = UI:List(body, { extent = EXTENT, init = initRow })
+  parent.List = UI:List(body, { extent = EXTENT, init = initRow, owner = House })
   parent.Heading, parent.Legacy, parent.Archetype, parent.Bars, parent.Empty = heading, legacy, archetype, bars, empty
   parent.Refresh = refresh
   return parent

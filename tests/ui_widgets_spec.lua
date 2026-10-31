@@ -128,6 +128,23 @@ describe("UI Widgets", function()
       assert.same({ "c" }, screen(box))
     end)
 
+    it("sets up each row through the error wrapper, under its owner, so one bad row spoils no other", function()
+      local owner = ns:NewService("WidgetsSpecOwner")
+      local box = UI:List(parent, {
+        owner = owner,
+        init = function(button, data)
+          if data.text == "bad" then error("broken row") end
+          button.text = data.text
+        end,
+      })
+      box:SetDataProvider(CreateDataProvider(rows("a", "bad", "c", "bad")))
+      assert.same({ "a", "c" }, screen(box))
+      assert.equal(4, #box.elements)
+      assert.equal(1, #wow.errors)
+      assert.truthy(wow.errors[1]:find("WidgetsSpecOwner (list:init)", 1, true))
+      wow.errors = {}
+    end)
+
     it("passes the caller's provider and scroll flag through while nothing is collapsed", function()
       local box = list()
       local provider = CreateDataProvider(rows({ header = true, text = "Desolace" }, "a"))

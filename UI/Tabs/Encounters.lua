@@ -161,7 +161,7 @@ local function build(parent)
   empty:SetPoint("RIGHT", -PAD, 0)
   empty:SetJustifyH("LEFT")
   empty:SetText(L.ENC_TAB_EMPTY)
-  parent.List = UI:List(body, { extent = EXTENT, init = initRow })
+  parent.List = UI:List(body, { extent = EXTENT, init = initRow, owner = Encounters })
   parent.Total, parent.Empty = total, empty
   parent.Refresh = refresh
   return parent

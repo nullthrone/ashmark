@@ -105,7 +105,9 @@ local function initElement(list, frame, data)
   end
 end
 
--- opts = { extent = n, init = function(button, data) end } -> scrollBox, dataProvider
+-- opts = { extent = n, init = function(button, data) end, owner = M } -> scrollBox, dataProvider
+-- Rows are set up while the player scrolls, outside any other wrapper, so each one runs through the
+-- error wrapper (3.6) under opts.owner (the tab's module), else under MainFrame.
 function UI:List(parent, opts)
   local box = CreateFrame("Frame", nil, parent, "WowScrollBoxList")
   box:SetPoint("TOPLEFT")
@@ -115,9 +117,12 @@ function UI:List(parent, opts)
   bar:SetPoint("BOTTOMLEFT", box, "BOTTOMRIGHT", BAR_GAP, 0)
 
   local list = { box = box, init = opts.init, collapsed = {}, setDataProvider = box.SetDataProvider }
+  local owner = opts.owner
   local view = CreateScrollBoxListLinearView()
   view:SetElementExtent(opts.extent or DEFAULT_EXTENT)
-  view:SetElementInitializer("Button", function(frame, data) initElement(list, frame, data) end)
+  view:SetElementInitializer("Button", function(frame, data)
+    ns:Call(owner or UI.MainFrame, "list:init", initElement, list, frame, data)
+  end)
   ScrollUtil.InitScrollBoxListWithScrollBar(box, bar, view)
 
   -- Callers keep passing their full rows (6.1); the list applies its collapsed headers to them.

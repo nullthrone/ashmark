@@ -116,7 +116,7 @@ local function build(parent)
   local empty = parent:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
   empty:SetPoint("TOPLEFT", body, "TOPLEFT", PAD, -PAD)
   empty:SetText(L.CONFLICT_TAB_EMPTY)
-  parent.List = UI:List(body, { extent = EXTENT, init = initRow })
+  parent.List = UI:List(body, { extent = EXTENT, init = initRow, owner = Conflicts })
   parent.Total, parent.Empty = total, empty
   parent.Refresh = refresh
   return parent
