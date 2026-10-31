@@ -183,7 +183,7 @@ describe("Campfire", function()
       wow.sounds = {}
       mock.sit(wow)
       mock.benefit(wow)
-      assert.same({ "Chapter I closes · somewhere" }, seen.notices)
+      assert.same({ "Chapter I closes · " .. ns.L.CORE_UNKNOWN_PLACE }, seen.notices)
       assert.same({}, wow.sounds)
     end)
   end)
