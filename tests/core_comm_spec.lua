@@ -2,6 +2,8 @@ local wow = require("tests.helpers.wow")
 
 local ME = "Player-1-00000001"
 local MIRA = "Player-1-00000002"
+local THALEN = "Player-1-00000003"
+local KEL = "Player-1-00000004"
 local HI = { MIRA, "OATHKEEPER", 1443, "RP", "1.0.0" }
 local RU = { "deadbeef", "ALLIANCE", 0, 100, 0, "OATHKEEPER", 92, 1443 }
 
@@ -285,11 +287,49 @@ describe("Core Comm", function()
     end)
 
     it("drops beyond 20 messages per sender per minute", function()
+      for _, budget in pairs(Comm.RECEIVE) do budget.burst, budget.every = 100, 0.01 end
       for _ = 1, 25 do hi(MIRA) end
       assert.equal(20, #got)
       wow.advance(60)
       hi(MIRA)
       assert.equal(21, #got)
+    end)
+
+    it("takes HI and PR at the greeting's pace: 3 at once, then 1 per 30 s, per sender and type", function()
+      for _ = 1, 5 do hi(MIRA) end
+      for _ = 1, 5 do receive("1|PR|" .. MIRA .. "|1|2|3") end
+      assert.equal(6, #got)
+      assert.equal(4, Comm.stats.limited)
+      wow.advance(29)
+      hi(MIRA)
+      assert.equal(6, #got)
+      wow.advance(2)
+      hi(MIRA)
+      hi(MIRA)
+      assert.equal(7, #got)
+      assert.equal("HI", got[7][1])
+      hi(THALEN, "Thalen-Forever")
+      assert.is_nil(got[8])
+      wow.unit("party2", { guid = THALEN, name = "Thalen" })
+      hi(THALEN, "Thalen-Forever")
+      assert.equal(THALEN, got[8][2].guid)
+      wow.advance(3600)
+      for _ = 1, 5 do hi(MIRA) end
+      assert.equal(11, #got)
+    end)
+
+    it("takes RU at the rumour rounds' pace: 10 at once, then 1 per 40 s", function()
+      hi(MIRA)
+      for _ = 1, 12 do ru() end
+      assert.equal(11, #got)
+      wow.advance(29)
+      ru()
+      assert.equal(11, #got)
+      wow.advance(12)
+      ru()
+      assert.equal(12, #got)
+      assert.equal("RU", got[12][1])
+      assert.equal(3, Comm.stats.limited)
     end)
 
     it("delivers to a handler's owner only while it is enabled", function()
@@ -306,6 +346,114 @@ describe("Core Comm", function()
       Comm:Register("HI", function() error("boom") end)
       assert.has_no.errors(function() hi(MIRA) end)
       assert.equal(1, #wow.errors)
+    end)
+  end)
+
+  describe("binding a GUID to its sender", function()
+    local function party(units)
+      for i, u in ipairs(units) do wow.unit("party" .. i, u) end
+    end
+
+    it("drops HI and PR whose sender's name belongs to another party member", function()
+      party({ { guid = MIRA, name = "Mira" }, { guid = THALEN, name = "Thalen" } })
+      boot()
+      hi(THALEN, "Mira-Forever")
+      receive("1|PR|" .. THALEN .. "|-100|0|0", "Mira-Forever")
+      assert.same({}, got)
+      assert.same({}, ns.DB:Char().state.senders)
+      hi(THALEN, "Thalen-Forever")
+      hi(MIRA, "Mira-Forever")
+      assert.equal(2, #got)
+      assert.same({ ["Thalen-Forever"] = THALEN, ["Mira-Forever"] = MIRA }, ns.DB:Char().state.senders)
+    end)
+
+    it("keeps the first sender of a GUID when names do not resolve, and one GUID per sender", function()
+      party({ { guid = MIRA, name = "Mira" }, { guid = THALEN, name = "Thalen" }, { guid = KEL, name = "Kel" } })
+      boot()
+      hi(THALEN, "Thalen-Vell")
+      hi(THALEN, "Mira-Vell")
+      hi(MIRA, "Mira-Vell")
+      hi(KEL, "Mira-Vell")
+      receive("1|PR|" .. THALEN .. "|-100|0|0", "Mira-Vell")
+      assert.same({ "HI", "HI" }, { got[1][1], got[2][1] })
+      assert.equal(2, #got)
+      assert.equal(THALEN, got[1][2].guid)
+      assert.same({ sender = "Mira-Vell", guid = MIRA, unit = "party1" }, got[2][2])
+      assert.same({ ["Thalen-Vell"] = THALEN, ["Mira-Vell"] = MIRA }, ns.DB:Char().state.senders)
+    end)
+
+    it("hands a GUID to the sender whose name resolves to it", function()
+      party({ { guid = MIRA, name = "Mira" }, { guid = THALEN, name = "Thalen" } })
+      boot()
+      hi(THALEN, "Someone-Vell")
+      ru("Someone-Vell")
+      assert.equal(2, #got)
+      hi(THALEN, "Thalen-Forever")
+      assert.equal(3, #got)
+      assert.same({ ["Thalen-Forever"] = THALEN }, ns.DB:Char().state.senders)
+      ru("Someone-Vell")
+      hi(THALEN, "Someone-Vell")
+      assert.equal(3, #got)
+    end)
+  end)
+
+  describe("the queue after the moment it was meant for", function()
+    local checks
+
+    local function count()
+      checks = 0
+      wow.stub("C_ChatInfo.InChatMessagingLockdown", function()
+        checks = checks + 1
+        return wow.state.chatLockdown
+      end)
+    end
+
+    it("is dropped once sharing is switched off", function()
+      group()
+      boot()
+      wow.state.chatLockdown = true
+      Comm:Send("HI", HI, "PARTY")
+      Comm:Send("RU", RU, "PARTY")
+      ns.Settings:Set("Comm.share", false)
+      wow.state.chatLockdown = false
+      wow.advance(5)
+      assert.same({}, wow.sent)
+      assert.equal(0, Comm:Queued())
+      assert.equal(2, Comm.stats.dropped)
+    end)
+
+    it("is dropped once the client cannot send", function()
+      group()
+      boot()
+      wow.state.chatLockdown = true
+      Comm:Send("HI", HI, "PARTY")
+      ns.Compat.Disable("canSend", "test")
+      wow.state.chatLockdown = false
+      wow.advance(5)
+      assert.same({}, wow.sent)
+      assert.equal(0, Comm:Queued())
+    end)
+
+    it("is dropped when the group ends, and its ticker stops", function()
+      group()
+      boot()
+      count()
+      wow.state.chatLockdown = true
+      Comm:Send("HI", HI, "PARTY")
+      Comm:Send("RU", RU, "PARTY")
+      wow.unit("party1", nil)
+      wow.fire("GROUP_ROSTER_UPDATE")
+      wow.advance(2)
+      assert.equal(0, Comm:Queued())
+      assert.equal(2, Comm.stats.dropped)
+      checks = 0
+      wow.advance(600)
+      assert.equal(0, checks)
+      wow.state.chatLockdown = false
+      wow.unit("party1", { guid = THALEN, name = "Thalen" })
+      wow.fire("GROUP_ROSTER_UPDATE")
+      wow.advance(2)
+      assert.same({}, wow.sent)
     end)
   end)
 

@@ -593,8 +593,21 @@ end
 
 -- Globals ------------------------------------------------------------------
 
+-- A unit token, or, as in the client, the name of a group member ("Name" on the player's realm,
+-- "Name-Realm" for a fixture with a realm field).
 local function unitOf(token)
-  return type(token) == "string" and wow.state.units[token] or nil
+  if type(token) ~= "string" then return nil end
+  local units = wow.state.units
+  if units[token] then return units[token] end
+  for _, group in ipairs({ { "party", 4 }, { "raid", 40 } }) do
+    for i = 1, group[2] do
+      local u = units[group[1] .. i]
+      if u and type(u.name) == "string" and token == (u.realm and u.name .. "-" .. u.realm or u.name) then
+        return u
+      end
+    end
+  end
+  return nil
 end
 
 local function nameReturns(u, api)
@@ -752,6 +765,13 @@ local function buildGlobals()
   G.IsInRaid = function() return count("raid", 40) > 0 end
   G.IsInGroup = function() return count("raid", 40) > 0 or count("party", 4) > 0 end
   G.GetNumSubgroupMembers = function() return count("party", 4) end
+  -- "Name-Realm" to "Name" for the player's realm; "short" drops any realm.
+  G.Ambiguate = function(name, context)
+    if type(name) ~= "string" then return name end
+    local base, realm = name:match("^([^%-]+)%-(.+)$")
+    if base and (context == "short" or realm == data.realm) then return base end
+    return name
+  end
   G.GetNumGroupMembers = function()
     local raid = count("raid", 40)
     if raid > 0 then return raid end

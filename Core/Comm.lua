@@ -13,11 +13,15 @@ local MAX_QUEUE = 30
 local TICK = 0.5
 local THROTTLE_PAUSE = 5
 local RATE_LIMIT, RATE_WINDOW = 20, 60
+-- Receive budget per sender and type, a little above what the protocol sends: Fiction greets at
+-- most every 30 s, Rumours sends at most 3 RU per 2 minutes (7.8, 7.9). burst, then 1 per `every` s.
+local RECEIVE = { HI = { burst = 3, every = 30 }, PR = { burst = 3, every = 30 }, RU = { burst = 10, every = 40 } }
+Comm.RECEIVE = RECEIVE           -- read at receive time; specs may widen it
 local MAX_SENDERS = 40
 local MAX_BAD_RESULTS = 3
 
 Comm.PREFIX = PREFIX
-Comm.stats = { sent = 0, rejected = 0, dropped = 0, results = {} }
+Comm.stats = { sent = 0, rejected = 0, dropped = 0, limited = 0, results = {} }
 local stats = Comm.stats
 
 -- Field rules (5.6): the same table validates sending and receiving. Each takes the wire
@@ -185,6 +189,8 @@ local function settle(item, code, now)
 end
 
 pump = function()
+  -- Sharing switched off, or sending lost, after a message was queued: it stays unsent (5.6).
+  if queue[1] and (ns.Settings:Get("Comm.share") ~= true or not ns.Compat.Has.canSend) then dropAll() end
   local now = GetTime()
   refill(now)
   while queue[1] and tokens >= 1 and not paused(now) do
@@ -216,7 +222,7 @@ end
 -- Receive -------------------------------------------------------------------
 
 local handlers = {}
-local rates = {}                 -- [sender] = { start, count }
+local rates = {}                 -- [sender] = { start, count, tokens = { [type] = n }, at = { [type] = t } }
 
 -- fn(from, fields, channel); with an owner, delivered only while it is enabled and errors count to it.
 function Comm:Register(kind, fn, owner)
@@ -236,14 +242,26 @@ local function partyUnit(guid)
   end
 end
 
-local function limited(sender, now)
+local function limited(sender, kind, now)
   local rate = rates[sender]
-  if not rate or now - rate.start >= RATE_WINDOW then
-    rate = { start = now, count = 0 }
+  if not rate then
+    rate = { start = now, count = 0, tokens = {}, at = {} }
     rates[sender] = rate
+  elseif now - rate.start >= RATE_WINDOW then
+    rate.start, rate.count = now, 0
   end
   rate.count = rate.count + 1
-  return rate.count > RATE_LIMIT
+  local budget = RECEIVE[kind]
+  local left = rate.tokens[kind]
+  left = left and math.min(budget.burst, left + (now - rate.at[kind]) / budget.every) or budget.burst
+  rate.at[kind] = now
+  if rate.count > RATE_LIMIT or left < 1 then
+    rate.tokens[kind] = left
+    stats.limited = stats.limited + 1
+    return true
+  end
+  rate.tokens[kind] = left - 1
+  return false
 end
 
 local function remember(s, sender, guid)
@@ -264,6 +282,35 @@ local function remember(s, sender, guid)
   senders[sender] = guid
 end
 
+-- The GUID the client resolves for the sender's name, if it does (group members' names work as
+-- unit tokens; the sender format on Forever is unverified, so this may be nil).
+local function senderGUID(sender)
+  local ok, name = Safe.Call(Ambiguate, sender, "none")
+  if not ok or type(name) ~= "string" then name = sender end
+  return Safe.UnitGUID(name)
+end
+
+-- HI and PR claim a GUID; the client names the sender. Accepted only if the sender's name does not
+-- resolve to another party member, and neither the sender nor the GUID is bound to someone else in
+-- the party. A sender whose name resolves to the claimed GUID takes the GUID over (5.6 step 6).
+local function owns(s, sender, guid)
+  local named = senderGUID(sender)
+  if named and named ~= guid and partyUnit(named) then return false end
+  local senders = s.senders
+  if named == guid then
+    for other, bound in pairs(senders) do
+      if bound == guid and other ~= sender then senders[other] = nil end
+    end
+    return true
+  end
+  local bound = senders[sender]
+  if bound and bound ~= guid and partyUnit(bound) then return false end
+  for other, g in pairs(senders) do
+    if g == guid and other ~= sender then return false end
+  end
+  return true
+end
+
 local function onMessage(_, _, prefix, text, channel, sender)
   if Safe.IsSecret(prefix) or prefix ~= PREFIX then return end
   if Safe.IsSecret(text) or Safe.IsSecret(channel) or Safe.IsSecret(sender) then return end
@@ -273,7 +320,7 @@ local function onMessage(_, _, prefix, text, channel, sender)
     stats.rejected = stats.rejected + 1
     return
   end
-  if limited(sender, GetTime()) then return end
+  if limited(sender, kind, GetTime()) then return end
   local s = state()
   if not s or sender == s.selfSender then return end
   local from = { sender = sender }
@@ -284,7 +331,7 @@ local function onMessage(_, _, prefix, text, channel, sender)
       return
     end
     from.unit = partyUnit(guid)
-    if not from.unit then return end
+    if not from.unit or not owns(s, sender, guid) then return end
     remember(s, sender, guid)
     from.guid = guid
   else
@@ -305,11 +352,14 @@ local function unlock()
   if queue[1] then pump() end
 end
 
+-- Leaving the group: messages queued for that party never reach the next one.
 local function onGroupChanged(_, _, inGroup)
   if inGroup then return end
   local s = state()
   if s then s.senders = {} end
   rates = {}
+  dropAll()
+  ns.Util.StopTicker("Comm")
 end
 
 -- PLAYER_LOGIN
