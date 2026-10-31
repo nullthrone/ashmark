@@ -452,16 +452,16 @@ td.wrap-ok { white-space: normal; }
           <li class="feature">
             <h3>Conflicts</h3>
             <p class="where"><span class="caps-column">In game</span>A line under the quest dialog · Decisions tab</p>
-            <p>Accepting or turning in a quest on one side of a conflict allies you with that side. Standing alone also decides it, once exactly one side's faction reaches the conflict's level (Honored in every pilot conflict). A quest that contradicts your side shows a red line under the dialog:</p>
+            <p>Accepting or turning in a quest on one side of a conflict allies you with that side. Standing alone also decides it, once exactly one side's faction reaches the conflict's level (Honored in every pilot conflict); one standing decides every conflict of that faction in a zone at once, with one line in the chronicle. A quest that contradicts your side shows a red line under the dialog:</p>
             <blockquote>Contradicts your alliance with {faction}.</blockquote>
-            <p>Ashmark cannot block the quest. Turning it in breaks your word: the chronicle and the Decisions tab record it and your alliance moves to the new side. There is no further penalty; the rewards you gave up are the consequence. The Decisions tab lists the conflicts by zone with both sides, the side taken and since when, how often it was broken, and your total of broken words. Ten pilot conflicts ship with v1.</p>
+            <p>Ashmark cannot block the quest. Turning it in breaks your word: the chronicle and the Decisions tab record it and your alliance moves to the new side. There is no further penalty; the rewards you gave up are the consequence. The Decisions tab lists the conflicts by zone, each under the title of its first quest with both sides, the side taken and since when, how often it was broken, and your total of broken words. Ten pilot conflicts ship with v1. Outside Zephras Isle, the Skyborne starting zone, the first of them begin around level 30 in Desolace.</p>
           </li>
           <li class="feature">
             <h3>Profile</h3>
             <p class="where"><span class="caps-column">In game</span>House tab · archetype in tooltips, the chronicle and rumours</p>
             <p>Three axes from −100 to 100, read from what you do. Every value halves over 30 days.</p>
             <ul>
-              <li><strong>Fidelity</strong>, principled to opportunistic: +2 per turn-in for your side, +5 for every 7 days an alliance holds, −25 per broken word (−15 once you are an opportunist), −2 per abandoned quest, −1 per 10 gold of loot beyond quest gold in a day (at most −5).</li>
+              <li><strong>Fidelity</strong>, principled to opportunistic: +2 per turn-in for your side, +5 for every 7 days an alliance holds (once for the alliances one standing formed together), −25 per broken word (−15 once you are an opportunist), −2 per abandoned quest, −1 per 10 gold of loot beyond quest gold in a day (at most −5).</li>
               <li><strong>Habitat</strong>, civil to wild: +1 per 10 minutes outdoors and not resting, −1 per 10 minutes in a rested area, +6 per rest at a camp, −1 per turn-in in a capital.</li>
               <li><strong>Mercy</strong>, merciful to ruthless: +1 for each calendar day you play without a kill, −3 per calm neutral creature killed, −2 per critter.</li>
             </ul>
@@ -471,7 +471,7 @@ td.wrap-ok { white-space: normal; }
           <li class="feature">
             <h3>World map</h3>
             <p class="where"><span class="caps-column">In game</span>World-map pins</p>
-            <p>Pins for conflicts (open, allied, broken), for the places where you broke your word and for the places where your chapters closed. Zone maps show all three; continent maps show conflicts only. Only you see them. Pins are placed after combat, never during it.</p>
+            <p>Pins for conflicts (open, allied, broken; the tooltip names the conflict by its first quest), for the places where you broke your word and for the places where your chapters closed. Zone maps show all three; continent maps show conflicts only. Only you see them. Pins are placed after combat, never during it.</p>
             <p class="muted">No pilot conflict has a map position yet, because the quest givers' coordinates are missing from the source data. Until they are added, the map shows broken words and chapters. Addons that replace the world map may not show the pins.</p>
           </li>
           <li class="feature">
@@ -506,7 +506,7 @@ td.wrap-ok { white-space: normal; }
             <p class="where"><span class="caps-column">In game</span>Chat lines</p>
             <p>Your alliances, broken words and turns from your house become rumours that travel from party to party among Ashmark users. A rumour you hear for the first time prints one chat line.</p>
             <blockquote>People say the Oathkeeper from Desolace has sided with {faction}.</blockquote>
-            <p>Each hop costs 30 percent of a rumour's strength. From the second hop the place is the continent; from the third the faction is gone. Strength halves every 3 days, and a rumour below 20 fades. A rumour names an archetype, the conflict's zone and a faction, never a character. Entering a zone can repeat one rumour about it or its continent: each rumour at most once a day, at most five rumour lines an hour. The module runs only while Shared fiction is on.</p>
+            <p>Each hop costs 30 percent of a rumour's strength. From the second hop the place is the continent; from the third the faction is gone. Strength halves every 3 days, and a rumour below 20 fades. A rumour names an archetype, the conflict's zone and a faction, never a character; but party members who hear one of your own rumours first know it is yours, because the game names the sender of every addon message. Entering a zone can repeat one rumour about it or its continent: each rumour at most once a day, at most five rumour lines an hour. The module runs only while Shared fiction is on.</p>
           </li>
           <li class="feature">
             <h3>Shared fiction</h3>
@@ -553,7 +553,8 @@ td.wrap-ok { white-space: normal; }
               <tr><td><code>/ashmark test</code></td><td>Run the self-test against this client, show the chronicle next to the quest dialog and take a screenshot. Out of combat only.</td></tr>
               <tr><td><code>/ashmark probe</code></td><td>Record raw facts about this client for the developers.</td></tr>
               <tr><td><code>/ashmark debug</code></td><td>Turn debug mode on or off for this session. In debug mode a malformed log entry raises a Lua error instead of being dropped or stripped.</td></tr>
-              <tr><td><code>/ashmark reset</code></td><td>After a confirmation, wipe this character's record.</td></tr>
+              <tr><td><code>/ashmark reset</code></td><td>After a confirmation, wipe this character's record, its meetings and its sightings of Ashmark users.</td></tr>
+              <tr><td><code>/ashmark reset &lt;name&gt;</code></td><td>After a confirmation, forget another character of this account that you deleted or moved. Several characters with that name are listed with their GUIDs; type <code>/ashmark reset &lt;GUID&gt;</code> for one. A name that matches no other character changes nothing.</td></tr>
               <tr><td><code>/ashmark reset others</code></td><td>After a confirmation, wipe every contact, peer and heard rumour on the account. Your own rumours stay.</td></tr>
             </tbody>
           </table>
@@ -604,19 +605,19 @@ td.wrap-ok { white-space: normal; }
             </tbody>
           </table>
         </div>
-        <p>Names, contacts, notes, peers, chat text and free text are never sent. A rumour carries no GUID and no name. Every field must match a fixed pattern and a message is at most 255 bytes; the sender refuses anything else and the receiver drops it. Ashmark accepts <code>HI</code> and <code>PR</code> only when the GUID belongs to a member of your party, <code>RU</code> only from a sender whose <code>HI</code> or <code>PR</code> it has accepted, and at most 20 messages per sender per minute. Its own queue stays under Blizzard's throttle.</p>
+        <p>Names, contacts, notes, peers, chat text and free text are never sent. A rumour carries no GUID and no name, but the game names the sender of every addon message, so party members who hear your own rumour first know it is yours. Every field must match a fixed pattern and a message is at most 255 bytes; the sender refuses anything else and the receiver drops it. Ashmark accepts <code>HI</code> and <code>PR</code> only when the GUID belongs to a member of your party and is not already bound to another sender, <code>RU</code> only from a sender whose <code>HI</code> or <code>PR</code> it has accepted, and at most 20 messages per sender per minute: 3 <code>HI</code> and 3 <code>PR</code> at once, then one of each per 30 seconds, and 10 <code>RU</code> at once, then one per 40 seconds. At most 6 new rumours per sender in 2 minutes are kept. Its own queue stays under Blizzard's throttle.</p>
         <p>Ashmark only receives when "Share with other Ashmark users" is off, on Forever trial and veteran accounts, which cannot send addon messages, and for the rest of a session in which three sends in a row fail with an unexpected result.</p>
         <h3>What is stored</h3>
         <p>One account-wide SavedVariable, <code>AshmarkDB</code>, in <code>_forever_\WTF\Account\&lt;ACCOUNT&gt;\SavedVariables\Ashmark.lua</code>. Characters are keyed by GUID; names are for display only. It holds:</p>
         <ul>
-          <li><strong>chars</strong>: per character, its name, surname, class, race, sex, faction, ruleset and level; the event log; chapters, first zone visits, alliances, profile, IDs of items held, group sessions (at most 200), a chosen house name and counters. The log is compacted at login and once it passes 4,000 entries: ordinary entries older than 180 days go, then the oldest ordinary entries until 3,000 remain. Chapters, levels, alliances, broken words and house turns are kept; first meetings are kept up to 2,000.</li>
+          <li><strong>chars</strong>: per character, its name, surname, class, race, sex, faction, ruleset and level; the event log; chapters, first zone visits, alliances, profile, IDs of items held, group sessions (at most 200), a chosen house name and counters. The log is compacted at login and once it passes 4,000 entries: ordinary entries older than 180 days by the realm's clock go, then the oldest ordinary entries until 3,000 remain, those the chronicle never shows first. Chapters, levels, alliances, broken words and house turns are kept; first meetings and sightings of Ashmark users are kept up to 2,000 together, sightings going first.</li>
           <li><strong>contacts</strong>: the people you grouped with, with your notes. Past 2,000, the oldest go, except those with a note or three meetings.</li>
           <li><strong>peers</strong>: up to 500 Ashmark users you met, with their archetype, origin, ruleset, addon version and profile.</li>
-          <li><strong>rumours</strong>: up to 200 rumours, your own included, and which peers have heard each.</li>
+          <li><strong>rumours</strong>: up to 200 rumours, your own included and kept before anyone else's, and which peers have heard each.</li>
           <li><strong>settings</strong>, <strong>traces</strong> (empty, reserved for v2) and <strong>dev</strong> (the last 10 test reports, 20 probe records and 20 blocked-action reports).</li>
         </ul>
         <h3>Reset</h3>
-        <p><code>/ashmark reset</code> deletes this character's record (log, chapters, alliances, profile, held items and sessions) and starts a new one. Contacts, peers and rumours belong to the account and stay, and contacts keep this character's meeting counts, so the Encounters tab still lists them. <code>/ashmark reset others</code> deletes contacts with their notes, peers and every rumour this account did not start. Both ask first in Ashmark's own dialog. To remove everything, delete <code>Ashmark.lua</code> and <code>Ashmark.lua.bak</code> from the SavedVariables folder while the game is closed.</p>
+        <p><code>/ashmark reset</code> deletes this character's record (log, chapters, alliances, profile, held items and sessions) and starts a new one. Contacts, peers and rumours belong to the account and stay, but they lose this character's share: its meeting counts in contacts and its sightings in peers. A contact that no other character met and that has no note goes. <code>/ashmark reset &lt;name&gt;</code> does the same for another character of the account that you deleted or moved, so it stops counting in its house; it never names the character you are playing. <code>/ashmark reset others</code> deletes contacts with their notes, peers and every rumour this account did not start. All three ask first in Ashmark's own dialog. To remove everything, delete <code>Ashmark.lua</code> and <code>Ashmark.lua.bak</code> from the SavedVariables folder while the game is closed.</p>
         <p>Saved data from a newer Ashmark is only read, never written. Data in a shape Ashmark does not know is kept untouched in <code>AshmarkDB.recovered</code>. When a new record starts, Ashmark says so. If the account used Ashmark before, its saved data did not load: do not reload or log out, quit the game and replace <code>Ashmark.lua</code> with <code>Ashmark.lua.bak</code> before the next login.</p>
       </div>
     </div>
@@ -725,11 +726,12 @@ td.wrap-ok { white-space: normal; }
             </tbody>
           </table>
         </div>
-        <pre><code>python3 tools/conflicts.py           # validate and write Data/Conflicts.lua
-python3 tools/conflicts.py --check   # validate; fail if Data/Conflicts.lua is stale (CI)</code></pre>
-        <p>The validator refuses a header that differs from these columns, a value outside its rule, a source that is not https, a missing <code>quest_name</code>, a quest listed twice, rows of one conflict that disagree, a side with two factions or without quests, two sides with the same faction, <code>honored</code> without a faction and partial anchors. Commit the CSV and the generated <code>Data/Conflicts.lua</code> together, and never edit the generated file by hand.</p>
+        <pre><code>python3 tools/conflicts.py           # validate, write Data/Conflicts.lua, register new ids in registry.csv
+python3 tools/conflicts.py --check   # validate; fail if Data/Conflicts.lua or registry.csv is stale (CI)</code></pre>
+        <p>The validator refuses a header that differs from these columns, a value outside its rule, a source that is not https, a missing <code>quest_name</code>, a quest listed twice, rows of one conflict that disagree, a side with two factions or without quests, two sides with the same faction, <code>honored</code> without a faction and partial anchors. Commit the CSVs, <code>registry.csv</code> and the generated <code>Data/Conflicts.lua</code> together, and never edit the generated file by hand.</p>
+        <p>Conflict ids and sides are permanent once generated, because players' alliances are stored under them. <code>registry.csv</code> lists every id ever generated with each side's faction and quests, and the generator refuses data that drops an id, gives a side another faction or moves a quest to the other side. Rename or retire an id only with a row in <code>renamed.csv</code> (<code>old_id,new_id,reason</code>); stored alliances follow a rename, and a retired id is never reused.</p>
         <p>Every row stays <code>verified = false</code> until it is checked in the client. The Conflicts test check reads every quest title and faction name from the client, so a run of <code>/ashmark test</code> shows which IDs resolve.</p>
-        <p>Provenance: the pilot set was researched on 30 and 31 October 2026 from Wowhead's Forever database and re-checked quest by quest. It holds 10 conflicts: Gelkis against Magram in Desolace and Shen'dralas (six), Booty Bay against the Bloodsail Buccaneers in Stranglethorn Vale (two) and the Windshapers against the High Order on Zephras Isle (two). The classic starter zones yielded no quest pairs whose texts oppose each other. Format details: <a href="https://github.com/nullthrone/ashmark/blob/main/data/conflicts/README.md">data/conflicts/README.md</a>.</p>
+        <p>Provenance: the pilot set was researched on 30 and 31 October 2026 from Wowhead's Forever database and re-checked quest by quest. It holds 10 conflicts: Gelkis against Magram in Desolace and Shen'dralas (six), Booty Bay against the Bloodsail Buccaneers in Stranglethorn Vale (two) and the Windshapers against the High Order on Zephras Isle (two). The classic starter zones yielded no quest pairs whose texts oppose each other, so outside Zephras Isle the first conflicts begin around level 30; conflicts below that level are the most wanted contribution. Format details: <a href="https://github.com/nullthrone/ashmark/blob/main/data/conflicts/README.md">data/conflicts/README.md</a>.</p>
       </div>
     </div>
   </div>
@@ -751,8 +753,8 @@ UI/        main window, dialog, notice, chat line, compartment; Tabs/ for the fo
 Data/      Conflicts.lua, generated from data/conflicts/
 Modules/   Conflicts Profile Map Encounters House Campfire Knowledge Fiction Rumours Traces
 Dev/       TestMode.lua Probe.lua
-data/      conflict source CSVs                               not shipped
-tools/     conflicts.py, toc_check.py                         not shipped
+data/      conflict source CSVs, registry.csv, renamed.csv    not shipped
+tools/     conflicts.py, test_conflicts.py, toc_check.py      not shipped
 tests/     busted specs and the WoW mock                      not shipped
 docs/      ARCHITECTURE.md DECISIONS.md research/ index.html  not shipped</code></pre>
         <h3>Architecture</h3>
@@ -761,8 +763,9 @@ docs/      ARCHITECTURE.md DECISIONS.md research/ index.html  not shipped</code>
 <pre><code>luacheck .                            # lint, Lua 5.1, configured in .luacheckrc
 busted                                # specs under Lua 5.1, configured in .busted
 python3 tools/conflicts.py --check    # conflict data is current
+python3 -B -m unittest discover -s tools -p "test_*.py"   # the generator's own specs
 python3 tools/toc_check.py --strict   # both TOCs agree, and every listed file exists</code></pre>
-        <p>CI (<code>.github/workflows/ci.yml</code>) runs these four on every push to <code>main</code> and on every pull request, on Ubuntu 24.04 with Lua 5.1, luacheck and busted from LuaRocks.</p>
+        <p>CI (<code>.github/workflows/ci.yml</code>) runs these five on every push and on every pull request, on Ubuntu 24.04 with Lua 5.1, luacheck and busted from LuaRocks.</p>
         <h3>Ownership</h3>
         <p>Every file belongs to exactly one unit, listed in section 9 of the architecture. A unit that needs a change in a file it does not own asks for it instead of making it, and adds files only as its own specs and mocks. Both TOCs list every file from the start, so no unit edits them.</p>
         <h3>Release</h3>
