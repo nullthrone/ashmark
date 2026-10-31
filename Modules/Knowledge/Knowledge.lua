@@ -130,13 +130,13 @@ local function queueCarried()
   ns.Util.Debounce("Knowledge.carried", SCAN_DELAY, scanLater)
 end
 
--- Every Enum.BagIndex value whose key names the character's bank (Bank, BankBag_n, CharacterBankTab_n),
--- without the account bank.
+-- Every Enum.BagIndex value whose key names the character's bank, without the account bank. Ignoring case,
+-- because the client spells its keys both ways (BankBag_1, Bankbag, Reagentbank, Accountbanktab).
 local function bankContainers(index)
   local list = {}
   for key, value in pairs(index) do
-    if type(key) == "string" and type(value) == "number" and key:find("Bank", 1, true)
-      and not key:find("Account", 1, true) then
+    local lower = type(key) == "string" and key:lower()
+    if lower and type(value) == "number" and lower:find("bank", 1, true) and not lower:find("account", 1, true) then
       list[#list + 1] = value
     end
   end
@@ -364,15 +364,18 @@ local function checkSecret()
   return #failed == 0, table.concat(parts, "; ")
 end
 
+local function shown(fs)
+  local text = fs and fs:GetText()
+  if Safe.IsSecret(text) then return "<secret>" end
+  if text ~= nil and text ~= "" then return tostring(text) end
+end
+
 -- The texts of the lines conceal kept, with the right text after a slash.
 local function keptLines(tip, last)
   local name, out = tip:GetName(), {}
   for i = 1, last do
-    local left, right = _G[name .. "TextLeft" .. i], _G[name .. "TextRight" .. i]
-    local l, r = left and left:GetText(), right and right:GetText()
-    if (l ~= nil and l ~= "") or Safe.IsSecret(l) then
-      out[#out + 1] = (r ~= nil and r ~= "") and (str(l) .. " / " .. str(r)) or str(l)
-    end
+    local left, right = shown(_G[name .. "TextLeft" .. i]), shown(_G[name .. "TextRight" .. i])
+    if left then out[#out + 1] = right and (left .. " / " .. right) or left end
   end
   return table.concat(out, " | ")
 end
@@ -390,8 +393,12 @@ local function checkSample()
   local n = tip:NumLines()
   local last = _G[tip:GetName() .. "TextLeft" .. n]
   local marked = done and hidden ~= nil and last ~= nil and last:GetText() == L.KNOW_UNKNOWN
-  local detail = marked and string.format("item %d: %d of %d lines hidden, kept %s", id, hidden, n - 2,
-    keptLines(tip, n - 1)) or string.format("item %d: %s", id, done and "left untouched" or ("raised " .. str(hidden)))
+  local detail
+  if marked then
+    detail = string.format("item %d: %d of %d lines hidden, kept %s", id, hidden, n - 2, keptLines(tip, n - 1))
+  else
+    detail = string.format("item %d: %s", id, done and "left untouched" or ("raised " .. str(hidden)))
+  end
   tip:Hide()
   return marked and hidden > 0, detail .. "; " .. summary()
 end

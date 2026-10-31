@@ -244,17 +244,20 @@ describe("Knowledge", function()
       assert.same({}, mock.entries(ns))
     end)
 
-    it("takes every key with Bank but not Account from Enum.BagIndex", function()
-      wow.stub("Enum.BagIndex", { Backpack = 0, ReagentBag = 5, CharacterBankTab_1 = 6, CharacterBankTab_2 = 7,
-                                  AccountBankTab_1 = 12 })
+    it("takes every key with Bank but not Account from Enum.BagIndex, in either spelling", function()
+      wow.stub("Enum.BagIndex", { Backpack = 0, ReagentBag = 5, CharacterBankTab_1 = 6, Reagentbank = -3,
+                                  Bankbag = -4, AccountBankTab_1 = 12, Accountbanktab = -5 })
       mock.bag(wow, 6, 98, SPEAR)
-      mock.bag(wow, 7, 98, HAUBERK)
+      mock.bag(wow, -3, 98, HAUBERK)
+      mock.bag(wow, -4, 7, MACE)
       mock.bag(wow, 12, 98, CLOTH)
+      mock.bag(wow, -5, 98, 777)
       boot()
       openBank()
-      assert.is_number(knowledge().held[SPEAR])
-      assert.is_number(knowledge().held[HAUBERK])
-      assert.is_nil(knowledge().held[CLOTH])
+      local held = knowledge().held
+      for _, id in ipairs({ SPEAR, HAUBERK, MACE }) do assert.is_number(held[id], id) end
+      assert.is_nil(held[CLOTH])
+      assert.is_nil(held[777])
     end)
   end)
 
