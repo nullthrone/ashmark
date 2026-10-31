@@ -10,7 +10,7 @@ Research for Embertale v1, run on 2026-10-30, five days before the Forever launc
 | TOC | Game type `forever` (alias `camelot`), suffix `_Forever.toc` / `_Camelot.toc`, Interface `16001` on beta and test. The live interface number is unpublished. | Ship a Forever TOC with `16001`; confirm at launch with `/dump select(4, GetBuildInfo())`. |
 | Runtime detection | `WOW_PROJECT_ID == WOW_PROJECT_CAMELOT` (18) per warcraft.wiki.gg; Questie instead checks an interface range 16000–16999. | Guard with both; refuse to run outside Forever. |
 | Restrictions | Midnight's addon restrictions, including secret values, are active (developer Discord post via warcraft.wiki.gg). The combat log is closed to addons. Chat sender names and texts can be secret in dungeons and raids. | No combat-log input for the profile. Every unit-name read goes through `issecretvalue` / `canaccessvalue`. Snapshot party rosters in the open world. |
-| Addon messages | `C_ChatInfo.SendAddonMessage`: prefix ≤ 16, message ≤ 255, 10 messages per prefix, regenerating 1 per second. Trial and veteran accounts cannot send. Whether `CHANNEL` works on Forever is unknown. | Own throttle under Blizzard's limit; receive-only mode for accounts that cannot send; rumours over PARTY, RAID, GUILD, WHISPER first. |
+| Addon messages | `C_ChatInfo.SendAddonMessage`: prefix ≤ 16, message ≤ 255, 10 messages per prefix, regenerating 1 per second. Trial and veteran accounts cannot send. Whether `CHANNEL` works on Forever is unknown. | Own throttle under Blizzard's limit; receive-only mode for accounts that cannot send; v1 sends over PARTY only (ARCHITECTURE 5.6), so rumours travel from group to group. |
 | Groups | No retail Dungeon Finder. Forever has a Classic-style Group Finder listing board; groups form by whisper and invite. | Module 4 records party and raid rosters from any source, not from a queue. |
 | Names | Characters have a first name and a surname. Only the full name is unique per region; unrelated players can share a surname. Shipped Forever addons read the surname as the second return of `UnitName` (unverified). | House = alts of this account that share a surname, discovered from account-wide SavedVariables. Primary key is the player GUID; names are display only. |
 | SavedVariables | Per-character folder layout under `WTF` is unknown (first names are not unique). A beta bug that dropped SavedVariables was fixed in build 70009. | Account-wide SavedVariables only, keyed by GUID. Never overwrite stored data with defaults when a load returns nil. |
@@ -41,7 +41,8 @@ The test mode answers these in one run. Commands are for the Forever client.
 | Hidden item state | `C_Item.GetItemInfo`, `GET_ITEM_INFO_RECEIVED` success flag for an unrevealed item ID |
 | Gelkis / Magram exclusivity | `C_Reputation.GetFactionDataByID(92)` and `(93)` before and after quest `1368` |
 | Legacy | `C_MajorFactions.GetMajorFactionData(2802)`, `C_Reputation.GetFactionDataByID(2802)` |
-| Map pins | `WorldMapFrame.AddDataProvider`, `C_Map.GetMapInfo(2652)` |
+| Map pins | `WorldMapFrame.AddDataProvider`, `C_Map.GetMapInfo(2652)`. The test mode's `Conflicts.data` check and `/ashmark probe` record `C_Map.GetMapInfo` for every conflict zone and anchor map. |
+| Bag item count | `/dump C_Item.GetItemCount(<itemID>)` for an item in the bags returns a number. Knowledge counts a bag item as held through it before the bag scan has run; without it that fix does nothing. |
 | Screenshot from addon code | `Screenshot()` with `SCREENSHOT_SUCCEEDED` / `SCREENSHOT_FAILED` |
 | Blizzard UI source | Launch with `-console`, then `exportInterfaceFiles code` and `exportInterfaceFiles art` at the login screen |
 
