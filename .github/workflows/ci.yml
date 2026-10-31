@@ -27,5 +27,5 @@ jobs:
       - name: Conflict data is current
         run: python3 tools/conflicts.py --check
 
-      - name: TOC files agree
-        run: python3 tools/toc_check.py
+      - name: TOC files agree and list only existing files
+        run: python3 tools/toc_check.py --strict
