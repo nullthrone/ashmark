@@ -180,6 +180,61 @@ describe("Profile", function()
       assert.equal(5, char.profile.raw.fidelity)
     end)
 
+    describe("held in conflicts the dataset changed", function()
+      local ME = "Player-1-00000001"
+
+      local function data()
+        local d = mock.data()
+        d.list[2] = { id = "clan_raid", zone = 1443, theme = "feud",
+                      A = { faction = 92, quests = { 1101 } }, B = { faction = 93, quests = { 2101 } } }
+        return d
+      end
+
+      -- Alliances stored 7 days ago; the first day roll after login settles them.
+      local function held(allied, began, kept)
+        local since = wow.state.epoch - 7 * DAY
+        local conflicts = { allied = allied, since = {}, began = began }
+        for id in pairs(allied) do conflicts.since[id] = since end
+        wow.saved({ schema = 1, chars = { [ME] = { guid = ME, name = "Aren", conflicts = conflicts,
+          profile = { raw = {}, kept = kept or {}, day = { key = "2000-01-01" } } } } })
+      end
+
+      it("earns one award for alliances one standing formed together", function()
+        held({ clan_choice = "A", clan_raid = "A" }, { clan_choice = 4, clan_raid = 4 })
+        mock.boot(wow, { data = data() })
+        local char = wow.ns.DB:Char()
+        assert.equal(5, char.profile.raw.fidelity)
+        assert.is_number(char.profile.kept.clan_choice)
+        assert.is_number(char.profile.kept.clan_raid)
+      end)
+
+      it("earns one award each for alliances formed apart", function()
+        held({ clan_choice = "A", clan_raid = "B" }, { clan_choice = 4, clan_raid = 9 })
+        mock.boot(wow, { data = data() })
+        assert.equal(10, wow.ns.DB:Char().profile.raw.fidelity)
+      end)
+
+      it("earns nothing for a conflict the dataset retired", function()
+        held({ clan_choice = "A", gone = "A" }, { clan_choice = 4, gone = 7 })
+        mock.boot(wow, { data = data() })
+        local p = wow.ns.DB:Char().profile
+        assert.equal(5, p.raw.fidelity)
+        assert.is_nil(p.kept.gone)
+      end)
+
+      it("moves kept to the current id of a renamed conflict, keeping its cadence", function()
+        local d = data()
+        d.renamed = { old_choice = "clan_choice" }
+        local awarded = wow.state.epoch - 3 * DAY
+        held({ old_choice = "A" }, { old_choice = 4 }, { old_choice = awarded })
+        mock.boot(wow, { data = d })
+        local p = wow.ns.DB:Char().profile
+        assert.equal(awarded, p.kept.clan_choice)
+        assert.is_nil(p.kept.old_choice)
+        assert.equal(0, p.raw.fidelity)
+      end)
+    end)
+
     it("counts the 7 days again from a violation", function()
       local char = boot()
       mock.accept(wow, 1001)

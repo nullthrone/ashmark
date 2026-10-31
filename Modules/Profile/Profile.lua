@@ -16,7 +16,7 @@ local L = ns.L
 local WEIGHTS = {
   fidelity = {
     turnin = 2,             -- a turn-in on the side this character was allied with before it
-    kept = 5,               -- an alliance held 7 days since it began or since its last award
+    kept = 5,               -- an alliance held 7 days since it began or since its last award (one per standing)
     violation = -25,
     switched = -15,         -- a violation written with o == 1 (the opportunist wording)
     abandon = -2,
@@ -250,22 +250,37 @@ end
 
 -- Days and the ticker -------------------------------------------------------------------
 
+-- A conflict the shipped dataset no longer has (retired in data/conflicts/renamed.csv) earns nothing.
+-- Without the dataset or the Conflicts unit nothing can tell, and every stored alliance counts.
+local function retired(id)
+  local data, service = ns.Data and ns.Data.Conflicts, ns.Conflicts
+  if type(data) ~= "table" or type(data.list) ~= "table" or not (service and service.Get) then return false end
+  local ok, conflict = Safe.Call(service.Get, service, id)
+  return ok and conflict == nil
+end
+
 -- Alliances held 7 days since since[C] or the last award, whichever is later; at most one award each per day.
 -- kept[C] marks the end of the 7 days awarded, not the roll, so a late day roll never stretches the next ones.
+-- Alliances one standing formed together share began[C] (7.1 rule 2) and earn one award between them.
 local function keptAlliances(char, p, now)
   local rec = type(char.conflicts) == "table" and char.conflicts
   local allied = rec and type(rec.allied) == "table" and rec.allied
   local since = rec and type(rec.since) == "table" and rec.since
   if not (allied and since) then return 0 end
-  local count = 0
+  local began = type(rec.began) == "table" and rec.began or {}
+  local awarded, count = {}, 0
   for id, side in pairs(allied) do
     local from = since[id]
-    if (side == "A" or side == "B") and type(from) == "number" then
+    if (side == "A" or side == "B") and type(from) == "number" and not retired(id) then
       local last = p.kept[id]
       if type(last) == "number" and last > from then from = last end
       if now - from >= KEPT_AFTER then
         p.kept[id] = from + math.floor((now - from) / KEPT_AFTER) * KEPT_AFTER
-        count = count + 1
+        local group = type(began[id]) == "number" and began[id] or id
+        if not awarded[group] then
+          awarded[group] = true
+          count = count + 1
+        end
       end
     end
   end
@@ -512,7 +527,29 @@ end
 
 -- Lifecycle ---------------------------------------------------------------------------------
 
+-- Every character's kept[C] follows a conflict the dataset renamed, as Conflicts moves allied and since,
+-- so the next award keeps its cadence. A current id already stored keeps its value.
+local function followRenames()
+  local data = ns.Data and ns.Data.Conflicts
+  local renamed = type(data) == "table" and data.renamed
+  local chars = type(AshmarkDB) == "table" and AshmarkDB.chars
+  if type(renamed) ~= "table" or ns.DB.readOnly or type(chars) ~= "table" then return end
+  for _, char in pairs(chars) do
+    local p = type(char) == "table" and char.profile
+    local kept = type(p) == "table" and p.kept
+    if type(kept) == "table" then
+      for old, new in pairs(renamed) do
+        if kept[old] ~= nil and type(new) == "string" then
+          if kept[new] == nil then kept[new] = kept[old] end
+          kept[old] = nil
+        end
+      end
+    end
+  end
+end
+
 function M:OnInitialize()
+  followRenames()
   ns.Log:RegisterKind("kill.neutral", { fields = {} })
   ns.Log:RegisterKind("kill.critter", { fields = {} })
   ns.Test:Register("Profile.axes", checkAxes)
