@@ -296,6 +296,45 @@ describe("Core Log", function()
     end)
   end)
 
+  -- The mock's skew moves the system clock (time(), date()) away from the realm's (GetServerTime).
+  describe("clocks", function()
+    local function play(sessions, kind)
+      for _ = 1, sessions do
+        ns.Log:Add(kind, {})
+        ns.Log:Add(kind, {})
+        ns = wow.reload()
+      end
+      return ns.DB:Char()
+    end
+
+    it("stamps entries and chapters by the realm's clock, the one that ages them", function()
+      wow.state.skew = -200 * DAY
+      boot()
+      local entry = Log:Add("test.plain", {})
+      assert.equal(GetServerTime(), entry.t)
+      assert.equal(GetServerTime(), Log:CloseChapter().closed)
+    end)
+
+    it("closes no chapter at every login while the system clock runs 8 days behind the realm", function()
+      wow.state.skew = -8 * DAY
+      boot()
+      local char = play(4, "death")
+      assert.same({}, char.chapters)
+      assert.equal(8, #char.log)
+    end)
+
+    it("deletes nothing a session wrote while the system clock runs 181 days behind or ahead", function()
+      for _, skew in ipairs({ -181 * DAY, 400 * DAY }) do
+        wow.reset()
+        wow.state.skew = skew
+        boot()
+        local char = play(3, "death")
+        assert.equal(6, #char.log)
+        assert.same({}, char.chapters)
+      end
+    end)
+  end)
+
   describe("chapters", function()
     it("returns nil for an empty open chapter", function()
       boot()

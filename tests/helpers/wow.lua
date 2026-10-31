@@ -500,7 +500,8 @@ local CLASSES = {
 
 local function defaultState()
   return {
-    epoch = 1790000000,          -- time()
+    epoch = 1790000000,          -- GetServerTime(), the realm's clock
+    skew = 0,                    -- seconds the system clock (time(), date()) runs ahead of the realm's
     uptime = 5000,               -- GetTime()
     locale = "enUS",
     loggedIn = false,
@@ -517,6 +518,8 @@ local function defaultState()
     map = nil,                   -- C_Map.GetBestMapForUnit("player")
     pos = nil,                   -- { x = 0..1, y = 0..1 } or a secret
     instance = nil,              -- { name, type = "party", instanceID = 389 } while inside
+    instanceGroup = false,       -- the unit tokens name an instance group (a battleground's raid)
+    homeGroup = nil,             -- { size, raid } of the home group behind an instance group
     money = 0,
     resting = false,
     outdoors = true,
@@ -664,8 +667,8 @@ local function buildGlobals()
   G.CopyTable = function(t) return deepcopy(t) end
   G.Round = function(v) return math.floor(v + 0.5) end
   G.Clamp = function(v, lo, hi) return math.min(math.max(v, lo), hi) end
-  G.time = function(t) if t then return os.time(t) end return math.floor(state.epoch) end
-  G.date = function(fmt, t) return os.date(fmt, t or math.floor(state.epoch)) end
+  G.time = function(t) if t then return os.time(t) end return math.floor(state.epoch + (state.skew or 0)) end
+  G.date = function(fmt, t) return os.date(fmt, t or math.floor(state.epoch + (state.skew or 0))) end
   G.GetTime = function() return state.uptime end
   G.GetServerTime = function() return math.floor(state.epoch) end
   G.debugstack = function() return debug.traceback("", 2) end
@@ -762,8 +765,27 @@ local function buildGlobals()
   end
   G.UnitInParty = function(t) return unitOf(t) ~= nil and (t == "player" or count("party", 4) > 0) end
   G.UnitInRaid = function(t) return unitOf(t) ~= nil and count("raid", 40) > 0 or nil end
-  G.IsInRaid = function() return count("raid", 40) > 0 end
-  G.IsInGroup = function() return count("raid", 40) > 0 or count("party", 4) > 0 end
+  -- The unit tokens name the active group: the instance group while state.instanceGroup is set (a
+  -- battleground), else the home group. Without a category the client answers for the active group.
+  G.LE_PARTY_CATEGORY_HOME, G.LE_PARTY_CATEGORY_INSTANCE = 1, 2
+  local function group(category)
+    local raid, party = count("raid", 40), count("party", 4)
+    local size, isRaid = raid > 0 and raid or (party > 0 and party + 1 or 0), raid > 0
+    if state.instanceGroup then
+      if category ~= G.LE_PARTY_CATEGORY_HOME then return size, isRaid end
+      local home = state.homeGroup
+      return home and home.size or 0, home and home.raid == true or false
+    end
+    if category == G.LE_PARTY_CATEGORY_INSTANCE then return 0, false end
+    return size, isRaid
+  end
+  G.IsInRaid = function(category) local _, raid = group(category) return raid end
+  G.IsInGroup = function(category)
+    if category == nil then
+      return group(G.LE_PARTY_CATEGORY_HOME) > 0 or group(G.LE_PARTY_CATEGORY_INSTANCE) > 0
+    end
+    return group(category) > 0
+  end
   G.GetNumSubgroupMembers = function() return count("party", 4) end
   -- "Name-Realm" to "Name" for the player's realm; "short" drops any realm.
   G.Ambiguate = function(name, context)
@@ -772,12 +794,7 @@ local function buildGlobals()
     if base and (context == "short" or realm == data.realm) then return base end
     return name
   end
-  G.GetNumGroupMembers = function()
-    local raid = count("raid", 40)
-    if raid > 0 then return raid end
-    local party = count("party", 4)
-    return party > 0 and party + 1 or 0
-  end
+  G.GetNumGroupMembers = function(category) return (group(category)) end
 
   -- Places
   G.IsInInstance = function()

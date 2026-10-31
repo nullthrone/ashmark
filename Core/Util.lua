@@ -43,9 +43,9 @@ function Util.Trim(s)
   return (s:gsub("^%s+", ""):gsub("%s+$", ""))
 end
 
--- Seconds since the epoch by the realm's clock where the client offers it, else the system clock. Ageing
--- and decay (log compaction, profile axes, rumour strength) read this, so a system date set ahead or back
--- neither wipes history nor freezes it.
+-- Seconds since the epoch by the realm's clock where the client offers it, else the system clock. Log
+-- stamps and everything aged against them (compaction, the automatic chapter, kept alliances), profile decay
+-- and rumour strength read this, so a system date set ahead or back neither wipes history nor freezes it.
 function Util.Now()
   if type(GetServerTime) == "function" then
     local ok, now = pcall(GetServerTime)

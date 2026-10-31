@@ -48,6 +48,12 @@ local function scheduleCompact()
   end)
 end
 
+-- Entries are stamped and aged by one clock, the realm's where the client offers it (ns.Util.Now), so a
+-- wrong system date neither deletes history nor closes a chapter at every login (4.2).
+local function clock()
+  return ns.Util.Now()
+end
+
 -- before(entry) runs after the append and before LOG_ADDED (CloseChapter stores its record there).
 local function write(kind, fields, opts, before)
   if not ns.ready or ns.DB.readOnly then return nil end
@@ -73,7 +79,7 @@ local function write(kind, fields, opts, before)
     end
   end
   local n = char.seq + 1
-  entry.n, entry.t, entry.k = n, time(), kind
+  entry.n, entry.t, entry.k = n, clock(), kind
   if not (opts and opts.noWhere) then
     local w = ns.Where()
     entry.m, entry.x, entry.y, entry.i = w.m, w.x, w.y, w.i
@@ -155,12 +161,6 @@ local function isKeep(entry)
   return spec and spec.keep and true or false
 end
 
--- Compaction ages entries by the server's clock where the client offers it, so a wrong system
--- date cannot delete history (4.2).
-local function clock()
-  return ns.Util.Now()
-end
-
 -- Drops stay[i] for the oldest entries that pass test(i), until count(dropped) reaches excess.
 local function dropOldest(log, stay, excess, test)
   local dropped = 0
@@ -179,8 +179,9 @@ function Log:Compact(char)
   local log, now = char.log, clock()
   local stay, keepKind = {}, {}
   local nKeep, nOther = 0, 0
-  -- An entry is never younger than one written before it: a session stamped by a clock set back
-  -- ages from the entries before it, not from its own date.
+  -- An entry never counts as older than one written before it, so a session stamped by a system clock set
+  -- back (where the realm's clock is missing, or in a log from before stamps used it) ages from the entries
+  -- before it, not from its own date.
   local newest = 0
   for i, entry in ipairs(log) do
     local t = tonumber(entry.t) or 0
