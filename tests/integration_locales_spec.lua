@@ -57,25 +57,29 @@ describe("Integration in every locale", function()
     wow.reset()
   end)
 
-  it("names a Notes line for every translated locale in both TOCs, in order, after ## Notes", function()
-    local expected = {}
-    for _, code in ipairs(LOCALES) do
-      if code ~= "enUS" then expected[#expected + 1] = "## Notes-" .. code end
-    end
-    for _, toc in ipairs(TOCS) do
-      local lines, notes, at = headers(toc), {}, nil
-      for i, line in ipairs(lines) do
-        if line:match("^## Notes:") then at = i end
-        local tag, text = line:match("^(## Notes%-%a+):%s*(.*)$")
-        if tag then
-          assert.is_true(text ~= "", tag)
-          assert.equal(at + #notes + 1, i, tag .. " in " .. toc)
-          notes[#notes + 1] = tag
+  -- The addon list shows Notes and groups by Category as the client's locale names them.
+  for _, field in ipairs({ "Notes", "Category" }) do
+    it("names a " .. field .. " line for every translated locale in both TOCs, in order, after ## " .. field,
+      function()
+        local expected = {}
+        for _, code in ipairs(LOCALES) do
+          if code ~= "enUS" then expected[#expected + 1] = "## " .. field .. "-" .. code end
         end
-      end
-      assert.same(expected, notes, toc)
-    end
-  end)
+        for _, toc in ipairs(TOCS) do
+          local lines, found, at = headers(toc), {}, nil
+          for i, line in ipairs(lines) do
+            if line:match("^## " .. field .. ":") then at = i end
+            local tag, text = line:match("^(## " .. field .. "%-%a+):%s*(.*)$")
+            if tag then
+              assert.is_true(text ~= "", tag)
+              assert.equal(at + #found + 1, i, tag .. " in " .. toc)
+              found[#found + 1] = tag
+            end
+          end
+          assert.same(expected, found, toc)
+        end
+      end)
+  end
 
   for _, code in ipairs(LOCALES) do
     it(code .. " loads as the active locale and plays the integration flow without an error", function()
