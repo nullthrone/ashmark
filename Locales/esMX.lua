@@ -19,7 +19,7 @@ L.CORE_SV_NEW = "Se inició un nuevo registro. Si ya usaste Ashmark en esta cuen
   .. "Ashmark.lua.bak en WTF\\Account\\<cuenta>\\SavedVariables\\ antes de volver a iniciar sesión."
 L.CORE_SV_NEWER = "Estos datos guardados provienen de una versión más reciente de Ashmark. Ashmark solo los "
   .. "leerá hasta que lo actualices."
-L.CORE_SV_RECOVERED = "Los datos guardados no tenían una forma que Ashmark reconozca. Se inició un nuevo registro; "
+L.CORE_SV_RECOVERED = "Los datos guardados no tenían un formato que Ashmark reconozca. Se inició un nuevo registro; "
   .. "los datos anteriores se conservan intactos en AshmarkDB.recovered."
 L.CORE_SV_MIGRATE_FAILED = "Ashmark no pudo actualizar sus datos guardados y durante esta sesión solo los leerá."
 
@@ -32,7 +32,7 @@ L.CORE_SETTING_CHAT_LINES = "Líneas en el chat"
 L.CORE_SETTING_CHAT_LINES_DESC = "Ashmark puede escribir líneas breves en la ventana de chat."
 L.CORE_SETTING_SOUNDS = "Sonidos"
 L.CORE_SETTING_SOUNDS_DESC = "Ashmark reproduce los sonidos de páginas y libros del juego."
-L.CORE_SETTING_SHARE = "Compartir con otros usuarios de Ashmark"
+L.CORE_SETTING_SHARE = "Compartir con usuarios de Ashmark"
 L.CORE_SETTING_SHARE_DESC = "Envía tu arquetipo, tu origen y tus rumores a los miembros del grupo que también "
   .. "usan Ashmark. Los contactos y las notas nunca salen de tu cliente."
 
@@ -72,18 +72,19 @@ L.CORE_HELP_HEADER = "Comandos:"
 L.CORE_HELP_TOGGLE = "abre o cierra la crónica"
 L.CORE_HELP_HELP = "muestra estos comandos"
 L.CORE_HELP_DEBUG = "activa o desactiva los mensajes de depuración durante esta sesión"
-L.CORE_HELP_RESET = "borra el registro de este personaje; \"reset others\" borra los contactos, los pares y los "
-  .. "rumores escuchados"
+L.CORE_HELP_RESET = "borra el registro de este personaje; \"reset others\" borra los contactos, los datos de "
+  .. "otros usuarios de Ashmark y los rumores escuchados"
 L.CORE_UNKNOWN_COMMAND = "Comando desconocido: {command}"
 L.CORE_DEBUG_ON = "Los mensajes de depuración están activados durante esta sesión."
 L.CORE_DEBUG_OFF = "Los mensajes de depuración están desactivados."
 L.CORE_RESET_CONFIRM = "¿Borrar todo lo que Ashmark registró de este personaje? Esto no se puede deshacer."
-L.CORE_RESET_OTHERS_CONFIRM = "¿Borrar todos los contactos, pares y rumores escuchados de esta cuenta? Tus propios "
-  .. "rumores se conservan. Esto no se puede deshacer."
+L.CORE_RESET_OTHERS_CONFIRM = "¿Borrar todos los contactos, los datos de otros usuarios de Ashmark y los rumores "
+  .. "escuchados en esta cuenta? Tus propios rumores se conservan. Esto no se puede deshacer."
 L.CORE_RESET_ACCEPT = "Borrar"
 L.CORE_CANCEL = "Cancelar"
 L.CORE_RESET_DONE = "Se borró el registro de este personaje."
-L.CORE_RESET_OTHERS_DONE = "Se borraron los contactos, los pares y los rumores escuchados."
+L.CORE_RESET_OTHERS_DONE = "Se borraron los contactos, los datos de otros usuarios de Ashmark y los rumores "
+  .. "escuchados."
 L.CORE_RESET_READONLY = "Los datos guardados provienen de una versión más reciente de Ashmark, así que no se puede "
   .. "borrar nada."
 
@@ -121,15 +122,15 @@ L.TEST_PROBE_NEXT = "Acepta una misión e inicia un combate durante esta sesión
 
 L.CONFLICT_MODULE_NAME = "Conflictos"
 L.CONFLICT_MODULE_DESC = "Algunas misiones enfrentan a un bando con otro. Ashmark recuerda el bando que eliges, "
-  .. "marca bajo la ventana de misión las misiones que lo contradicen y lo registra cuando faltas a tu palabra."
+  .. "marca bajo la ventana de misión las misiones que lo contradicen y registra las veces que faltas a tu palabra."
 
--- Stands where a faction name would: after "con", "por", "para", "contra", "a", "de" and as a subject.
+-- Stands where a faction name would: after "con", "por", "para", "a", "de", "dejando atrás a" and in "{a} o {b}".
 L.CONFLICT_UNNAMED = "quienes van sin estandarte"
 
 -- Quest-dialog line (7.1)
 L.CONFLICT_CONTRADICTS = "Contradice tu compromiso con {faction}."
 L.CONFLICT_CONTRADICTS_NOFACTION = "Contradice el bando que elegiste."
-L.CONFLICT_HOUSE_STANDS_AGAINST = "Tu casa, {house}, se alza contra {faction}."
+L.CONFLICT_HOUSE_STANDS_AGAINST = "Tu casa, {house}, se opone a {faction}."
 L.CONFLICT_TEST_DIALOG = "Aquí aparece la línea de Ashmark bajo la ventana de misión."
 
 -- Chronicle sentences; _THEY forms are used in the family chronicle with {name}.
@@ -150,14 +151,14 @@ L.CONFLICT_TAB_SIDES = "{a} o {b}"
 L.CONFLICT_TAB_ALLIED = "Del lado de {faction} desde el {date}"
 L.CONFLICT_TAB_OPEN = "Sin decidir"
 L.CONFLICT_TAB_BROKEN = "Palabra rota {count}×"
-L.CONFLICT_TAB_VIOLATIONS = "Palabras rotas: {count}"
+L.CONFLICT_TAB_VIOLATIONS = "Veces que faltaste a tu palabra: {count}"
 L.CONFLICT_TAB_NO_VIOLATIONS = "No has faltado a tu palabra."
 L.CONFLICT_TAB_EMPTY = "Ashmark aún no conoce ningún conflicto en este mundo."
 
 -- Profile ------------------------------------------------------------------------------------------------
 
 L.PROFILE_MODULE_NAME = "Perfil"
-L.PROFILE_MODULE_DESC = "Ashmark interpreta a tu personaje a partir de lo que haces: si cumples tu palabra, si "
+L.PROFILE_MODULE_DESC = "Ashmark deduce cómo es tu personaje a partir de lo que haces: si cumples tu palabra, si "
   .. "vives en tierras salvajes o en ciudades, y cómo tratas a las criaturas que no buscan hacer daño."
 
 -- Archetypes (7.2): labels without an article. _F forms where the character's sex is known; "Oportunista",
@@ -168,7 +169,7 @@ L.PROFILE_OPPORTUNIST = "Oportunista"
 L.PROFILE_WANDERER = "Errante"
 L.PROFILE_TOWNSFOLK = "Citadino"
 L.PROFILE_TOWNSFOLK_F = "Citadina"
-L.PROFILE_GENTLE = "Alma gentil"
+L.PROFILE_GENTLE = "Alma compasiva"
 L.PROFILE_RUTHLESS = "Alma despiadada"
 L.PROFILE_PRAGMATIST = "Pragmático"
 L.PROFILE_PRAGMATIST_F = "Pragmática"
@@ -190,7 +191,7 @@ L.MAP_MODULE_DESC = "Marca tu propia historia en el mapa del mundo: los conflict
 L.MAP_PIN_SIDES = "{a} o {b}"
 L.MAP_PIN_OPEN = "Aquí no has tomado partido."
 L.MAP_PIN_ALLIED = "Estás del lado de {faction}."
-L.MAP_PIN_BROKEN = "Estás del lado de {faction}, y aquí faltaste a tu palabra {count}×."
+L.MAP_PIN_BROKEN = "Estás del lado de {faction} y aquí faltaste a tu palabra {count}×."
 L.MAP_PIN_VIOLATION = "Aquí faltaste a tu palabra"
 L.MAP_PIN_CHAPTER = "Capítulo {roman}"
 L.MAP_PIN_CHAPTER_CLOSED = "Cerrado aquí el {date}"
@@ -198,9 +199,9 @@ L.MAP_PIN_CHAPTER_CLOSED = "Cerrado aquí el {date}"
 -- Encounters ---------------------------------------------------------------------------------------------
 
 L.ENC_MODULE_NAME = "Encuentros"
-L.ENC_MODULE_DESC = "Ashmark recuerda a las personas con las que formas grupo: cuántas veces se encontraron, "
-  .. "dónde y cómo les fue. Agrega una línea a su descripción emergente, las muestra en la pestaña Encuentros "
-  .. "y guarda tus notas sobre ellas. Los contactos y las notas nunca salen de tu cliente."
+L.ENC_MODULE_DESC = "Ashmark recuerda a las personas con las que formas grupo: cuántas veces te encontraste "
+  .. "con ellas, dónde y cómo te fue. Agrega una línea a su descripción emergente, las muestra en la pestaña "
+  .. "Encuentros y guarda tus notas sobre ellas. Los contactos y las notas nunca salen de tu cliente."
 
 -- Unit tooltip (7.4)
 L.ENC_TOOLTIP = "Encuentros: {count} · el último en {place}"
@@ -266,21 +267,22 @@ L.HOUSE_MODULE_DESC = "Los personajes de esta cuenta que comparten apellido form
   .. "personas que conocen."
 
 -- /ashmark house (5.9)
-L.HOUSE_HELP = "muestra tu casa; \"house <nombre>\" te une a la casa con ese nombre, \"house reset\" vuelve a "
-  .. "seguir tu apellido"
+L.HOUSE_HELP = "muestra tu casa; \"house <nombre>\" te une a la casa de ese nombre, \"house reset\" te devuelve "
+  .. "a la casa de tu apellido"
 L.HOUSE_SLASH_CURRENT = "Perteneces a la Casa {house}."
 L.HOUSE_SLASH_NONE = "No perteneces a ninguna casa. Escribe /ashmark house <nombre> para unirte a una."
 L.HOUSE_SLASH_SET = "Ahora perteneces a la Casa {house}."
-L.HOUSE_SLASH_RESET = "Tu casa vuelve a seguir tu apellido: Casa {house}."
-L.HOUSE_SLASH_RESET_NONE = "Tu casa vuelve a seguir tu apellido. Sin apellido, no perteneces a ninguna casa."
-L.HOUSE_SLASH_OFF = "El módulo Casa está desactivado o no disponible, así que tu casa no puede cambiar ahora."
+L.HOUSE_SLASH_RESET = "Tu casa vuelve a ser la de tu apellido: Casa {house}."
+L.HOUSE_SLASH_RESET_NONE = "Tu casa vuelve a ser la de tu apellido. Sin apellido, no perteneces a ninguna casa."
+L.HOUSE_SLASH_OFF = "El módulo Casa está desactivado o no está disponible, así que por ahora no puedes cambiar "
+  .. "de casa."
 
 -- House tab (6.1, 7.5)
 L.HOUSE_TAB = "Casa"
 L.HOUSE_TAB_HEADING = "Casa {house}"
 L.HOUSE_TAB_NO_HOUSE = "Sin casa"
 L.HOUSE_TAB_NONE = "Los personajes de esta cuenta que comparten apellido forman una casa. Ashmark no conoce "
-  .. "ningún apellido para este personaje: escribe /ashmark house <nombre> para elegir una casa."
+  .. "ningún apellido de este personaje: escribe /ashmark house <nombre> para elegir una casa."
 L.HOUSE_TAB_ARCHETYPE = "Arquetipo: {archetype}"
 L.HOUSE_TAB_MEMBERS = "Miembros"
 L.HOUSE_TAB_MEMBER = "{name}, nivel {level}"
@@ -298,8 +300,8 @@ L.HOUSE_LEGACY_STANDING = "{faction}: {standing}"
 -- Campfire -----------------------------------------------------------------------------------------------
 
 L.CAMP_MODULE_NAME = "Fogata"
-L.CAMP_MODULE_DESC = "Descansa junto a una fogata hasta que sus beneficios surtan efecto, y Ashmark podrá cerrar "
-  .. "allí un capítulo de tu crónica, si ha pasado lo suficiente desde el anterior."
+L.CAMP_MODULE_DESC = "Descansa en un campamento hasta que sus beneficios surtan efecto, y Ashmark podrá cerrar "
+  .. "allí un capítulo de tu crónica, si ha ocurrido lo suficiente desde el anterior."
 
 -- Centre-screen notice (7.6)
 L.CAMP_CHAPTER_CLOSED = "Se cierra el capítulo {roman} · {place}"
@@ -323,8 +325,8 @@ L.KNOW_SETTING_QUEST_REWARDS_DESC = "Nunca oculta las descripciones emergentes d
 -- Fiction ------------------------------------------------------------------------------------------------
 
 L.FICTION_MODULE_NAME = "Ficción compartida"
-L.FICTION_MODULE_DESC = "Los miembros del grupo que también usan Ashmark conocen tu arquetipo y tu origen sin "
-  .. "una sola palabra en el chat, y tú conoces los suyos, para que tu crónica y tus descripciones emergentes "
+L.FICTION_MODULE_DESC = "Los miembros del grupo que también usan Ashmark se enteran de tu arquetipo y tu origen "
+  .. "sin una sola palabra en el chat, y tú de los suyos, para que tu crónica y tus descripciones emergentes "
   .. "sepan con quién viajaste. No se muestra nada a otros jugadores."
 
 -- Test mode (7.10)
