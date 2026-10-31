@@ -23,6 +23,7 @@ function Ashmark_OnAddonCompartmentEnter(_, button)
   if type(button) ~= "table" then return end
   GameTooltip:SetOwner(button, "ANCHOR_LEFT")
   GameTooltip:SetText(L.CORE_TITLE, HIGHLIGHT_FONT_COLOR:GetRGB())
+  GameTooltip:AddLine(ns.version, GRAY_FONT_COLOR:GetRGB())
   GameTooltip:AddLine(L.CORE_COMPARTMENT_CLICK, NORMAL_FONT_COLOR:GetRGB())
   GameTooltip:AddLine(L.CORE_COMPARTMENT_RIGHT_CLICK, NORMAL_FONT_COLOR:GetRGB())
   GameTooltip:Show()

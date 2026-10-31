@@ -130,7 +130,11 @@ local function create()
   frame:SetToplevel(true)
   frame:SetMovable(true)
   frame:SetClampedToScreen(true)
-  frame:SetTitle(L.CORE_TITLE)
+  local version = ns.version
+  if GRAY_FONT_COLOR and GRAY_FONT_COLOR.WrapTextInColorCode then
+    version = GRAY_FONT_COLOR:WrapTextInColorCode(version)
+  end
+  frame:SetTitle(L.CORE_TITLE .. " " .. version)
   -- No buttons along the bottom: the Inset reaches down to the border.
   if type(ButtonFrameTemplate_HideButtonBar) == "function" then
     pcall(ButtonFrameTemplate_HideButtonBar, frame)

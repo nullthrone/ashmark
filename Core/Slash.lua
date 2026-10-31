@@ -224,6 +224,7 @@ local function run(msg)
 end
 
 Slash:Register("help", help, "CORE_HELP_HELP")
+Slash:Register("version", function() ns.Print(ns.version) end, "CORE_HELP_VERSION")
 Slash:Register("debug", debug, "CORE_HELP_DEBUG")
 Slash:Register("reset", reset, "CORE_HELP_RESET")
 

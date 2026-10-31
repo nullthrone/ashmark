@@ -1,6 +1,10 @@
 local ADDON, ns = ...
 
-ns.version = C_AddOns and C_AddOns.GetAddOnMetadata and C_AddOns.GetAddOnMetadata(ADDON, "Version") or "dev"
+-- The packager writes the release tag into ## Version; a copy run from the source still holds the
+-- unreplaced @project-version@ token, which reads as "dev".
+local tocVersion = C_AddOns and C_AddOns.GetAddOnMetadata and C_AddOns.GetAddOnMetadata(ADDON, "Version")
+ns.version = type(tocVersion) == "string" and tocVersion ~= "" and not tocVersion:find("@", 1, true)
+  and tocVersion or "dev"
 ns.debug = false
 ns.ready = false
 

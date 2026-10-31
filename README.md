@@ -56,6 +56,7 @@ Open the window with `/ashmark`, `/amk` or the Addon Compartment at the minimap 
 | --- | --- |
 | `/ashmark`, `/amk` | open or close the main window |
 | `/ashmark help` | list the commands |
+| `/ashmark version` | show the installed version; the window title and the minimap menu tooltip show it too |
 | `/ashmark house` | show the house this character belongs to |
 | `/ashmark house <name>` | join the house of that name |
 | `/ashmark house reset` | follow your surname again |

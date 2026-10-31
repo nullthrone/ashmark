@@ -380,6 +380,13 @@ local function region(tip, side, i)
   return r
 end
 
+-- ButtonFrameTemplate and PortraitFrameTemplate: SetTitle writes the TitleContainer's TitleText.
+function methods:SetTitle(text)
+  local container = rawget(self, "TitleContainer")
+  local title = container and rawget(container, "TitleText")
+  if title then title:SetText(text) end
+end
+
 function methods:SetText(text, ...)
   if self.__kind == "GameTooltip" then
     self:ClearLines()

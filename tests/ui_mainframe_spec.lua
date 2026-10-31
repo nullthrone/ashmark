@@ -40,6 +40,13 @@ describe("UI MainFrame", function()
     assert.is_true(tContains(UISpecialFrames, "AshmarkFrame"))
   end)
 
+  it("names the installed version, in grey, after the title", function()
+    wow.login()
+    main:Show()
+    assert.equal("Ashmark " .. GRAY_FONT_COLOR:WrapTextInColorCode("1.0.0-test"),
+                 _G.AshmarkFrame.TitleContainer.TitleText:GetText())
+  end)
+
   it("orders the tabs, maps ids to indices and builds a tab once, when it is first shown", function()
     tab("b", 20)
     tab("a", 10)
