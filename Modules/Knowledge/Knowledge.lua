@@ -81,12 +81,22 @@ local function note(k, id, silent, now)
   if not silent then ns.Log:Add("item.held", { it = id }) end
 end
 
--- Every item in a container; returns the container's number of slots.
+-- The bag that forms a container (bags 1 and up, and the bank's bags): it sits in an inventory slot
+-- outside INVSLOT_FIRST_EQUIPPED..INVSLOT_LAST_EQUIPPED. The backpack and the bank's own slots (IDs 0
+-- and below) are no bags; nothing either where the client cannot name the slot.
+local function noteBag(k, bag, silent, now)
+  if bag <= FIRST_BAG then return end
+  local slot = number(Safe.Call(C_Container.ContainerIDToInventoryID, bag))
+  if slot then note(k, number(Safe.Call(GetInventoryItemID, "player", slot)), silent, now) end
+end
+
+-- Every item in a container, and the bag itself; returns the container's number of slots.
 local function scanContainer(k, bag, silent, now)
   local slots = number(Safe.Call(C_Container.GetContainerNumSlots, bag)) or 0
   for slot = 1, slots do
     note(k, number(Safe.Call(C_Container.GetContainerItemID, bag, slot)), silent, now)
   end
+  if slots > 0 then noteBag(k, bag, silent, now) end
   return slots
 end
 

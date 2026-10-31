@@ -936,7 +936,7 @@ ns.Campfire.AURAS = {
 ### 7.7 Knowledge (Module 7)
 
 Held items:
-- Bags: `Enum.BagIndex.Backpack` to `Enum.BagIndex.ReagentBag` (0 to `NUM_TOTAL_EQUIPPED_BAG_SLOTS`). Bank, on `BANKFRAME_OPENED`: every `Enum.BagIndex` value whose key contains `Bank` and not `Account`, plus `Enum.BagIndex.Bank` if present, keeping those with `C_Container.GetContainerNumSlots(i) > 0`. Equipment: `GetInventoryItemID("player", slot)` for `INVSLOT_FIRST_EQUIPPED` to `INVSLOT_LAST_EQUIPPED`.
+- Bags: `Enum.BagIndex.Backpack` to `Enum.BagIndex.ReagentBag` (0 to `NUM_TOTAL_EQUIPPED_BAG_SLOTS`). Bank, on `BANKFRAME_OPENED`: every `Enum.BagIndex` value whose key contains `Bank` and not `Account`, plus `Enum.BagIndex.Bank` if present, keeping those with `C_Container.GetContainerNumSlots(i) > 0`. Equipment: `GetInventoryItemID("player", slot)` for `INVSLOT_FIRST_EQUIPPED` to `INVSLOT_LAST_EQUIPPED`; the bag forming each scanned container above 0 counts too, `GetInventoryItemID("player", C_Container.ContainerIDToInventoryID(bag))` where the client has it.
 - Events: `BAG_UPDATE_DELAYED` (coalesced 1 s), `PLAYER_EQUIPMENT_CHANGED`, `BANKFRAME_OPENED`.
 - A new item ID writes `knowledge.held[id] = t` and an `item.held { it }` entry. Silence is tracked per area: the first full scan of bags and equipment (`scanned.bags == false`) and the first bank scan (`scanned.bank == false`) fill `held` silently and set their flag, so the first bank visit after install writes no burst of entries.
 

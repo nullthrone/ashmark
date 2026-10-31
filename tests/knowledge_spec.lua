@@ -123,6 +123,26 @@ describe("Knowledge", function()
       for _, id in ipairs({ SPEAR, HAUBERK, 120 }) do assert.is_nil(held[id], id) end
     end)
 
+    it("count the bags in their slots as held, the carried ones with the bags and the bank's at the bank", function()
+      wow.stub("C_Container.ContainerIDToInventoryID", function(bag)
+        if bag < 1 then error("not a bag") end
+        return 30 + bag
+      end)
+      mock.bag(wow, mock.BACKPACK, 16)
+      mock.bag(wow, 1, 10)
+      mock.bag(wow, mock.BANK, 28)
+      mock.bag(wow, mock.BANK_BAG, 10)
+      wow.data.inventory[31], wow.data.inventory[30 + mock.BANK_BAG] = 4496, 4497
+      boot()
+      assert.is_number(knowledge().held[4496])
+      assert.is_nil(knowledge().held[4497])
+      wow.data.inventory[31] = 4245
+      bagUpdate()
+      wow.fire("BANKFRAME_OPENED")
+      assert.is_number(knowledge().held[4497])
+      assert.same({ 4245 }, mock.entries(ns))
+    end)
+
     it("write item.held at once for a newly equipped item", function()
       boot()
       wow.data.inventory[16] = SPEAR
