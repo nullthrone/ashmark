@@ -13,7 +13,7 @@ local GAP = 6
 local PAD = 18                   -- margin of the text on the page
 local CHAPTER_EXTENT = 20
 local LINE_EXTENT = 34           -- two lines of QuestFont
-local HIGHLIGHT = "Interface\\QuestFrame\\UI-QuestTitleHighlight"
+local TITLE_HIGHLIGHT = "Interface\\QuestFrame\\UI-QuestTitleHighlight"
 
 local selected                   -- chapter number the reader picked; nil follows the open chapter
 local shown                      -- chapter number on the page
@@ -66,7 +66,7 @@ local function initChapter(button, data)
     button:SetFontString(label)
     button:SetNormalFontObject(GameFontNormal)
     button:SetHighlightFontObject(GameFontHighlight)
-    button:SetHighlightTexture(HIGHLIGHT, "ADD")
+    button:SetHighlightTexture(TITLE_HIGHLIGHT, "ADD")
     button:SetScript("OnClick", onChapterClick)
     button.label = label
   end
