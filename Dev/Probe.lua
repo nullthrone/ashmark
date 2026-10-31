@@ -470,7 +470,7 @@ function Probe:Run()
   watchNext()
   currentStored = TestMode:Keep("probes", record, MAX_PROBES)
   if not currentStored then
-    ns.Print(L.TEST_NOT_STORED)
+    ns.Print(TestMode:NotStoredText())
     for _, fact in ipairs(facts) do ns.Print(fact.call .. ": " .. table.concat(fact.r, ", ")) end
   end
   ns.Print(ns.Format(L.TEST_PROBE_DONE, { count = #facts }))

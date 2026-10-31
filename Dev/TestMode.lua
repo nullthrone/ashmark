@@ -56,6 +56,12 @@ function TestMode:Keep(key, record, cap)
   return true
 end
 
+-- The line that says nothing was stored, for the reason the data is only read: a failed update is not
+-- data from a newer Ashmark (4.4).
+function TestMode:NotStoredText()
+  return ns.DB.readOnlyReason == "migration" and L.TEST_NOT_STORED_MIGRATION or L.TEST_NOT_STORED
+end
+
 -- A reload is a save that moves the files, so a fresh record warns instead (4.4).
 function TestMode:SaveHint(stored)
   if stored then ns.Print(ns.DB.fresh and L.CORE_SV_NEW or L.TEST_RELOAD) end
@@ -398,7 +404,7 @@ end
 
 -- Failed checks, or every check when nothing is stored, then the counts.
 local function report(results, stored)
-  if not stored then ns.Print(L.TEST_NOT_STORED) end
+  if not stored then ns.Print(TestMode:NotStoredText()) end
   local passed, failed, skipped = 0, 0, 0
   for _, result in ipairs(results) do
     if result.ok == true then

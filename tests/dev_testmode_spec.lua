@@ -169,6 +169,21 @@ describe("Dev test mode", function()
     assert.same(before, _G.AshmarkDB)
   end)
 
+  it("says after a failed update that it could not update the data, never that the data is newer", function()
+    start(SAVED, function()
+      ns.DB.SCHEMA = 2
+      ns.DB.migrations[2] = function() error("broken") end
+    end)
+    wow.errors = {}
+    local before = wow.deepcopy(_G.AshmarkDB)
+    wow.chat = {}
+    SlashCmdList.ASHMARK("test")
+    assert.same(before, _G.AshmarkDB)
+    assert.is_true(printed(ns.L.TEST_NOT_STORED_MIGRATION))
+    assert.is_false(printed(ns.L.TEST_NOT_STORED))
+    assert.is_true(printed("Test finished: "))
+  end)
+
   describe("screenshot", function()
     local shown
     local function withMainFrame()
