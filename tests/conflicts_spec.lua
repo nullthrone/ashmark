@@ -347,6 +347,43 @@ describe("Conflicts", function()
     end)
   end)
 
+  describe("data check", function()
+    local function run()
+      for _, c in ipairs(ns.Test.checks) do
+        if c.id == "Conflicts.data" then return c.fn() end
+      end
+    end
+
+    it("passes when every quest has a title and every faction a name", function()
+      boot()
+      assert.same({ true, "3 conflicts, 8 quests, 4 factions, verified 1/3" }, { run() })
+      assert.same({}, wow.requests.quest)
+    end)
+
+    it("asks for missing titles once, then fails on those still missing", function()
+      wow.data.quests[2002].title = nil
+      wow.data.quests[6001].title = nil
+      boot()
+      local ok, detail = run()
+      assert.is_nil(ok)
+      assert.matches("pending, run again: 2002, 6001$", detail)
+      assert.same({ 2002, 6001 }, wow.requests.quest)
+      wow.data.quests[2002].title = "Broken Tears"
+      ok, detail = run()
+      assert.is_false(ok)
+      assert.matches("no quest title: 6001$", detail)
+      assert.same({ 2002, 6001 }, wow.requests.quest)
+    end)
+
+    it("fails on a faction without a name", function()
+      wow.data.factions[87] = nil
+      boot()
+      local ok, detail = run()
+      assert.is_false(ok)
+      assert.matches("; no faction name: 87$", detail)
+    end)
+  end)
+
   describe("turning from the house", function()
     it("records turning from the house after the alliance, never as a violation", function()
       local char = boot(function(n) mock.house(n, "Ashvale", { clan_choice = { A = {}, B = { SISTER } } }) end)
