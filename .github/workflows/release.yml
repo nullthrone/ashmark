@@ -7,6 +7,10 @@ on:
 jobs:
   package:
     runs-on: ubuntu-24.04
+    # The packager creates or updates the GitHub release and uploads the zip to it; the default
+    # GITHUB_TOKEN of this organization is read-only, which fails that step with a 403.
+    permissions:
+      contents: write
     env:
       # The packager uploads to CurseForge only when CF_API_KEY is set and the TOC
       # carries ## X-Curse-Project-ID; otherwise it builds the zip and the GitHub release.
