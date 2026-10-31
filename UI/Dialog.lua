@@ -28,12 +28,14 @@ local function hide()
 end
 
 -- Answers once: in combat the dialog stays on screen until PLAYER_REGEN_ENABLED, and further
--- clicks on it do nothing.
+-- clicks on it do nothing. The editor lets go of the keyboard at once (not a protected action), or
+-- every key of the fight would be typed into it.
 local function answer(accepted)
   local opts = current
   if not opts then return end
   current = nil
   local text = opts.edit and frame.EditBox:GetText() or nil
+  frame.EditBox:ClearFocus()
   ns.Combat.Run("dialog", hide)
   if accepted and type(opts.onAccept) == "function" then
     ns:Call(Dialog, "dialog:accept", opts.onAccept, text)

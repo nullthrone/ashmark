@@ -182,6 +182,20 @@ describe("UI Dialog", function()
     assert.is_false(d:IsShown())
   end)
 
+  it("lets go of the keyboard at once when its editor is answered in combat", function()
+    for _, key in ipairs({ "OnEnterPressed", "OnEscapePressed" }) do
+      local d = show({ text = "Note for Mira", edit = { text = "Great healer", max = 120 } })
+      assert.is_true(d.EditBox.focused)
+      wow.combat(true)
+      wow.script(d.EditBox, key)
+      assert.is_true(d:IsShown())
+      assert.is_false(d.EditBox.focused, key)
+      wow.combat(false)
+      assert.is_false(d:IsShown())
+    end
+    assert.same({ { n = 1, "Great healer" } }, accepted)
+  end)
+
   it("reports an error in onAccept under the dialog and still hides", function()
     local d = show({ onAccept = function() error("boom") end })
     wow.script(d.Accept, "OnClick")
