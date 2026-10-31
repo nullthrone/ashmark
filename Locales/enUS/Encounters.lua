@@ -25,6 +25,7 @@ L.ENC_NOTE_PROMPT = "Your note on {name}:"
 L.ENC_NOTE_SAVE = "Save"
 
 -- Encounters tab (6.1). {date} is a short date from the client, {race} and {class} come from the client.
+-- When the client knows only one of race and class, the row shows that name alone instead of ENC_TAB_WHO.
 L.ENC_TAB = "Encounters"
 L.ENC_TAB_TOTAL = "People you have met: {count} · familiar faces: {recurring}"
 L.ENC_TAB_EMPTY = "Nobody has crossed your path yet. Group with someone and Ashmark will remember them."
@@ -58,5 +59,12 @@ L.ENC_LOG_OTHERS = "{count} others"
 L.ENC_LOG_STRANGER = "a stranger"
 L.ENC_LOG_STRANGERS = "{count} strangers"
 L.ENC_LOG_STRANGERS_ANY = "strangers"
+-- When the group's record is gone, only the number of people is known, and some of them may have been
+-- people you knew.
+L.ENC_LOG_COMPANION = "a companion"
+L.ENC_LOG_COMPANIONS = "{count} companions"
 L.ENC_LIST_SEP = ", "
 L.ENC_LIST_AND = "{list} and {last}"
+-- Used instead of ENC_LIST_AND when {last} begins with the sound /i/ (I-, Í-, Hi-, but not Hia-, Hie-).
+-- Spanish writes "{list} e {last}" here; every other language repeats its ENC_LIST_AND.
+L.ENC_LIST_AND_VOWEL = "{list} and {last}"

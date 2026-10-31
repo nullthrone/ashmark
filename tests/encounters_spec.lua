@@ -678,13 +678,55 @@ describe("Encounters", function()
       assert.equal("Aren met Mira for the first time.", render(last("contact"), ctx))
     end)
 
-    it("falls back to the group's size when its session is gone", function()
+    it("falls back to the group's size when its session is gone, without calling known people strangers", function()
       local char = boot()
       local s = mock.session(wow, ns, { "thalen", "mira" })
       char.sessions[s.id] = nil
-      assert.equal("You travelled with 2 strangers.", render(last("group.end")))
+      assert.equal("You travelled with 2 companions.", render(last("group.end")))
+      assert.equal("You travelled with a companion.", render({ k = "group.end", g = "gone", size = 1, e = "travel" }))
       assert.equal("You travelled with strangers.", render({ k = "group.end", g = "gone", size = 0, e = "odd" }))
       assert.equal("You met someone for the first time.", render({ k = "contact", p = "Player-1-0" }))
+    end)
+
+    it("writes no second first meeting for a contact the store forgot", function()
+      local char = boot()
+      mock.session(wow, ns, { "thalen" })
+      local entry = last("contact")
+      _G.AshmarkDB.contacts[THALEN] = nil
+      assert.equal("You met someone for the first time.", render(entry))
+      mock.session(wow, ns, { "thalen", "mira" })
+      assert.same({ "contact", "group.end", "contact", "group.end" }, mock.kinds(char))
+      assert.equal(MIRA, last("contact").p)
+      assert.equal("You met Thalen for the first time.", render(entry))
+      assert.equal(1, M:Met(THALEN, char).count)
+      relog(60, { player = mock.BRYN })
+      mock.session(wow, ns, { "thalen" })
+      assert.equal(THALEN, last("contact").p)
+    end)
+
+    it("joins the last name with ENC_LIST_AND_VOWEL when it begins with the sound /i/", function()
+      boot({ setup = function(n) n.Locale:Base().ENC_LIST_AND_VOWEL = "{list} e {last}" end })
+      local function member(i, name)
+        return { guid = string.format("Player-1-3%07x", i), name = name, classFile = "MAGE", raceID = 1, sex = 3,
+                 faction = "Alliance", level = 20, isPlayer = true }
+      end
+      local cases = {
+        { "Iris", "Thalen e Iris" }, { "isolde", "Thalen e isolde" }, { "\195\141\195\177igo", "Thalen e Íñigo" },
+        { "Hilda", "Thalen e Hilda" }, { "H\195\173a", "Thalen e Hía" }, { "Hierro", "Thalen and Hierro" },
+        { "Hialmar", "Thalen and Hialmar" }, { "Mira", "Thalen and Mira" }, { "Helga", "Thalen and Helga" },
+      }
+      for i, case in ipairs(cases) do
+        mock.session(wow, ns, { "thalen", member(i, case[1]) })
+        assert.equal("You travelled with " .. case[2] .. ".", render(last("group.end")))
+      end
+      mock.session(wow, ns, { member(1, "Iris"), "thalen" })
+      assert.equal("You travelled with Iris and Thalen.", render(last("group.end")))
+    end)
+
+    it("keeps one word for 'and' in English", function()
+      boot()
+      mock.session(wow, ns, { "thalen", { guid = "Player-1-30000001", name = "Iris", isPlayer = true } })
+      assert.equal("You travelled with Thalen and Iris.", render(last("group.end")))
     end)
 
     it("keeps contact entries through compaction, not group.end entries", function()

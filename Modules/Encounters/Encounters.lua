@@ -305,15 +305,26 @@ local function sub(rec, key)
   return rec[key]
 end
 
+-- GUIDs that this character's log already names in a `contact` entry (a keep kind).
+local function loggedContacts(char)
+  local set = {}
+  for entry in ns.Log:Iter(char, 1) do
+    if entry.k == "contact" and type(entry.p) == "string" then set[entry.p] = true end
+  end
+  return set
+end
+
 -- One member of an ending session: the snapshot, this character's record, the first-meeting entry.
-local function meet(char, session, guid, person, opts)
+-- logged() gives loggedContacts: a contact pruned from the store (4) and met again keeps its first
+-- meeting in the log and gets no second one.
+local function meet(char, session, guid, person, opts, logged)
   local snap = copyFields(person, SNAPSHOT)
   if not snap then return end
   local contact = contactOf(contactStore(), guid)
   for _, key in ipairs(SNAPSHOT) do contact[key] = snap[key] end
   local rec = contact.byChar[char.guid]
-  local first = type(rec) ~= "table"
-  if first then
+  local first = type(rec) ~= "table" and not logged()[guid]
+  if type(rec) ~= "table" then
     rec = {}
     contact.byChar[char.guid] = rec
   end
@@ -395,9 +406,14 @@ local function finish(char, session, stop, stale)
   session.stop = stop
   session.e = outcome(session)
   local opts = stale and { noWhere = true } or nil
+  local set
+  local function logged()
+    set = set or loggedContacts(char)
+    return set
+  end
   for _, guid in ipairs(session.members) do
     local person = session.people[guid]
-    if type(person) == "table" then meet(char, session, guid, person, opts) end
+    if type(person) == "table" then meet(char, session, guid, person, opts, logged) end
   end
   ns.Log:Add("group.end", {
     g = session.id, size = #session.members, inst = session.inst[#session.inst], e = session.e,
@@ -526,10 +542,30 @@ local function memberText(guid)
   return ns.Format(L.ENC_LOG_PEER_NOPLACE, { who = name, archetype = archetype })
 end
 
+local I_LETTERS = { "I", "i", "\195\141", "\195\173" }   -- I, i, Í, í in UTF-8
+
+-- True when text begins with the sound /i/ (I-, Í-, Hi-, Hí-, but not the diphthongs hia-, hie-, ...),
+-- before which Spanish writes "e" for "y". Only code sees the name, so the rule lives here; every other
+-- language's ENC_LIST_AND_VOWEL repeats its ENC_LIST_AND.
+local function iSound(text)
+  local s = (tostring(text):gsub("^|c%x%x%x%x%x%x%x%x", ""))
+  local rest = s:match("^[Hh](.*)$")
+  local word = rest or s
+  for _, letter in ipairs(I_LETTERS) do
+    if word:sub(1, #letter) == letter then
+      if not (rest and #letter == 1) then return true end
+      local after = word:sub(2)
+      return not (after:find("^[AaEeOoUu]") or after:find("^\195[\129\137\147\154\161\169\179\186]"))
+    end
+  end
+  return false
+end
+
 local function joined(items)
   if #items == 1 then return items[1] end
-  return ns.Format(L.ENC_LIST_AND, {
-    list = table.concat(items, L.ENC_LIST_SEP, 1, #items - 1), last = items[#items],
+  local last = items[#items]
+  return ns.Format(iSound(last) and L.ENC_LIST_AND_VOWEL or L.ENC_LIST_AND, {
+    list = table.concat(items, L.ENC_LIST_SEP, 1, #items - 1), last = last,
   })
 end
 
@@ -539,15 +575,23 @@ local function strangers(n)
   return L.ENC_LOG_STRANGERS_ANY
 end
 
--- Up to NAMED members with a contact, then the rest as a number; without the session (pruned), only the size.
+-- Without the session (pruned, 4) the members are only a number, and some may have been contacts.
+local function companions(n)
+  if n == 1 then return L.ENC_LOG_COMPANION end
+  if n > 1 then return ns.Format(L.ENC_LOG_COMPANIONS, { count = n }) end
+  return strangers(n)
+end
+
+-- Up to NAMED members with a contact, then the rest as a number; without the session, only the size.
 local function people(session, size)
-  local members = session and session.members or {}
+  if not session then return companions(tonumber(size) or 0) end
+  local members = session.members
   local named, rest = {}, 0
   for _, guid in ipairs(members) do
     local text = #named < NAMED and memberText(guid)
     if text then named[#named + 1] = text else rest = rest + 1 end
   end
-  if #named == 0 then return strangers(session and #members or tonumber(size) or 0) end
+  if #named == 0 then return strangers(#members) end
   if rest == 1 then
     named[#named + 1] = L.ENC_LOG_OTHER
   elseif rest > 1 then

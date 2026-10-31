@@ -64,12 +64,27 @@ describe("Encounters tab", function()
     return list.box.provider.items
   end
 
+  -- The tab's data provider now, without showing the tab again.
+  local function provider()
+    for _, list in ipairs(lists) do
+      if list.opts.extent == 34 then return list.box.provider end
+    end
+  end
+
+  -- A row as the list draws it: its texts are made in init (lazily, for the rows on screen only).
+  local function drawn(data)
+    for _, list in ipairs(lists) do
+      if list.opts.extent == 34 then list.opts.init(CreateFrame("Button"), data) end
+    end
+    return data
+  end
+
   -- The rows on screen now, without showing the tab again (which refreshes it).
   local function current(guid)
     for _, list in ipairs(lists) do
       if list.opts.extent == 34 then
         for _, row in ipairs(list.box.provider.items) do
-          if row.guid == guid then return row end
+          if row.guid == guid then return drawn(row) end
         end
       end
     end
@@ -83,7 +98,7 @@ describe("Encounters tab", function()
 
   local function find(guid)
     for _, row in ipairs(rows()) do
-      if row.guid == guid then return row end
+      if row.guid == guid then return drawn(row) end
     end
   end
 
@@ -166,11 +181,65 @@ describe("Encounters tab", function()
     wow.script(b.noteButton, "OnClick")
     assert.equal("Your note on Thalen Brightwood:", dialog.text)
     assert.same({ text = "Tanked the Deadmines", max = 120 }, dialog.edit)
+    local before = provider()
     dialog.onAccept("Healed us through Gnomeregan")
     assert.equal("Healed us through Gnomeregan", ns.Encounters:Contact(THALEN).note)
-    assert.equal("Tanked the Deadmines", current(THALEN).note)
+    assert.equal(before, provider())
     wow.advance(0.5)
+    assert.is_not.equal(before, provider())
     assert.equal("Healed us through Gnomeregan", current(THALEN).note)
+  end)
+
+  it("redraws for contacts, a reset and module toggles, not for every log entry", function()
+    boot()
+    show()
+    local before = provider()
+    ns.Log:Add("gold", { src = "loot", c = 5 })
+    ns.Bus:Fire("PROFILE_CHANGED")
+    ns.Bus:Fire("HOUSE_CHANGED")
+    wow.advance(0.5)
+    assert.equal(before, provider())
+    ns.Encounters:SetNote(THALEN, "Owes me a drink")
+    wow.advance(0.5)
+    assert.is_not.equal(before, provider())
+    before = provider()
+    ns.Bus:Fire("LOG_COMPACTED", ns.DB:Char())
+    wow.advance(0.5)
+    assert.is_not.equal(before, provider())
+  end)
+
+  it("makes a row's texts only when the list draws it", function()
+    boot()
+    local calls, race = 0, ns.Names.Race
+    ns.Names.Race = function(...)
+      calls = calls + 1
+      return race(...)
+    end
+    local list = rows()
+    assert.equal(3, #list)
+    assert.equal(0, calls)
+    drawn(list[2])
+    assert.equal(1, calls)
+    assert.equal("Human Paladin", list[2].who)
+    drawn(list[2])
+    assert.equal(1, calls)
+  end)
+
+  it("leaves a race or class the client does not know out of the who line", function()
+    local db = stored()
+    db.contacts[THALEN].race = 999
+    db.contacts[MIRA].class = nil
+    db.contacts[ORLA].race, db.contacts[ORLA].class = nil, nil
+    boot(db)
+    assert.equal("Paladin", find(THALEN).who)
+    assert.equal("Gnome", find(MIRA).who)
+    local orla = find(ORLA)
+    assert.is_nil(orla.who)
+    local b = button(orla)
+    wow.script(b, "OnEnter")
+    local texts = {}
+    for i = 1, GameTooltip:NumLines() do texts[i] = _G["GameTooltipTextLeft" .. i]:GetText() end
+    assert.same({ orla.name, orla.info, orla.first }, texts)
   end)
 
   it("follows new meetings", function()

@@ -42,7 +42,7 @@ local function onEnter(row)
   if not data then return end
   GameTooltip:SetOwner(row, "ANCHOR_RIGHT")
   GameTooltip:SetText(data.name)
-  GameTooltip:AddLine(data.who, HIGHLIGHT_FONT_COLOR:GetRGB())
+  if data.who then GameTooltip:AddLine(data.who, HIGHLIGHT_FONT_COLOR:GetRGB()) end
   GameTooltip:AddLine(data.info, GRAY_FONT_COLOR:GetRGB())
   if data.first then GameTooltip:AddLine(data.first, GRAY_FONT_COLOR:GetRGB()) end
   if data.note ~= "" then
@@ -85,8 +85,45 @@ local function setup(row)
   row.icon, row.name, row.marker, row.note, row.info, row.noteButton = icon, name, marker, text, info, note
 end
 
+local function met(rec, last)
+  if rec.lastPlace then
+    return ns.Format(L.ENC_TAB_MET, { count = rec.count, place = ns.Names.Map(rec.lastPlace), date = day(last) })
+  end
+  return ns.Format(L.ENC_TAB_MET_NOPLACE, { count = rec.count, date = day(last) })
+end
+
+-- Race and class as the client names them. A name the client does not know is left out instead of
+-- filling the label's slot with CORE_UNKNOWN_*; without either, there is no line.
+local function who(contact)
+  local race, class = ns.Names.Race(contact.race), ns.Names.Class(contact.class, contact.sex)
+  local hasRace, hasClass = race ~= L.CORE_UNKNOWN_RACE, class ~= L.CORE_UNKNOWN_CLASS
+  if hasRace and hasClass then return ns.Format(L.ENC_TAB_WHO, { race = race, class = class }) end
+  if hasRace then return race end
+  if hasClass then return class end
+end
+
+local function sortName(data)
+  data.sortName = data.sortName or Encounters:DisplayName(Encounters:Contact(data.guid))
+  return data.sortName
+end
+
+-- The row's texts, made when the list first draws it: a refresh only sorts, so its cost does not grow
+-- with formatting every contact (3.9).
+local function fill(data)
+  if data.name then return end
+  local contact = Encounters:Contact(data.guid) or {}
+  local rec = data.rec
+  data.name = UI:ClassColored(sortName(data), contact.class)
+  data.class = type(contact.class) == "string" and contact.class or nil
+  data.note = type(contact.note) == "string" and contact.note or ""
+  data.info = met(rec, data.last)
+  data.who = who(contact)
+  data.first = type(rec.first) == "number" and ns.Format(L.ENC_TAB_FIRST, { date = day(rec.first) }) or nil
+end
+
 local function initRow(row, data)
   if not row.name then setup(row) end
+  fill(data)
   row.guid, row.data = data.guid, data
   local atlas = type(GetClassAtlas) == "function" and data.class and GetClassAtlas(data.class)
   if atlas then row.icon:SetAtlas(atlas) end
@@ -97,39 +134,16 @@ local function initRow(row, data)
   row.info:SetText(data.info)
 end
 
-local function met(rec, last)
-  if rec.lastPlace then
-    return ns.Format(L.ENC_TAB_MET, { count = rec.count, place = ns.Names.Map(rec.lastPlace), date = day(last) })
-  end
-  return ns.Format(L.ENC_TAB_MET_NOPLACE, { count = rec.count, date = day(last) })
-end
-
-local function contactRow(guid, rec)
-  local contact = Encounters:Contact(guid) or {}
-  local note = type(contact.note) == "string" and contact.note or ""
-  local last = tonumber(rec.last) or 0
-  return {
-    guid = guid,
-    last = last,
-    sortName = Encounters:DisplayName(contact),
-    name = UI:ClassColored(Encounters:DisplayName(contact), contact.class),
-    class = type(contact.class) == "string" and contact.class or nil,
-    recurring = Encounters:IsRecurring(rec),
-    note = note,
-    info = met(rec, last),
-    who = ns.Format(L.ENC_TAB_WHO, { race = ns.Names.Race(contact.race), class = ns.Names.Class(contact.class,
-      contact.sex) }),
-    first = type(rec.first) == "number" and ns.Format(L.ENC_TAB_FIRST, { date = day(rec.first) }) or nil,
-  }
-end
-
 -- Contacts with a record for this character, the most recent meeting first.
 local function rows(char)
   local out = {}
-  for guid, rec in pairs(Encounters:Known(char)) do out[#out + 1] = contactRow(guid, rec) end
+  for guid, rec in pairs(Encounters:Known(char)) do
+    out[#out + 1] = { guid = guid, rec = rec, last = tonumber(rec.last) or 0, recurring = Encounters:IsRecurring(rec) }
+  end
   table.sort(out, function(a, b)
     if a.last ~= b.last then return a.last > b.last end
-    if a.sortName ~= b.sortName then return a.sortName < b.sortName end
+    local na, nb = sortName(a), sortName(b)
+    if na ~= nb then return na < nb end
     return a.guid < b.guid
   end)
   return out
@@ -167,4 +181,14 @@ local function build(parent)
   return parent
 end
 
-UI.MainFrame:AddTab("encounters", { label = "ENC_TAB", order = 30, module = "Encounters", build = build })
+-- The tab shows contacts only. It redraws on CONTACT_UPDATED (every meeting and note), LOG_COMPACTED (a
+-- reset of this character), NAMES_UPDATED and a module toggle (no topic); new log entries and the
+-- house's and profile's changes leave it as it is.
+local REDRAW = { CONTACT_UPDATED = true, LOG_COMPACTED = true, NAMES_UPDATED = true }
+
+local function ignore(topic)
+  return topic ~= nil and not REDRAW[topic]
+end
+
+UI.MainFrame:AddTab("encounters", { label = "ENC_TAB", order = 30, module = "Encounters", build = build,
+                                    ignore = ignore })
