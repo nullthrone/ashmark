@@ -44,14 +44,15 @@ local function charState()
   if type(state) == "table" then return char, state end
 end
 
--- The open chapter is due when it holds CHAPTER_ENTRIES entries or its first entry is CHAPTER_AGE old.
+-- The open chapter is due when it holds CHAPTER_ENTRIES entries or its first entry is CHAPTER_AGE old, aged
+-- by the realm's clock that stamped it (ns.Util.Now, 4.2).
 local function chapterDue(char)
   local chapters = type(char.chapters) == "table" and char.chapters or EMPTY
   local last = chapters[#chapters]
   local to = last and last.to or 0
   if ns.Log:Seq(char) - to >= CHAPTER_ENTRIES then return true end
   local first = ns.Log:Iter(char, to + 1)()
-  return first ~= nil and time() - first.t >= CHAPTER_AGE
+  return first ~= nil and ns.Util.Now() - first.t >= CHAPTER_AGE
 end
 
 local function party()

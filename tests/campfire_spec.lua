@@ -175,6 +175,24 @@ describe("Campfire", function()
       assert.same({}, char.chapters)
     end)
 
+    it("ages the chapter by the realm's clock, whatever the system clock says", function()
+      wow.state.skew = -7200
+      local char = boot()
+      ns.Log:Add("level", { l = 2 })
+      wow.advance(1740)
+      mock.sit(wow)
+      wow.advance(60)
+      mock.benefit(wow)
+      assert.equal(1, #char.chapters)
+      wow.state.skew = 7200
+      ns.Log:Add("level", { l = 3 })
+      wow.advance(1000)
+      mock.sit(wow)
+      wow.advance(60)
+      mock.benefit(wow)
+      assert.equal(1, #char.chapters)
+    end)
+
     it("plays no sound with Core.sounds off and names an unknown place", function()
       wow.state.map = nil
       boot()
