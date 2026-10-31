@@ -1,0 +1,22 @@
+-- Traces (v2, ARCHITECTURE 4.5). This file holds the format only; v1 has no code that reads or writes traces
+-- and registers no module.
+--
+-- Core/DB.lua reserves the store in every AshmarkDB:
+--
+--   AshmarkDB.traces = { schema = 0, outbox = {}, inbox = {} }
+--
+-- v2 fills `outbox` with this account's own traces, left where something happened: a grave, an extinguished
+-- camp, a note built from templates. A companion app reads `outbox` and writes other players' traces into
+-- `inbox` between sessions, while the game is closed. One trace:
+--
+--   {
+--     id = <ns.Util.Token()>,         -- 8 random lowercase hex characters
+--     k = "grave" | "camp" | "note",  -- kind
+--     m, x, y,                        -- uiMapID and position, integers 0..100 (percent of the map), as in 4.2
+--     t,                              -- epoch, time()
+--     tpl = templateId,               -- the template the trace's text is built from
+--     args = { ... },                 -- the template's arguments
+--     a = archetype,                  -- the author's archetype key (7.2)
+--   }
+--
+-- `schema` stays 0 until v2 defines the first version of this format.
