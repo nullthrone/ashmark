@@ -37,7 +37,8 @@ L.CORE_SETTING_CHAT_LINES_DESC = "Ashmark может выводить корот
 L.CORE_SETTING_SOUNDS = "Звуки"
 L.CORE_SETTING_SOUNDS_DESC = "Ashmark воспроизводит игровые звуки страниц и книг."
 L.CORE_SETTING_SHARE = "Делиться с пользователями Ashmark"
-L.CORE_SETTING_SHARE_DESC = "Передавать ваш архетип, происхождение и слухи участникам группы, которые тоже "
+L.CORE_SETTING_SHARE_DESC = "Передавать ваш архетип, происхождение, показатели профиля (верность, "
+  .. "среда обитания, милосердие), тип мира, версию Ashmark и слухи участникам группы, которые тоже "
   .. "пользуются Ashmark. Контакты и заметки никогда не покидают ваш клиент."
 
 -- Shared vocabulary (5.8). Each fills a placeholder slot in the nominative: CORE_UNKNOWN_QUEST stands in
@@ -152,9 +153,9 @@ L.CONFLICT_HOUSE_STANDS_AGAINST = "Ваш дом, {house}, выступает п
 L.CONFLICT_TEST_DIALOG = "Здесь появляется строка Ashmark под окном задания."
 
 -- Chronicle sentences; _THEY forms are used in the family chronicle with {name}.
-L.CONFLICT_ALLIED = "В зоне {zone} вы выбрали сторону: {faction}."
-L.CONFLICT_ALLIED_THEY = "В зоне {zone} {name} выбрал сторону: {faction}."
-L.CONFLICT_ALLIED_THEY_F = "В зоне {zone} {name} выбрала сторону: {faction}."
+L.CONFLICT_ALLIED = "В зоне {zone} вы выбрали сторону: {faction} («{title}»)."
+L.CONFLICT_ALLIED_THEY = "В зоне {zone} {name} выбрал сторону: {faction} («{title}»)."
+L.CONFLICT_ALLIED_THEY_F = "В зоне {zone} {name} выбрала сторону: {faction} («{title}»)."
 L.CONFLICT_ALLIED_REP = "В зоне {zone} вашу сторону определила репутация: {faction}."
 L.CONFLICT_ALLIED_REP_THEY = "В зоне {zone} сторону персонажа {name} определила репутация: {faction}."
 L.CONFLICT_BROKE_WORD = "Вы нарушили слово, данное одной стороне ({broken}), и выполнили задание «{quest}» "
@@ -325,7 +326,7 @@ L.HOUSE_TAB_MEMBERS = "Члены дома"
 L.HOUSE_TAB_MEMBER = "{name}, уровень {level}"
 L.HOUSE_TAB_MEMBER_RULESET = "{member} · {ruleset}"
 L.HOUSE_TAB_FEUDS = "Унаследованные распри"
-L.HOUSE_TAB_FEUD = "{name}: выбор в зоне {zone} — {faction}."
+L.HOUSE_TAB_FEUD = "«{title}», {name}: выбор в зоне {zone} — {faction}."
 L.HOUSE_TAB_CHRONICLE = "Семейная летопись"
 L.HOUSE_TAB_MEMORY = "Семейная память"
 L.HOUSE_TAB_KNOWS = "{sibling} и {name} знакомы."
@@ -363,8 +364,8 @@ L.KNOW_SETTING_QUEST_REWARDS_DESC = "Никогда не скрывать под
 
 L.FICTION_MODULE_NAME = "Общая история"
 L.FICTION_MODULE_DESC = "Участники группы, которые тоже пользуются Ashmark, без единого слова в чате узнают ваш "
-  .. "архетип и происхождение, а вы — их. Благодаря этому летопись и подсказки могут рассказать, с кем вы "
-  .. "странствовали. Другим игрокам ничего не показывается."
+  .. "архетип, происхождение, показатели профиля, тип мира и версию Ashmark, а вы — их. Благодаря этому "
+  .. "летопись и подсказки могут рассказать, с кем вы странствовали. Другим игрокам ничего не показывается."
 
 -- Test mode (7.10)
 L.FICTION_TEST_HOWTO = "Вступите в группу с другим пользователем Ashmark, затем снова введите /ashmark test."

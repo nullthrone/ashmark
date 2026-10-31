@@ -37,7 +37,8 @@ L.CORE_SETTING_CHAT_LINES_DESC = "Ashmark가 대화창에 짧은 글을 남기�
 L.CORE_SETTING_SOUNDS = "효과음"
 L.CORE_SETTING_SOUNDS_DESC = "Ashmark가 게임의 책장 넘기는 소리와 책 여닫는 소리를 재생합니다."
 L.CORE_SETTING_SHARE = "다른 Ashmark 사용자와 공유"
-L.CORE_SETTING_SHARE_DESC = "당신의 유형과 출신, 소문을 Ashmark를 사용하는 다른 파티원에게 보냅니다. "
+L.CORE_SETTING_SHARE_DESC = "당신의 유형과 출신, 프로필 점수(신의, 생활권, 자비), 서버 종류, "
+  .. "Ashmark 버전, 소문을 Ashmark를 사용하는 다른 파티원에게 보냅니다. "
   .. "만남 기록과 메모는 결코 당신의 클라이언트 밖으로 나가지 않습니다."
 
 -- Shared vocabulary (5.8). Every frame writes "{quest} 퀘스트", so the quest fallback is a determiner.
@@ -146,8 +147,8 @@ L.CONFLICT_HOUSE_STANDS_AGAINST = "당신이 속한 {house} 가문은 {faction} 
 L.CONFLICT_TEST_DIALOG = "퀘스트 창 아래에 나타나는 Ashmark의 문구가 여기에 표시됩니다."
 
 -- Chronicle sentences
-L.CONFLICT_ALLIED = "{zone}에서 {faction} 편에 섰습니다."
-L.CONFLICT_ALLIED_THEY = "{name}은(는) {zone}에서 {faction} 편에 섰습니다."
+L.CONFLICT_ALLIED = "{zone}에서 {faction} 편에 섰습니다({title} 퀘스트)."
+L.CONFLICT_ALLIED_THEY = "{name}은(는) {zone}에서 {faction} 편에 섰습니다({title} 퀘스트)."
 L.CONFLICT_ALLIED_REP = "{zone}에서는 {faction}에 대한 평판이 당신의 편을 정했습니다."
 L.CONFLICT_ALLIED_REP_THEY = "{zone}에서는 {faction}에 대한 평판이 {name}의 편을 정했습니다."
 L.CONFLICT_BROKE_WORD = "{broken} 측과의 신의를 저버리고 {faction} 측을 위해 {quest} 퀘스트를 "
@@ -302,7 +303,7 @@ L.HOUSE_TAB_MEMBERS = "구성원"
 L.HOUSE_TAB_MEMBER = "{name}, 레벨 {level}"
 L.HOUSE_TAB_MEMBER_RULESET = "{member} · {ruleset}"
 L.HOUSE_TAB_FEUDS = "물려받은 반목"
-L.HOUSE_TAB_FEUD = "{name}은(는) {zone}에서 {faction} 편에 섰습니다."
+L.HOUSE_TAB_FEUD = "{title} 퀘스트: {name}은(는) {zone}에서 {faction} 편에 섰습니다."
 L.HOUSE_TAB_CHRONICLE = "가문 연대기"
 L.HOUSE_TAB_MEMORY = "가문의 기억"
 L.HOUSE_TAB_KNOWS = "{sibling}은(는) {name}의 얼굴을 압니다."
@@ -340,8 +341,9 @@ L.KNOW_SETTING_QUEST_REWARDS_DESC = "퀘스트 창에 표시되는 보상의 툴
 
 L.FICTION_MODULE_NAME = "공유된 이야기"
 L.FICTION_MODULE_DESC = "Ashmark를 사용하는 다른 파티원은 대화창에 한마디 없이도 당신의 유형과 "
-  .. "출신을 알게 되고, 당신도 그들의 것을 알게 됩니다. 그래서 연대기와 툴팁이 당신이 누구와 함께 "
-  .. "여행했는지 알려 줄 수 있습니다. 다른 플레이어에게는 아무것도 표시되지 않습니다."
+  .. "출신, 프로필 점수, 서버 종류, Ashmark 버전을 알게 되고, 당신도 그들의 것을 알게 됩니다. "
+  .. "그래서 연대기와 툴팁이 당신이 누구와 함께 여행했는지 알려 줄 수 있습니다. "
+  .. "다른 플레이어에게는 아무것도 표시되지 않습니다."
 
 -- Test mode (7.10)
 L.FICTION_TEST_HOWTO = "다른 Ashmark 사용자와 파티를 맺은 다음 /ashmark test를 다시 실행하십시오."

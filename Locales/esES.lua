@@ -34,8 +34,9 @@ L.CORE_SETTING_CHAT_LINES_DESC = "Ashmark puede escribir líneas breves en la ve
 L.CORE_SETTING_SOUNDS = "Sonidos"
 L.CORE_SETTING_SOUNDS_DESC = "Ashmark reproduce los sonidos de páginas y libros del juego."
 L.CORE_SETTING_SHARE = "Compartir con otros usuarios de Ashmark"
-L.CORE_SETTING_SHARE_DESC = "Envía tu arquetipo, tu origen y tus rumores a los miembros del grupo que también "
-  .. "usen Ashmark. Los contactos y las notas nunca salen de tu cliente."
+L.CORE_SETTING_SHARE_DESC = "Envía tu arquetipo, tu origen, tus valores de perfil (fidelidad, hábitat, "
+  .. "clemencia), tu tipo de reino, tu versión de Ashmark y tus rumores a los miembros del grupo que también usen "
+  .. "Ashmark. Los contactos y las notas nunca salen de tu cliente."
 
 -- Shared vocabulary (5.8)
 L.CORE_UNKNOWN_QUEST = "una misión"
@@ -142,8 +143,8 @@ L.CONFLICT_HOUSE_STANDS_AGAINST = "Tu casa, {house}, se opone a {faction}."
 L.CONFLICT_TEST_DIALOG = "Aquí aparece la línea de Ashmark bajo la ventana de misión."
 
 -- Chronicle sentences. {broken} never needs to agree: it stands after "a".
-L.CONFLICT_ALLIED = "Te pusiste del lado de {faction} en {zone}."
-L.CONFLICT_ALLIED_THEY = "{name} se puso del lado de {faction} en {zone}."
+L.CONFLICT_ALLIED = "Te pusiste del lado de {faction} en {zone} ({title})."
+L.CONFLICT_ALLIED_THEY = "{name} se puso del lado de {faction} en {zone} ({title})."
 L.CONFLICT_ALLIED_REP = "Tu reputación con {faction} decidió tu bando en {zone}."
 L.CONFLICT_ALLIED_REP_THEY = "La reputación de {name} con {faction} decidió su bando en {zone}."
 L.CONFLICT_BROKE_WORD = "Faltaste a la palabra dada a {broken} y completaste {quest} para {faction}."
@@ -301,7 +302,7 @@ L.HOUSE_TAB_MEMBERS = "Miembros"
 L.HOUSE_TAB_MEMBER = "{name}, nivel {level}"
 L.HOUSE_TAB_MEMBER_RULESET = "{member} · {ruleset}"
 L.HOUSE_TAB_FEUDS = "Enemistades heredadas"
-L.HOUSE_TAB_FEUD = "{name} se puso del lado de {faction} en {zone}."
+L.HOUSE_TAB_FEUD = "{title}: {name} se puso del lado de {faction} en {zone}."
 L.HOUSE_TAB_CHRONICLE = "Crónica familiar"
 L.HOUSE_TAB_MEMORY = "Memoria familiar"
 L.HOUSE_TAB_KNOWS = "{sibling} conoce a {name}."
@@ -338,9 +339,10 @@ L.KNOW_SETTING_QUEST_REWARDS_DESC = "No ocultar nunca las descripciones emergent
 -- Fiction --------------------------------------------------------------------------------------------------------
 
 L.FICTION_MODULE_NAME = "Ficción compartida"
-L.FICTION_MODULE_DESC = "Los miembros del grupo que también usan Ashmark conocen tu arquetipo y tu origen sin que "
-  .. "aparezca una sola palabra en el chat, y tú conoces los suyos, de modo que tu crónica y tus descripciones "
-  .. "emergentes pueden decir con quién viajaste. A los demás jugadores no se les muestra nada."
+L.FICTION_MODULE_DESC = "Los miembros del grupo que también usan Ashmark conocen tu arquetipo, tu origen, tus "
+  .. "valores de perfil, tu tipo de reino y tu versión de Ashmark sin que aparezca una sola palabra en el chat, y tú "
+  .. "conoces los suyos, de modo que tu crónica y tus descripciones emergentes pueden decir con quién viajaste. A "
+  .. "los demás jugadores no se les muestra nada."
 
 -- Test mode (7.10)
 L.FICTION_TEST_HOWTO = "Forma grupo con otro usuario de Ashmark y vuelve a ejecutar /ashmark test."

@@ -35,8 +35,9 @@ L.CORE_SETTING_CHAT_LINES_DESC = "Ashmark peut écrire de courtes lignes dans la
 L.CORE_SETTING_SOUNDS = "Sons"
 L.CORE_SETTING_SOUNDS_DESC = "Ashmark joue les sons de page et de livre du jeu."
 L.CORE_SETTING_SHARE = "Partager avec les autres utilisateurs d'Ashmark"
-L.CORE_SETTING_SHARE_DESC = "Envoie votre archétype, votre origine et vos rumeurs aux membres du groupe qui "
-  .. "utilisent aussi Ashmark. Les contacts et les notes ne quittent jamais votre client."
+L.CORE_SETTING_SHARE_DESC = "Envoie votre archétype, votre origine, vos scores de profil (fidélité, habitat, "
+  .. "clémence), votre type de royaume, votre version d'Ashmark et vos rumeurs aux membres du groupe qui utilisent "
+  .. "aussi Ashmark. Les contacts et les notes ne quittent jamais votre client."
 
 -- Shared vocabulary (5.8)
 L.CORE_UNKNOWN_QUEST = "une quête"
@@ -143,8 +144,8 @@ L.CONFLICT_HOUSE_STANDS_AGAINST = "Votre maison, {house}, se dresse contre {fact
 L.CONFLICT_TEST_DIALOG = "La ligne d'Ashmark sous la fenêtre de quête apparaît ici."
 
 -- Chronicle sentences; _THEY forms are used in the family chronicle with {name}.
-L.CONFLICT_ALLIED = "Vous avez pris parti pour {faction} dans {zone}."
-L.CONFLICT_ALLIED_THEY = "{name} a pris parti pour {faction} dans {zone}."
+L.CONFLICT_ALLIED = "Vous avez pris parti pour {faction} dans {zone} ({title})."
+L.CONFLICT_ALLIED_THEY = "{name} a pris parti pour {faction} dans {zone} ({title})."
 L.CONFLICT_ALLIED_REP = "Vous avez pris parti pour {faction} dans {zone}, comme le dictait votre réputation."
 L.CONFLICT_ALLIED_REP_THEY = "{name} a pris parti pour {faction} dans {zone}, comme le dictait sa réputation."
 L.CONFLICT_BROKE_WORD = "Vous avez trahi {broken} en achevant {quest} pour {faction}."
@@ -309,7 +310,7 @@ L.HOUSE_TAB_MEMBERS = "Membres"
 L.HOUSE_TAB_MEMBER = "{name}, niveau {level}"
 L.HOUSE_TAB_MEMBER_RULESET = "{member} · {ruleset}"
 L.HOUSE_TAB_FEUDS = "Querelles héritées"
-L.HOUSE_TAB_FEUD = "{name} a pris parti pour {faction} dans {zone}."
+L.HOUSE_TAB_FEUD = "{title} : {name} a pris parti pour {faction} dans {zone}."
 L.HOUSE_TAB_CHRONICLE = "Chronique familiale"
 L.HOUSE_TAB_MEMORY = "Mémoire familiale"
 L.HOUSE_TAB_KNOWS = "{sibling} connaît {name}."
@@ -346,9 +347,10 @@ L.KNOW_SETTING_QUEST_REWARDS_DESC = "Ne masque jamais les infobulles des récomp
 -- Fiction ------------------------------------------------------------------------------------------------
 
 L.FICTION_MODULE_NAME = "Fiction partagée"
-L.FICTION_MODULE_DESC = "Les membres du groupe qui utilisent aussi Ashmark apprennent votre archétype et votre "
-  .. "origine sans un mot dans la discussion, et vous apprenez les leurs : votre chronique et vos infobulles "
-  .. "savent ainsi avec qui vous avez voyagé. Rien n'est montré aux autres joueurs."
+L.FICTION_MODULE_DESC = "Les membres du groupe qui utilisent aussi Ashmark apprennent votre archétype, votre "
+  .. "origine, vos scores de profil, votre type de royaume et votre version d'Ashmark sans un mot dans la "
+  .. "discussion, et vous apprenez les leurs : votre chronique et vos infobulles savent ainsi avec qui vous avez "
+  .. "voyagé. Rien n'est montré aux autres joueurs."
 
 -- Test mode (7.10)
 L.FICTION_TEST_HOWTO = "Formez un groupe avec un autre utilisateur d'Ashmark, puis tapez de nouveau /ashmark test."

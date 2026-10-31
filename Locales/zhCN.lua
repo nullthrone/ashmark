@@ -33,7 +33,8 @@ L.CORE_SETTING_CHAT_LINES_DESC = "允许Ashmark在聊天窗口中写下简短的
 L.CORE_SETTING_SOUNDS = "音效"
 L.CORE_SETTING_SOUNDS_DESC = "Ashmark会播放游戏自带的翻页声和书本音效。"
 L.CORE_SETTING_SHARE = "与其他Ashmark用户共享"
-L.CORE_SETTING_SHARE_DESC = "将你的人物类型、出身和传闻发送给同样使用Ashmark的队友。"
+L.CORE_SETTING_SHARE_DESC = "将你的人物类型、出身、侧写分数（守信、栖所、仁慈）、服务器类型、"
+  .. "Ashmark版本和传闻发送给同样使用Ashmark的队友。"
   .. "相识记录和备注绝不会离开你的客户端。"
 
 -- Shared vocabulary (5.8). Every frame writes "{quest}任务", so the quest fallback is a determiner.
@@ -136,8 +137,8 @@ L.CONFLICT_HOUSE_STANDS_AGAINST = "你所属的{house}家族与{faction}对立�
 L.CONFLICT_TEST_DIALOG = "Ashmark在任务窗口下方的提示文字会显示在这里。"
 
 -- Chronicle sentences
-L.CONFLICT_ALLIED = "你在{zone}站到了{faction}一边。"
-L.CONFLICT_ALLIED_THEY = "{name}在{zone}站到了{faction}一边。"
+L.CONFLICT_ALLIED = "你在{zone}站到了{faction}一边（{title}任务）。"
+L.CONFLICT_ALLIED_THEY = "{name}在{zone}站到了{faction}一边（{title}任务）。"
 L.CONFLICT_ALLIED_REP = "你在{faction}中的声望决定了你在{zone}的立场。"
 L.CONFLICT_ALLIED_REP_THEY = "{name}在{faction}中的声望决定了其在{zone}的立场。"
 L.CONFLICT_BROKE_WORD = "你背弃了{broken}，为{faction}完成了{quest}任务。"
@@ -282,7 +283,7 @@ L.HOUSE_TAB_MEMBERS = "成员"
 L.HOUSE_TAB_MEMBER = "{name}，{level}级"
 L.HOUSE_TAB_MEMBER_RULESET = "{member} · {ruleset}"
 L.HOUSE_TAB_FEUDS = "世仇"
-L.HOUSE_TAB_FEUD = "{name}在{zone}站到了{faction}一边。"
+L.HOUSE_TAB_FEUD = "{title}任务：{name}在{zone}站到了{faction}一边。"
 L.HOUSE_TAB_CHRONICLE = "家族编年史"
 L.HOUSE_TAB_MEMORY = "家族记忆"
 L.HOUSE_TAB_KNOWS = "{sibling}认识{name}。"
@@ -317,8 +318,9 @@ L.KNOW_SETTING_QUEST_REWARDS_DESC = "从不隐藏任务窗口中所列奖励的�
 -- Fiction --------------------------------------------------------------------------------------------------------
 
 L.FICTION_MODULE_NAME = "共享叙事"
-L.FICTION_MODULE_DESC = "同样使用Ashmark的小队成员无需在聊天中多说一句，就能得知你的人物类型和出身，你也能"
-  .. "得知他们的，因此你的编年史和鼠标提示能讲述你曾与谁同行。其他玩家不会看到任何内容。"
+L.FICTION_MODULE_DESC = "同样使用Ashmark的小队成员无需在聊天中多说一句，就能得知你的人物类型、出身、"
+  .. "侧写分数、服务器类型和Ashmark版本，你也能得知他们的，"
+  .. "因此你的编年史和鼠标提示能讲述你曾与谁同行。其他玩家不会看到任何内容。"
 
 -- Test mode (7.10)
 L.FICTION_TEST_HOWTO = "与另一位Ashmark用户组队，然后再次输入/ashmark test。"

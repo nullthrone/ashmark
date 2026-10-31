@@ -34,8 +34,9 @@ L.CORE_SETTING_CHAT_LINES_DESC = "Ashmark darf kurze Zeilen ins Chatfenster schr
 L.CORE_SETTING_SOUNDS = "Soundeffekte"
 L.CORE_SETTING_SOUNDS_DESC = "Ashmark spielt die Seiten- und Buchgeräusche des Spiels ab."
 L.CORE_SETTING_SHARE = "Mit anderen Ashmark-Nutzern teilen"
-L.CORE_SETTING_SHARE_DESC = "Sendet Euren Archetyp, Eure Herkunft und Eure Gerüchte an Gruppenmitglieder, die "
-  .. "ebenfalls Ashmark nutzen. Kontakte und Notizen verlassen Euren Client nie."
+L.CORE_SETTING_SHARE_DESC = "Sendet Euren Archetyp, Eure Herkunft, Eure Profilwerte (Treue, Lebensart, Gnade), "
+  .. "Euren Realmtyp, Eure Ashmark-Version und Eure Gerüchte an Gruppenmitglieder, die ebenfalls Ashmark nutzen. "
+  .. "Kontakte und Notizen verlassen Euren Client nie."
 
 -- Shared vocabulary (5.8)
 L.CORE_UNKNOWN_QUEST = "eine Quest"
@@ -142,8 +143,9 @@ L.CONFLICT_HOUSE_STANDS_AGAINST = "Euer Haus {house} steht gegen die Fraktion {f
 L.CONFLICT_TEST_DIALOG = "Hier erscheint Ashmarks Zeile unter dem Questfenster."
 
 -- Chronicle sentences
-L.CONFLICT_ALLIED = "Ihr habt Euch im Gebiet {zone} auf die Seite der Fraktion {faction} gestellt."
-L.CONFLICT_ALLIED_THEY = "{name} hat sich im Gebiet {zone} auf die Seite der Fraktion {faction} gestellt."
+L.CONFLICT_ALLIED = "Ihr habt Euch im Gebiet {zone} auf die Seite der Fraktion {faction} gestellt ({title})."
+L.CONFLICT_ALLIED_THEY = "{name} hat sich im Gebiet {zone} auf die Seite der Fraktion {faction} gestellt "
+  .. "({title})."
 L.CONFLICT_ALLIED_REP = "Euer Ruf bei der Fraktion {faction} hat im Gebiet {zone} über Eure Seite entschieden."
 L.CONFLICT_ALLIED_REP_THEY = "Der Ruf bei der Fraktion {faction} hat im Gebiet {zone} über die Seite von {name} "
   .. "entschieden."
@@ -308,7 +310,7 @@ L.HOUSE_TAB_MEMBERS = "Mitglieder"
 L.HOUSE_TAB_MEMBER = "{name}, Stufe {level}"
 L.HOUSE_TAB_MEMBER_RULESET = "{member} · {ruleset}"
 L.HOUSE_TAB_FEUDS = "Geerbte Fehden"
-L.HOUSE_TAB_FEUD = "{name} hat sich im Gebiet {zone} auf die Seite der Fraktion {faction} gestellt."
+L.HOUSE_TAB_FEUD = "{title}: {name} hat sich im Gebiet {zone} auf die Seite der Fraktion {faction} gestellt."
 L.HOUSE_TAB_CHRONICLE = "Familienchronik"
 L.HOUSE_TAB_MEMORY = "Familiengedächtnis"
 L.HOUSE_TAB_KNOWS = "{sibling} kennt {name}."
@@ -345,9 +347,10 @@ L.KNOW_SETTING_QUEST_REWARDS_DESC = "Die Tooltips der Belohnungen im Questfenste
 -- Fiction --------------------------------------------------------------------------------------------------------
 
 L.FICTION_MODULE_NAME = "Gemeinsame Fiktion"
-L.FICTION_MODULE_DESC = "Gruppenmitglieder, die ebenfalls Ashmark nutzen, erfahren Euren Archetyp und Eure "
-  .. "Herkunft, ohne dass ein Wort im Chat fällt, und Ihr erfahrt die ihren, sodass Eure Chronik und Eure Tooltips "
-  .. "sagen können, mit wem Ihr unterwegs wart. Anderen Spielern wird nichts angezeigt."
+L.FICTION_MODULE_DESC = "Gruppenmitglieder, die ebenfalls Ashmark nutzen, erfahren Euren Archetyp, Eure "
+  .. "Herkunft, Eure Profilwerte, Euren Realmtyp und Eure Ashmark-Version, ohne dass ein Wort im Chat fällt, und "
+  .. "Ihr erfahrt die ihren, sodass Eure Chronik und Eure Tooltips sagen können, mit wem Ihr unterwegs wart. "
+  .. "Anderen Spielern wird nichts angezeigt."
 
 -- Test mode (7.10)
 L.FICTION_TEST_HOWTO = "Bildet mit einem anderen Ashmark-Nutzer eine Gruppe und führt dann erneut /ashmark test aus."
