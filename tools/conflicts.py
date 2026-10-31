@@ -4,9 +4,14 @@
 Source: data/conflicts/*.csv, one row per quest. Conflict-level columns repeat on
 every row of a conflict and must agree.
 
+Characters store alliances under the conflict id and as the letter of a side, so ids and
+sides are permanent once written. data/conflicts/registry.csv records every id the
+generator has written, with each side's faction and quests; data/conflicts/renamed.csv is
+the only way to rename or retire one. Neither is an area file.
+
 Usage:
-  python3 tools/conflicts.py           validate and write Data/Conflicts.lua
-  python3 tools/conflicts.py --check   validate and fail if Data/Conflicts.lua is stale
+  python3 tools/conflicts.py           validate, write Data/Conflicts.lua and update the registry
+  python3 tools/conflicts.py --check   validate and fail if Data/Conflicts.lua or the registry is stale
 """
 import csv
 import re
@@ -23,6 +28,10 @@ COLUMNS = [
 ]
 CONFLICT_COLUMNS = ["zone", "theme", "honored", "anchor_m", "anchor_x", "anchor_y"]
 THEMES = {"feud", "law", "trade", "nature", "faith", "other"}
+REGISTRY = "registry.csv"
+REGISTRY_COLUMNS = ["conflict_id", "faction_a", "faction_b", "quests_a", "quests_b"]
+RENAMED = "renamed.csv"
+RENAMED_COLUMNS = ["old_id", "new_id", "reason"]
 SIDES = ("A", "B")
 ID_PATTERN = re.compile(r"^[a-z][a-z0-9_]{2,47}$")
 # Standing IDs as C_Reputation reports them: 4 Neutral .. 8 Exalted (9 is unused in Forever data).
@@ -55,19 +64,23 @@ def parse_coord(value, field, where):
     return round(number, 3)
 
 
+def read_table(path, columns):
+    with path.open(newline="", encoding="utf-8") as handle:
+        reader = csv.DictReader(handle)
+        if reader.fieldnames != columns:
+            raise ValidationError(
+                f"{path.name}: header must be {','.join(columns)}, got {','.join(reader.fieldnames or [])}"
+            )
+        for line, row in enumerate(reader, start=2):
+            yield f"{path.name}:{line}", {k: (v or "").strip() for k, v in row.items()}
+
+
 def read_rows():
-    files = sorted(SOURCE_DIR.glob("*.csv"))
+    files = [p for p in sorted(SOURCE_DIR.glob("*.csv")) if p.name not in (REGISTRY, RENAMED)]
     if not files:
         raise ValidationError(f"no source files in {SOURCE_DIR.relative_to(ROOT)}")
     for path in files:
-        with path.open(newline="", encoding="utf-8") as handle:
-            reader = csv.DictReader(handle)
-            if reader.fieldnames != COLUMNS:
-                raise ValidationError(
-                    f"{path.name}: header must be {','.join(COLUMNS)}, got {','.join(reader.fieldnames or [])}"
-                )
-            for line, row in enumerate(reader, start=2):
-                yield f"{path.name}:{line}", {k: (v or "").strip() for k, v in row.items()}
+        yield from read_table(path, COLUMNS)
 
 
 def build():
@@ -131,11 +144,114 @@ def build():
     return [conflicts[k] for k in sorted(conflicts)]
 
 
+def check_id(cid, field, where):
+    if not ID_PATTERN.match(cid):
+        raise ValidationError(f"{where}: {field} {cid!r} must match {ID_PATTERN.pattern}")
+
+
+def parse_quests(value, field, where):
+    return [parse_int(q, field, where, minimum=1) for q in value.split()]
+
+
+def read_registry():
+    path = SOURCE_DIR / REGISTRY
+    registry = {}
+    if not path.exists():
+        return registry
+    for where, row in read_table(path, REGISTRY_COLUMNS):
+        cid = row["conflict_id"]
+        check_id(cid, "conflict_id", where)
+        if cid in registry:
+            raise ValidationError(f"{where}: {cid} is registered twice")
+        registry[cid] = {
+            s: {
+                "faction": parse_int(row[f"faction_{s.lower()}"], f"faction_{s.lower()}", where),
+                "quests": parse_quests(row[f"quests_{s.lower()}"], f"quests_{s.lower()}", where),
+            }
+            for s in SIDES
+        }
+    return registry
+
+
+def read_renamed():
+    path = SOURCE_DIR / RENAMED
+    renamed = {}
+    if not path.exists():
+        return renamed
+    for where, row in read_table(path, RENAMED_COLUMNS):
+        old, new = row["old_id"], row["new_id"]
+        check_id(old, "old_id", where)
+        if new:
+            check_id(new, "new_id", where)
+        if old in renamed:
+            raise ValidationError(f"{where}: {old} is renamed twice")
+        if not row["reason"]:
+            raise ValidationError(f"{where}: reason is required")
+        renamed[old] = new or None
+    return renamed
+
+
+def check_registry(conflicts, registry, renamed):
+    """Released ids never disappear and released sides never change meaning."""
+    by_id = {c["id"]: c for c in conflicts}
+    targets = {}
+    for old, new in renamed.items():
+        if old not in registry:
+            raise ValidationError(f"{RENAMED}: {old} is not in {REGISTRY}; only a written id can be renamed")
+        if old in by_id:
+            raise ValidationError(f"{RENAMED}: {old} is renamed or retired, so the data must not use it")
+        if new is not None and new not in by_id:
+            raise ValidationError(f"{RENAMED}: {old} is renamed to {new}, which is not in the data")
+        if new is not None and new in targets:
+            raise ValidationError(f"{RENAMED}: {targets[new]} and {old} are both renamed to {new}")
+        targets[new] = old
+    for cid, released in registry.items():
+        if cid in renamed and renamed[cid] is None:
+            continue
+        target = renamed.get(cid, cid)
+        conflict = by_id.get(target)
+        if conflict is None:
+            raise ValidationError(
+                f"{cid} is in {REGISTRY} but not in the data; ids are permanent: restore it or add it to {RENAMED}"
+            )
+        for s, other in (("A", "B"), ("B", "A")):
+            was, now = released[s]["faction"], conflict["sides"][s]["faction"]
+            if was != now:
+                raise ValidationError(
+                    f"{target}: side {s} was written with faction {was}, now {now}; sides are permanent"
+                )
+            moved = sorted(set(released[s]["quests"]) & set(conflict["sides"][other]["quests"]))
+            if moved:
+                raise ValidationError(
+                    f"{target}: quest {', '.join(map(str, moved))} was written on side {s}, now on {other}; "
+                    "sides are permanent"
+                )
+
+
+def update_registry(conflicts, registry):
+    updated = {cid: {s: {"faction": e[s]["faction"], "quests": list(e[s]["quests"])} for s in SIDES}
+               for cid, e in registry.items()}
+    for c in conflicts:
+        entry = updated.setdefault(c["id"], {s: {"faction": c["sides"][s]["faction"], "quests": []} for s in SIDES})
+        for s in SIDES:
+            entry[s]["quests"] += [q for q in c["sides"][s]["quests"] if q not in entry[s]["quests"]]
+    return updated
+
+
+def render_registry(registry):
+    lines = [",".join(REGISTRY_COLUMNS)]
+    for cid in sorted(registry):
+        e = registry[cid]
+        quests = [" ".join(str(q) for q in e[s]["quests"]) for s in SIDES]
+        lines.append(f"{cid},{e['A']['faction']},{e['B']['faction']},{quests[0]},{quests[1]}")
+    return "\n".join(lines) + "\n"
+
+
 def lua_list(values):
     return "{ " + ", ".join(str(v) for v in values) + " }"
 
 
-def render(conflicts):
+def render(conflicts, renamed=None):
     lines = [
         "-- GENERATED by tools/conflicts.py from data/conflicts/*.csv. Do not edit.",
         "local _, ns = ...",
@@ -158,7 +274,15 @@ def render(conflicts):
             lines.append(f"      anchor = {{ m = {m}, x = {x}, y = {y} }},")
         lines.append(f"      verified = {'true' if verified else 'false'},")
         lines.append("    },")
-    lines += ["  },", "}", ""]
+    lines.append("  },")
+    renames = {old: new for old, new in (renamed or {}).items() if new}
+    if renames:
+        # Old id -> current id, so stored alliances can follow a renamed conflict.
+        lines.append("  renamed = {")
+        for old in sorted(renames):
+            lines.append(f'    ["{old}"] = "{renames[old]}",')
+        lines.append("  },")
+    lines += ["}", ""]
     return "\n".join(lines)
 
 
@@ -166,19 +290,29 @@ def main(argv):
     check = "--check" in argv
     try:
         conflicts = build()
+        registry = read_registry()
+        renamed = read_renamed()
+        check_registry(conflicts, registry, renamed)
     except ValidationError as error:
         print(f"conflicts: {error}", file=sys.stderr)
         return 1
-    output = render(conflicts)
+    output = render(conflicts, renamed)
+    registry_path = SOURCE_DIR / REGISTRY
+    registry_text = render_registry(update_registry(conflicts, registry))
     if check:
         current = OUTPUT.read_text(encoding="utf-8") if OUTPUT.exists() else ""
         if current != output:
             print("conflicts: Data/Conflicts.lua is out of date; run python3 tools/conflicts.py", file=sys.stderr)
             return 1
-        print(f"conflicts: {len(conflicts)} conflicts, Data/Conflicts.lua is current")
+        current = registry_path.read_text(encoding="utf-8") if registry_path.exists() else ""
+        if current != registry_text:
+            print(f"conflicts: {REGISTRY} is out of date; run python3 tools/conflicts.py", file=sys.stderr)
+            return 1
+        print(f"conflicts: {len(conflicts)} conflicts, Data/Conflicts.lua and {REGISTRY} are current")
         return 0
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     OUTPUT.write_text(output, encoding="utf-8")
+    registry_path.write_text(registry_text, encoding="utf-8")
     print(f"conflicts: wrote {len(conflicts)} conflicts to {OUTPUT.relative_to(ROOT)}")
     return 0
 

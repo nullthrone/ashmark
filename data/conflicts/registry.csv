@@ -1,0 +1,11 @@
+conflict_id,faction_a,faction_b,quests_a,quests_b
+gelkis_magram_clan_choice,92,93,1382 1368 1384,1385 1367 1386
+gelkis_magram_supplies_tears,92,93,1370 1373,1369 92743
+gelkis_magram_valley_of_bones,92,93,93034 93035 93037 93041 93044 93045,92841 92844 92846 92847 92873
+shendralas_gelkis_captives,92,93,93058,92893
+shendralas_khan_jehn,92,93,93128,93196 93188
+shendralas_scouting_vs_attack,92,93,93122,93072
+sw_bootybay_bloodsail_attack,21,87,597 599,4621
+sw_bootybay_bloodsail_recovery,21,87,576 587,1036
+zephras_belathaan_overlook_ambush,2778,2779,93746,92840 99260
+zephras_windshapers_vs_high_order_leyline,2778,2779,94411,94413
