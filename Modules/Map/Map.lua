@@ -151,9 +151,10 @@ local function file(t, m, item)
   list[#list + 1] = item
 end
 
+-- A violation of a retired conflict (7.1) tells nothing in the chronicle, so it gets no pin either.
 local function remember(t, kind, source)
   local item = positioned(kind, source)
-  if not item then return end
+  if not item or (kind == "violation" and conflicts("Get", source.c) == nil) then return end
   file(t, item.m, item)
   local zone = ns.Where.Zone(item.m)
   if zone and zone ~= item.m then file(t, zone, item) end
