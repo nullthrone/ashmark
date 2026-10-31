@@ -452,7 +452,7 @@ td.wrap-ok { white-space: normal; }
           <li class="feature">
             <h3>Conflicts</h3>
             <p class="where"><span class="caps-column">In game</span>A line under the quest dialog · Decisions tab</p>
-            <p>Accepting or turning in a quest on one side of a conflict allies you with that side. Standing alone also decides it, once exactly one side's faction reaches the conflict's level (Honored in every pilot conflict); one standing decides every conflict of that faction in a zone at once, with one line in the chronicle. A quest that contradicts your side shows a red line under the dialog:</p>
+            <p>Accepting or turning in a quest on one side of a conflict allies you with that side. Standing alone also decides it, once exactly one side's faction reaches the conflict's level (Honored in every pilot conflict); one standing decides every conflict of that faction in a zone at once, with one line in the chronicle. An alliance by quest names its conflict by the title of its first quest, so two conflicts between the same factions in one zone read apart. A quest that contradicts your side shows a red line under the dialog:</p>
             <blockquote>Contradicts your alliance with {faction}.</blockquote>
             <p>Ashmark cannot block the quest. Turning it in breaks your word: the chronicle and the Decisions tab record it and your alliance moves to the new side. There is no further penalty; the rewards you gave up are the consequence. The Decisions tab lists the conflicts by zone, each under the title of its first quest with both sides, the side taken and since when, how often it was broken, and your total of broken words. Ten pilot conflicts ship with v1. Outside Zephras Isle, the Skyborne starting zone, the first of them begin around level 30 in Desolace.</p>
           </li>
@@ -477,14 +477,14 @@ td.wrap-ok { white-space: normal; }
           <li class="feature">
             <h3>Encounters</h3>
             <p class="where"><span class="caps-column">In game</span>Unit tooltip line · Encounters tab · chat lines</p>
-            <p>Every group, however it formed, becomes a session. When it ends, each member becomes a contact with times met, last place and how it went: a boss kill, a wipe, a shared camp, a kick or plain travel.</p>
+            <p>Every party or raid you form, however it formed, becomes a session; the raid a battleground puts you in does not, so its strangers never become contacts. When it ends, each member becomes a contact with times met, last place and how it went: a boss kill, a wipe, a shared camp, a kick or plain travel.</p>
             <blockquote>Met: 3× · last Desolace</blockquote>
             <p>The line appears for people this character has met; a second line names the archetype of an Ashmark user. When people you know join your group, each of the first three gets a chat line and the rest share one. The tab lists contacts newest first in class colour, with your notes (up to 120 characters) and a "Familiar face" marker from three meetings on. Contacts belong to the account, counts to each character. Ashmark reads members' names outside instances only.</p>
           </li>
           <li class="feature">
             <h3>House</h3>
             <p class="where"><span class="caps-column">In game</span>House tab · a hint under the quest dialog</p>
-            <p>Characters on this account who share a surname form a house. The tab shows its members by level, this character's three axes and archetype, inherited feuds (sides your relatives took that this character has not), the family chronicle, family memory (people a relative has met three times or more) and the account's Legacy level when the client exposes it.</p>
+            <p>Characters on this account who share a surname form a house. The tab shows its members by level, this character's three axes and archetype, inherited feuds (sides your relatives took that this character has not, one row per conflict under the title of its first quest), the family chronicle, family memory (people a relative has met three times or more) and the account's Legacy level when the client exposes it.</p>
             <blockquote>Your house, {house}, stands against {faction}.</blockquote>
             <p>Taking such a quest is recorded as turning from your house. It is not a broken word. Without a readable surname, <code>/ashmark house &lt;name&gt;</code> picks a house.</p>
           </li>
@@ -504,7 +504,7 @@ td.wrap-ok { white-space: normal; }
           <li class="feature">
             <h3>Rumours</h3>
             <p class="where"><span class="caps-column">In game</span>Chat lines</p>
-            <p>Your alliances, broken words and turns from your house become rumours that travel from party to party among Ashmark users. A rumour you hear for the first time prints one chat line.</p>
+            <p>Your alliances, broken words and turns from your house become rumours that travel from party to party among Ashmark users. Deeds that tell the same thing make one rumour: siding with one faction in several conflicts of a zone starts one rumour, not one per conflict, until it fades. A rumour you hear for the first time prints one chat line.</p>
             <blockquote>People say the Oathkeeper from Desolace has sided with {faction}.</blockquote>
             <p>Each hop costs 30 percent of a rumour's strength. From the second hop the place is the continent; from the third the faction is gone. Strength halves every 3 days, and a rumour below 20 fades. A rumour names an archetype, the conflict's zone and a faction, never a character; but party members who hear one of your own rumours first know it is yours, because the game names the sender of every addon message. Entering a zone can repeat one rumour about it or its continent: each rumour at most once a day, at most five rumour lines an hour. The module runs only while Shared fiction is on.</p>
           </li>
@@ -555,7 +555,7 @@ td.wrap-ok { white-space: normal; }
               <tr><td><code>/ashmark debug</code></td><td>Turn debug mode on or off for this session. In debug mode a malformed log entry raises a Lua error instead of being dropped or stripped.</td></tr>
               <tr><td><code>/ashmark reset</code></td><td>After a confirmation, wipe this character's record, its meetings and its sightings of Ashmark users.</td></tr>
               <tr><td><code>/ashmark reset &lt;name&gt;</code></td><td>After a confirmation, forget another character of this account that you deleted or moved. Several characters with that name are listed with their GUIDs; type <code>/ashmark reset &lt;GUID&gt;</code> for one. A name that matches no other character changes nothing.</td></tr>
-              <tr><td><code>/ashmark reset others</code></td><td>After a confirmation, wipe every contact, peer and heard rumour on the account. Your own rumours stay.</td></tr>
+              <tr><td><code>/ashmark reset others</code></td><td>After a confirmation, wipe every contact, peer and heard rumour on the account, and what every character's record keeps of other players. Your own rumours stay.</td></tr>
             </tbody>
           </table>
         </div>
@@ -567,7 +567,7 @@ td.wrap-ok { white-space: normal; }
             <tbody>
               <tr><td>Lines in chat</td><td>Rumours and the recognition lines of Encounters print in chat. Replies to commands always print.</td></tr>
               <tr><td>Sounds</td><td>The game's quest log and page-turn sounds when the window opens or closes, when you turn to another chapter and when a camp closes one.</td></tr>
-              <tr><td>Share with other Ashmark users</td><td>Send your archetype, origin, profile and rumours to party members. Off: Ashmark only receives.</td></tr>
+              <tr><td>Share with other Ashmark users</td><td>Send your archetype, origin, profile scores, ruleset, Ashmark version and rumours to party members. Off: Ashmark only receives.</td></tr>
               <tr><td class="wrap-ok">Conflicts, Profile, World map, Encounters, House, Campfire, Character knowledge, Shared fiction, Rumours</td><td>One switch per module. A tab whose module is off is hidden. A module the client cannot support stays off, and its tooltip names the missing capability or event. Rumours runs only while Shared fiction is on.</td></tr>
               <tr><td>Quest rewards in full</td><td>Character knowledge never hides the tooltips of rewards shown in the quest dialog.</td></tr>
             </tbody>
@@ -617,7 +617,7 @@ td.wrap-ok { white-space: normal; }
           <li><strong>settings</strong>, <strong>traces</strong> (empty, reserved for v2) and <strong>dev</strong> (the last 10 test reports, 20 probe records and 20 blocked-action reports).</li>
         </ul>
         <h3>Reset</h3>
-        <p><code>/ashmark reset</code> deletes this character's record (log, chapters, alliances, profile, held items and sessions) and starts a new one. Contacts, peers and rumours belong to the account and stay, but they lose this character's share: its meeting counts in contacts and its sightings in peers. A contact that no other character met and that has no note goes. <code>/ashmark reset &lt;name&gt;</code> does the same for another character of the account that you deleted or moved, so it stops counting in its house; it never names the character you are playing. <code>/ashmark reset others</code> deletes contacts with their notes, peers and every rumour this account did not start. All three ask first in Ashmark's own dialog. To remove everything, delete <code>Ashmark.lua</code> and <code>Ashmark.lua.bak</code> from the SavedVariables folder while the game is closed.</p>
+        <p><code>/ashmark reset</code> deletes this character's record (log, chapters, alliances, profile, held items and sessions) and starts a new one. Contacts, peers and rumours belong to the account and stay, but they lose this character's share: its meeting counts in contacts and its sightings in peers. A contact that no other character met and that has no note goes. <code>/ashmark reset &lt;name&gt;</code> does the same for another character of the account that you deleted or moved, so it stops counting in its house; it never names the character you are playing. <code>/ashmark reset others</code> deletes contacts with their notes, peers and every rumour this account did not start, and forgets whom your own rumours were told to. In every character's record it also removes the first meetings and sightings from the log, the stored group sessions with their members, and other characters' party senders; old group sentences then count companions instead of naming them. All three ask first in Ashmark's own dialog. To remove everything, delete <code>Ashmark.lua</code> and <code>Ashmark.lua.bak</code> from the SavedVariables folder while the game is closed.</p>
         <p>Saved data from a newer Ashmark is only read, never written. Data in a shape Ashmark does not know is kept untouched in <code>AshmarkDB.recovered</code>. When a new record starts, Ashmark says so. If the account used Ashmark before, its saved data did not load: do not reload or log out, quit the game and replace <code>Ashmark.lua</code> with <code>Ashmark.lua.bak</code> before the next login.</p>
       </div>
     </div>

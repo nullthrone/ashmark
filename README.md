@@ -53,7 +53,7 @@ Open the window with `/ashmark`, `/amk` or the Addon Compartment (left click: wi
 | `/ashmark debug` | turn debug mode on or off for the session; in it a malformed log entry raises a Lua error |
 | `/ashmark reset` | after a confirmation, wipe this character's record, its meetings and its sightings of Ashmark users |
 | `/ashmark reset <name>` | after a confirmation, forget another character of this account that you deleted or moved; several with that name are listed with their GUIDs, and `/ashmark reset <GUID>` picks one |
-| `/ashmark reset others` | after a confirmation, wipe contacts, peers and heard rumours on the account |
+| `/ashmark reset others` | after a confirmation, wipe contacts, peers and heard rumours on the account, and what every character's record keeps of other players |
 
 ## Languages
 
@@ -64,7 +64,7 @@ enUS (also enGB), deDE, frFR, esES, esMX, ptBR, ruRU, koKR, zhTW and zhCN: the t
 - Ashmark sends addon messages with the prefix `Ashmark` on the `PARTY` channel only (in a raid, `PARTY` should reach only your subgroup; the probe checks this at launch): `HI` (your GUID, archetype, origin zone ID, ruleset, addon version), `PR` (your GUID and three axis values) and `RU` (a rumour: random id, template, hops, strength, age, archetype, faction ID, map ID). Names, contacts, notes and free text are never sent.
 - It only receives when "Share with other Ashmark users" is off, on Forever trial and veteran accounts, which cannot send addon messages, and for the rest of a session in which three sends in a row fail.
 - Everything is stored in one account-wide SavedVariable, `AshmarkDB` (`_forever_\WTF\Account\<ACCOUNT>\SavedVariables\Ashmark.lua`), with characters keyed by GUID.
-- `/ashmark reset` wipes this character's record and its share of contacts and peers (a contact no other character met and without a note goes); `/ashmark reset <name>` does the same for another character of the account. `/ashmark reset others` wipes contacts, peers and rumours this account did not start.
+- `/ashmark reset` wipes this character's record and its share of contacts and peers (a contact no other character met and without a note goes); `/ashmark reset <name>` does the same for another character of the account. `/ashmark reset others` wipes contacts, peers and rumours this account did not start, whom your own rumours were told to, and in every character's record the first meetings and sightings in the log, the stored group sessions with their members, and the party's Ashmark senders of other characters.
 - A rumour carries no name, but the game names the sender of every addon message, so party members who hear your own rumour first know it is yours.
 
 ## Testing at launch
