@@ -247,6 +247,26 @@ describe("UI House tab", function()
     assert.equal("Thalen", colored[#colored])
   end)
 
+  it("names a sibling whose record has no name as someone in every row", function()
+    boot({ extra = { [mock.MIRA] = allied({ clan_choice = "A" }), [mock.TOBIN] = { name = "" } } })
+    mock.char(mock.MIRA).name = nil
+    _G.AshmarkDB.contacts[THALEN] = { guid = THALEN, name = "Thalen", class = "HUNTER" }
+    known[mock.MIRA] = { [THALEN] = { count = 4 } }
+    known[mock.TOBIN] = { [THALEN] = { count = 3 } }
+    tab()
+    assert.same({
+      "# Members",
+      "[MAGE:someone Ashvale], level 35",
+      "[WARRIOR:Aren Ashvale], level 20",
+      "[ROGUE:someone Ashvale], level 12",
+      "# Inherited feuds",
+      "Clan Choice: [MAGE:someone] sided with Gelkis Clan Centaur in Desolace.",
+      "# Family memory",
+      "[MAGE:someone] knows [HUNTER:Thalen].",
+      "[ROGUE:someone] knows [HUNTER:Thalen].",
+    }, texts())
+  end)
+
   it("redraws for family entries and the Legacy, never for entries it does not show", function()
     boot()
     tab()

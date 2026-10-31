@@ -83,8 +83,15 @@ local function initRow(button, data)
   label:SetText(data.text or rowText(data))
 end
 
+-- A character record's first name; "someone" for a record whose name the client never gave (Identity).
+local function firstName(char)
+  local name = char.name
+  if type(name) == "string" and name ~= "" then return name end
+  return L.CORE_UNKNOWN_PLAYER
+end
+
 local function fullName(char)
-  local name = tostring(char.name or L.CORE_UNKNOWN_PLAYER)
+  local name = firstName(char)
   if type(char.surname) == "string" and char.surname ~= "" then return name .. " " .. char.surname end
   return name
 end
@@ -134,7 +141,7 @@ local function feudRows(char, members)
   local rows = {}
   local function add(conflict, side, sibling)
     local row = { zone = ns.Names.Map(conflict.zone), title = conflicts:Title(conflict) or L.CORE_UNKNOWN_QUEST,
-                  faction = sideName(conflict, side), name = tostring(sibling.name or "") }
+                  faction = sideName(conflict, side), name = firstName(sibling) }
     row.text = ns.Format(L.HOUSE_TAB_FEUD, {
       title = row.title, name = UI:ClassColored(row.name, sibling.class), faction = row.faction, zone = row.zone,
     })
@@ -180,7 +187,7 @@ local function memoryRows(char, members)
                               class = contact and contact.class }
       end
       table.sort(known, byName)
-      local name = #known > 0 and UI:ClassColored(sibling.name, sibling.class)
+      local name = #known > 0 and UI:ClassColored(firstName(sibling), sibling.class)
       for _, row in ipairs(known) do
         row.sibling = name
         rows[#rows + 1] = row
