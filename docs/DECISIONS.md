@@ -1,6 +1,6 @@
 # Decisions
 
-Decisions for Ashmark v1, set in the design interview on 2026-10-30 and revised the same day after the platform research (`docs/research/forever-platform.md`). The project started under the working name Embertale. The concept itself lives in the Claude Doc "Embertale: Addon-Konzept für Solo-Rollenspiel in WoW Forever" (German). Where this file and the concept disagree, this file wins.
+Decisions for Ashmark v1, set in the design interview on 2026-10-30 and revised the same day after the platform research (`docs/research/forever-platform.md`). The project started under the working name Embertale. The concept itself lives in the Claude Doc "Ashmark: Addon-Konzept für Solo-Rollenspiel in WoW Forever" (German; titled "Embertale: …" until 2026-10-31). Where this file and the concept disagree, this file wins.
 
 ## Platform
 
