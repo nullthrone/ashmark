@@ -107,6 +107,37 @@ describe("Encounters", function()
       assert.equal(2, last("group.end").size)
     end)
 
+    -- The unit tokens name the battleground's raid, an instance group; the home party stands behind it.
+    local function battleground()
+      wow.state.instanceGroup, wow.state.homeGroup = true, { size = 2 }
+      wow.unit("raid1", wow.state.units.player)
+      for i = 2, 15 do
+        wow.unit("raid" .. i, { guid = string.format("Player-1-2%07x", i), name = "Fighter" .. i, isPlayer = true })
+      end
+      for i = 1, 4 do wow.unit("party" .. i, wow.state.units["raid" .. (i + 1)]) end
+    end
+
+    it("take no members from a battleground's raid while the home party stands behind it", function()
+      boot()
+      mock.join(wow, "thalen")
+      local session = M:OpenSession()
+      battleground()
+      mock.roster(wow)
+      assert.equal(session, M:OpenSession())
+      assert.same({ THALEN }, session.members)
+      wow.reload()
+      ns, M = wow.ns, wow.ns.Encounters
+      local char = ns.DB:Char()
+      assert.equal(session.id, M:OpenSession().id)
+      assert.same({ THALEN }, M:OpenSession().members)
+      assert.same({}, mock.kinds(char))
+      wow.state.instanceGroup, wow.state.homeGroup = false, nil
+      for i = 1, 15 do wow.unit("raid" .. i, nil) end
+      mock.leave(wow)
+      assert.same({ "contact", "group.end" }, mock.kinds(char))
+      assert.equal(1, last("group.end").size)
+    end)
+
     it("open only once and end only an open session", function()
       boot()
       mock.join(wow, "thalen")

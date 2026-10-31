@@ -161,10 +161,10 @@ local function push(list, v)
 end
 
 -- GUIDs of the other group members right now, in unit order, and the same as a set; secret ones are skipped.
+-- The unit tokens come from Identity:Tokens, so a battleground's instance group yields no member (5.3).
 local function groupGuids()
-  local okRaid, raid = Safe.Call(IsInRaid)
-  local prefix, size = "party", 4
-  if okRaid and raid == true then prefix, size = "raid", 40 end
+  local prefix, size = ns.Identity:Tokens("all")
+  if not prefix then return {}, {} end
   local me = ns.playerGUID
   local list, set = {}, {}
   for i = 1, size do
@@ -430,7 +430,10 @@ local function finish(char, session, stop, stale)
   M:Fire("GROUP_SESSION_ENDED", session)
 end
 
+-- While the unit tokens name an instance group (a battleground), no member of the home group can be seen,
+-- so the session stands until the home group itself ends.
 local function stillThere(session)
+  if not ns.Identity:Tokens("all") then return true end
   local _, present = groupGuids()
   for _, guid in ipairs(session.members) do
     if present[guid] then return true end
@@ -590,8 +593,8 @@ local function renderGroupEnd(entry, ctx)
   return ns.Chronicle:Text(SENTENCES[entry.e] or SENTENCES.travel, ctx, { people = people(session, entry.size) })
 end
 
--- A first meeting is told while the contact is stored. Once the store forgets it (pruned, 4, or
--- /ashmark reset others) the entry stays, but says nothing rather than "You met someone".
+-- A first meeting is told while the contact is stored. Once the store forgets it (pruned, 4) the entry
+-- stays, but says nothing rather than "You met someone"; /ashmark reset others removes the entry itself.
 local function renderContact(entry, ctx)
   if not M:Contact(entry.p) then return nil end
   return ns.Chronicle:Text("ENC_LOG_CONTACT", ctx, { contact = ns.Names.Player(entry.p) })
