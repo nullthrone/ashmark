@@ -115,6 +115,7 @@ end
 
 -- Queue ---------------------------------------------------------------------
 
+local handlers = {}              -- [type] = { fn, owner }: Comm:Register; the owner also owns what is sent
 local queue = {}                 -- priority ascending, then age
 local seq = 0
 local tokens, refilledAt = CAPACITY, nil
@@ -188,6 +189,13 @@ local function settle(item, code, now)
   end
 end
 
+-- A message whose type's module (the owner Comm:Register names) was switched off after it was queued.
+local function stale(item)
+  local handler = handlers[item.kind]
+  local owner = handler and handler.owner
+  return owner ~= nil and owner.enabled == false
+end
+
 pump = function()
   -- Sharing switched off, or sending lost, after a message was queued: it stays unsent (5.6).
   if queue[1] and (ns.Settings:Get("Comm.share") ~= true or not ns.Compat.Has.canSend) then dropAll() end
@@ -195,8 +203,12 @@ pump = function()
   refill(now)
   while queue[1] and tokens >= 1 and not paused(now) do
     local item = table.remove(queue, 1)
-    tokens = tokens - 1
-    settle(item, transmit(item), now)
+    if stale(item) then
+      stats.dropped = stats.dropped + 1
+    else
+      tokens = tokens - 1
+      settle(item, transmit(item), now)
+    end
   end
   if queue[1] then
     ns.Util.Ticker("Comm", TICK, pump)
@@ -214,14 +226,13 @@ function Comm:Send(kind, fields, channel, target, priority)
   if not text then return false, reason end
   if not ns.Identity:InGroup() then return false, "notGrouped" end
   seq = seq + 1
-  enqueue({ text = text, channel = channel, priority = priority or DEFAULT_PRIORITY[kind], seq = seq })
+  enqueue({ kind = kind, text = text, channel = channel, priority = priority or DEFAULT_PRIORITY[kind], seq = seq })
   pump()
   return true
 end
 
 -- Receive -------------------------------------------------------------------
 
-local handlers = {}
 local rates = {}                 -- [sender] = { start, count, tokens = { [type] = n }, at = { [type] = t } }
 
 -- fn(from, fields, channel); with an owner, delivered only while it is enabled and errors count to it.

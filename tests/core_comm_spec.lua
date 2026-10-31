@@ -434,6 +434,23 @@ describe("Core Comm", function()
       assert.equal(0, Comm:Queued())
     end)
 
+    it("drops a type's messages once the module that registered it is off, and keeps the others", function()
+      group()
+      boot()
+      local rumours = { enabled = true }
+      Comm:Register("RU", function() end, rumours)
+      wow.state.chatLockdown = true
+      Comm:Send("HI", HI, "PARTY")
+      Comm:Send("RU", RU, "PARTY")
+      rumours.enabled = false
+      wow.state.chatLockdown = false
+      wow.advance(5)
+      assert.equal(1, #wow.sent)
+      assert.matches("^1|HI|", wow.sent[1].text)
+      assert.equal(0, Comm:Queued())
+      assert.equal(1, Comm.stats.dropped)
+    end)
+
     it("is dropped when the group ends, and its ticker stops", function()
       group()
       boot()
