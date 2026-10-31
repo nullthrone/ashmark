@@ -12,7 +12,8 @@ describe("Core lifecycle", function()
       self:RegisterEvent("BAG_UPDATE", function() trace[#trace + 1] = name .. ":bag" end)
     end
     function M:OnWorldReady(initial, reloading)
-      trace[#trace + 1] = table.concat({ name, "world", tostring(initial), tostring(reloading), tostring(ns.ready) }, ":")
+      local flags = { tostring(initial), tostring(reloading), tostring(ns.ready) }
+      trace[#trace + 1] = name .. ":world:" .. table.concat(flags, ":")
     end
     function M:OnDisable() trace[#trace + 1] = name .. ":disable" end
     return M

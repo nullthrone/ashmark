@@ -1,0 +1,87 @@
+local wow = require("tests.helpers.wow")
+
+local LOCALES = { "enUS", "deDE", "frFR", "esES", "esMX", "ptBR", "ruRU", "koKR", "zhTW", "zhCN" }
+
+local function exists(path)
+  local f = io.open(wow.ROOT .. path, "r")
+  if f then f:close() end
+  return f ~= nil
+end
+
+describe("Core Locale", function()
+  local ns
+  before_each(function()
+    wow.reset()
+  end)
+
+  it("falls back from the active locale to enUS to the key itself", function()
+    wow.state.locale = "deDE"
+    ns = wow.load()
+    local de = ns.Locale:For("deDE")
+    de.CORE_TITLE = "Aschmal"
+    assert.equal("Aschmal", ns.L.CORE_TITLE)
+    assert.equal("a quest", ns.L.CORE_UNKNOWN_QUEST)
+    assert.equal("NO_SUCH_KEY", ns.L.NO_SUCH_KEY)
+    assert.has_error(function() ns.L.X = 1 end)
+  end)
+
+  it("hands inactive locales a throwaway table unless loadAll is set", function()
+    ns = wow.load()
+    local fr = ns.Locale:For("frFR")
+    fr.CORE_TITLE = "x"
+    assert.is_nil(ns.Locale.tables.frFR)
+    assert.equal(ns.Locale:Base(), ns.Locale:For("enUS"))
+    ns.Locale.loadAll = true
+    assert.equal(ns.Locale:For("frFR"), ns.Locale.tables.frFR)
+  end)
+
+  it("formats named placeholders and leaves unknown ones", function()
+    ns = wow.load()
+    assert.equal("Hi Mira, 3 times.", ns.Format("Hi {name}, {count} times.", { name = "Mira", count = 3 }))
+    assert.equal("Hi {name}.", ns.Format("Hi {name}."))
+    assert.equal("50% of {x}", ns.Format("50% of {x}", { y = 1 }))
+    assert.equal("a%b", ns.Format("{v}", { v = "a%b" }))
+  end)
+
+  it("picks the feminine form for sex 3 when one exists", function()
+    wow.state.locale = "deDE"
+    ns = wow.load()
+    local de = ns.Locale:For("deDE")
+    de.TEST_WORD = "Kämpfer"
+    de.TEST_WORD_F = "Kämpferin"
+    assert.equal("Kämpferin", ns.Gender("TEST_WORD", 3))
+    assert.equal("Kämpfer", ns.Gender("TEST_WORD", 2))
+    assert.equal("Kämpfer", ns.Gender("TEST_WORD", 1))
+    assert.equal("a quest", ns.Gender("CORE_UNKNOWN_QUEST", 3))
+  end)
+
+  it("lists the enUS keys a locale lacks", function()
+    ns = wow.load()
+    local base = ns.Locale:Base()
+    ns.Locale.loadAll = true
+    local de = ns.Locale:For("deDE")
+    for key, text in pairs(base) do de[key] = text end
+    de.CORE_TITLE = nil
+    assert.same({ "CORE_TITLE" }, ns.Locale:Missing("deDE"))
+    assert.same({}, ns.Locale:Missing("enUS"))
+  end)
+
+  describe("every client locale (loadAll)", function()
+    local loaded
+    setup(function()
+      wow.reset()
+      loaded = wow.load(nil, { loadAll = true })
+    end)
+
+    for _, code in ipairs(LOCALES) do
+      local file = code == "enUS" and "Locales/enUS/Core.lua" or ("Locales/" .. code .. ".lua")
+      if exists(file) then
+        it(code .. " has every enUS key", function()
+          assert.same({}, loaded.Locale:Missing(code))
+        end)
+      else
+        pending(code .. ": " .. file .. " is not delivered yet")
+      end
+    end
+  end)
+end)
