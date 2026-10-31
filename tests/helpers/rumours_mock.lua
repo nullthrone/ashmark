@@ -10,10 +10,13 @@ mock.FILES = { "UI/ChatLine.lua", "Modules/Fiction", "Modules/Rumours" }
 mock.ME = fiction.ME
 mock.MIRA, mock.THALEN, mock.KEL = fiction.guid("mira"), fiction.guid("thalen"), fiction.guid("kel")
 
--- Desolace (1443, on Kalimdor 1414) with both sides' factions; Stranglethorn (1434) with a side without one.
+-- Desolace (1443, on Kalimdor 1414) with both sides' factions, twice for one faction pair as the shipped data
+-- has it; Stranglethorn (1434) with a side without one.
 mock.CONFLICTS = {
   gelkis = { id = "gelkis", zone = 1443, A = { faction = 92, quests = { 1382 } },
              B = { faction = 93, quests = { 1385 } } },
+  valley = { id = "valley", zone = 1443, A = { faction = 92, quests = { 93034 } },
+             B = { faction = 93, quests = { 93128 } } },
   bloodsail = { id = "bloodsail", zone = 1434, A = { faction = 87, quests = { 4621 } },
                 B = { faction = 0, quests = { 608 } } },
 }

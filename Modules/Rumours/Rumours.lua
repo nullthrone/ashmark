@@ -153,18 +153,33 @@ local function newId(heard)
   end
 end
 
--- An own alliance, violation or house turn; f is the faction allied with, broken with or taken.
+-- An own rumour that already says this and is still alive, or nil.
+local function ownAlive(heard, tpl, a, f, m, now)
+  for _, r in pairs(heard) do
+    if valid(r) and r.own == true and r.tpl == tpl and r.a == a and r.f == f and r.m == m
+      and strength(r, now) >= MIN_STRENGTH then
+      return r
+    end
+  end
+end
+
+-- An own alliance, violation or house turn; f is the faction allied with, broken with or taken. An own rumour
+-- with the same template, archetype, faction and zone that is still alive stands in for the new one, so the
+-- conflicts of one faction pair in one zone make one rumour, not one per conflict.
 local function seed(entry, char)
   local heard = stores()
   local conflict = heard and ask("Conflicts", "Get", entry.c)
   if type(conflict) ~= "table" or type(conflict.zone) ~= "number" then return end
   local side = conflict[entry.k == "violation" and OTHER[entry.side] or entry.side]
-  local id = newId(heard)
-  if not (id and type(side) == "table" and type(side.faction) == "number") then return end
+  if not (type(side) == "table" and type(side.faction) == "number") then return end
   -- Stamped by the same clock that decays it (ns.Util.Now), not the entry's system time.
   local now = ns.Util.Now()
+  local tpl, a = SEEDS[entry.k], ask("Profile", "Archetype", char) or "PRAGMATIST"
+  if ownAlive(heard, tpl, a, side.faction, conflict.zone, now) then return end
+  local id = newId(heard)
+  if not id then return end
   heard[id] = {
-    id = id, tpl = SEEDS[entry.k], a = ask("Profile", "Archetype", char) or "PRAGMATIST", f = side.faction,
+    id = id, tpl = tpl, a = a, f = side.faction,
     m = conflict.zone, hops = 0, strength = 100, t = now, heard = now, own = true,
   }
   prune(now)

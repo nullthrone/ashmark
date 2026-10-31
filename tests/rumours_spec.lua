@@ -83,6 +83,41 @@ describe("Rumours", function()
       assert.same({}, heard())
     end)
 
+    it("make one rumour of what deeds in conflicts of one faction pair and zone tell alike", function()
+      boot()
+      ns.Log:Add("alliance", { c = "gelkis", side = "A" })
+      ns.Log:Add("alliance", { c = "valley", side = "A" })
+      ns.Log:Add("alliance", { c = "gelkis", side = "A", rep = true })
+      assert.equal(1, #mock.heardIds())
+      assert.same({ "ALLIANCE", 92, 1443 }, { only().tpl, only().f, only().m })
+      ns.Log:Add("violation", { c = "valley", side = "B", q = 93128 })
+      ns.Log:Add("violation", { c = "gelkis", side = "B", q = 1385 })
+      ns.Log:Add("houseturn", { c = "gelkis", side = "A", q = 1382, h = "Ashvale" })
+      ns.Log:Add("houseturn", { c = "valley", side = "A", q = 93034, h = "Ashvale" })
+      local tpls = {}
+      for _, r in pairs(heard()) do tpls[#tpls + 1] = r.tpl end
+      table.sort(tpls)
+      assert.same({ "ALLIANCE", "BROKE", "TURNED" }, tpls)
+      -- Another archetype or another faction tells something else.
+      mock.archetype = "OPPORTUNIST"
+      ns.Log:Add("alliance", { c = "valley", side = "A" })
+      ns.Log:Add("alliance", { c = "valley", side = "B" })
+      assert.equal(5, #mock.heardIds())
+    end)
+
+    it("seed again once the own rumour has faded below 20, and never stand in a received copy", function()
+      mock.saved(wow, { cafef00d = mock.rumour("cafef00d", wow.state.epoch, { a = "OATHKEEPER", strength = 100 }) })
+      boot()
+      ns.Log:Add("alliance", { c = "gelkis", side = "A" })
+      assert.equal(2, #mock.heardIds())
+      heard().cafef00d = nil
+      local first = next(heard())
+      wow.advance(7 * DAY)
+      ns.Log:Add("alliance", { c = "valley", side = "A" })
+      assert.is_nil(heard()[first])
+      assert.same({ 100, wow.state.epoch, true }, { only().strength, only().t, only().own })
+    end)
+
     it("draw the id again on a collision", function()
       mock.saved(wow, { deadbeef = mock.rumour("deadbeef", wow.state.epoch) })
       local tokens = { "deadbeef", "cafef00d" }
