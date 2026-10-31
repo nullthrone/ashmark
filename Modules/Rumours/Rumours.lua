@@ -3,7 +3,11 @@ local _, ns = ...
 -- Rumours (7.8): what this character does in a conflict becomes a rumour that travels from one Ashmark party to
 -- the next, weaker and vaguer with every hop. A rumour names an archetype, a place and a faction, never a
 -- character, and its id is random; but party members who hear an own rumour first (hops 0) know whose deed it is,
--- as they know the sender of every addon message. Without canSend the module only listens.
+-- as they know the sender of every addon message. Whoever knows that can read a later copy too: it keeps the id,
+-- the content and the age, and its hops (and the zone, continent, faction ladder) give its distance from the
+-- source, so its sender grouped with that character (hops 1) or sits that many groups away. A fresh id per hop or
+-- a vaguer hop count would not hide this, as content, age and ladder identify the rumour and its hop range anyway;
+-- RUMOUR_MODULE_DESC tells the player. Without canSend the module only listens.
 local M = ns:NewModule("Rumours", {
   requires = { "addonMessages" },
   optional = { "canSend" },

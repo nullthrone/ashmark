@@ -45,6 +45,22 @@ describe("Rumours", function()
     assert.is_false(M.enabled)
   end)
 
+  it("tells the player that a copy passed on shows its sender's distance from whoever did the deed", function()
+    boot()
+    mock.peers(wow, "mira")
+    mock.ru(wow, "mira", { id = "deadbeef", hops = 0 })
+    mock.peers(wow, "mira", "thalen")
+    wow.advance(5)
+    -- The relayed copy keeps the id and says it is one hop from the source, so whoever heard the deed first
+    -- (hops 0) learns that this sender grouped with its doer; the description must not promise more.
+    local sent = mock.sentRU(wow)
+    assert.same({ { "deadbeef", 1 } }, { { sent[1].id, sent[1].hops } })
+    local desc = ns.Locale:Base().RUMOUR_MODULE_DESC
+    assert.truthy(desc:find("the game shows who passes it on", 1, true))
+    assert.truthy(desc:find("your own deeds", 1, true))
+    assert.truthy(desc:find("whether you grouped with that player", 1, true))
+  end)
+
   describe("seeds", function()
     it("turn an own alliance into a rumour with a random 8-hex id", function()
       boot()

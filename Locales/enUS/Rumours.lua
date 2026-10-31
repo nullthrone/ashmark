@@ -2,8 +2,13 @@ local _, ns = ...
 local L = ns.Locale:Base()
 
 L.RUMOUR_MODULE_NAME = "Rumours"
+-- 7.8: the client names the sender of every copy, and a copy keeps its id, content and age from hop to hop while
+-- its hop count and vagueness give its distance from the source.
 L.RUMOUR_MODULE_DESC = "What you do in a conflict travels on as a rumour from party to party, and you hear what "
-  .. "others did. A rumour names a kind of person, a place and a faction, never a character."
+  .. "others did. A rumour names a kind of person, a place and a faction, never a character, but the game shows "
+  .. "who passes it on: your party can tell which rumours are your own deeds, and anyone who knows whose deed a "
+  .. "rumour is can tell from your copy whether you grouped with that player in the past week, or how many groups "
+  .. "lie between you."
 
 -- Chat lines for a rumour heard (7.8). {archetype} is an archetype label (PROFILE_*), {place} a zone or, after
 -- two hops, a continent, {faction} a faction name; the last two come from the client.
