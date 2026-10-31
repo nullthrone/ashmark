@@ -100,6 +100,26 @@ class Registry(unittest.TestCase):
         self.assertIn("new_feud,92,93", self.ds.registry())
         self.assertEqual(self.ds.run("--check")[0], 0)
 
+    def test_a_rename_to_a_new_id_keeps_the_old_quests_and_passes_again(self):
+        self.ds.area(pair("new_feud", qa=(101, 102), qb=(202,)))
+        self.ds.renamed(["old_feud,new_feud,split by zone"])
+        self.assertEqual(self.ds.run()[0], 0)
+        self.assertIn("new_feud,92,93,101 102,201 202\n", self.ds.registry())
+        self.assertEqual(self.ds.run("--check")[0], 0)
+        self.assertEqual(self.ds.run()[0], 0)
+        self.assertEqual(self.ds.run("--check")[0], 0)
+
+    def test_a_rename_onto_an_id_written_under_its_own_name_fails(self):
+        self.ds.area(pair("old_feud") + pair("other_feud", qa=(301,), qb=(401,)))
+        self.assertEqual(self.ds.run()[0], 0)
+        self.ds.area(pair("other_feud", qa=(301, 101), qb=(401, 201)))
+        self.ds.renamed(["old_feud,other_feud,same conflict"])
+        lua, registry = self.ds.lua(), self.ds.registry()
+        code, err = self.ds.run()
+        self.assertEqual(code, 1)
+        self.assertIn("other_feud was written under its own id before old_feud was renamed to it", err)
+        self.assertEqual((self.ds.lua(), self.ds.registry()), (lua, registry))
+
     def test_a_retired_id_is_not_shipped_and_cannot_return(self):
         self.ds.area(pair("new_feud"))
         self.ds.renamed(["old_feud,,quests removed from the game"])

@@ -204,6 +204,15 @@ def check_registry(conflicts, registry, renamed):
             raise ValidationError(f"{RENAMED}: {old} is renamed to {new}, which is not in the data")
         if new is not None and new in targets:
             raise ValidationError(f"{RENAMED}: {targets[new]} and {old} are both renamed to {new}")
+        # A rename target enters the registry with every quest of the old id (update_registry), so a target
+        # registered without them was written under its own id: merging it would make two ids one.
+        if new is not None and new in registry and any(
+            not set(registry[old][s]["quests"]) <= set(registry[new][s]["quests"]) for s in SIDES
+        ):
+            raise ValidationError(
+                f"{RENAMED}: {new} was written under its own id before {old} was renamed to it; "
+                "two released ids cannot become one"
+            )
         targets[new] = old
     for cid, released in registry.items():
         if cid in renamed and renamed[cid] is None:
@@ -228,9 +237,15 @@ def check_registry(conflicts, registry, renamed):
                 )
 
 
-def update_registry(conflicts, registry):
+def update_registry(conflicts, registry, renamed=None):
     updated = {cid: {s: {"faction": e[s]["faction"], "quests": list(e[s]["quests"])} for s in SIDES}
                for cid, e in registry.items()}
+    # A rename target not yet registered starts from the old id's sides, so it keeps every quest the old id
+    # was ever written with and check_registry can tell it from an id released under its own name.
+    for old, new in (renamed or {}).items():
+        if new is not None and new not in updated and old in registry:
+            updated[new] = {s: {"faction": registry[old][s]["faction"], "quests": list(registry[old][s]["quests"])}
+                            for s in SIDES}
     for c in conflicts:
         entry = updated.setdefault(c["id"], {s: {"faction": c["sides"][s]["faction"], "quests": []} for s in SIDES})
         for s in SIDES:
@@ -298,7 +313,7 @@ def main(argv):
         return 1
     output = render(conflicts, renamed)
     registry_path = SOURCE_DIR / REGISTRY
-    registry_text = render_registry(update_registry(conflicts, registry))
+    registry_text = render_registry(update_registry(conflicts, registry, renamed))
     if check:
         current = OUTPUT.read_text(encoding="utf-8") if OUTPUT.exists() else ""
         if current != output:
