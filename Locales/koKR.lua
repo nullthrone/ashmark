@@ -14,8 +14,7 @@ local L = ns.Locale:For("koKR")
 L.CORE_TITLE = "Ashmark"
 
 -- Load safety (4.4)
-L.CORE_NOT_FOREVER = "Ashmark는 World of Warcraft Forever에서만 작동하며, 이 클라이언트에서는 꺼진 "
-  .. "상태로 남습니다."
+L.CORE_NOT_FOREVER = "Ashmark는 World of Warcraft Forever 전용이므로 이 클라이언트에서는 꺼져 있습니다."
 L.CORE_SV_NEW = "새 기록을 시작했습니다. 이 계정에서 전에 Ashmark를 사용했다면 저장된 데이터를 "
   .. "불러오지 못한 것입니다. /reload를 입력하거나 다시 로그아웃하지 마십시오. 게임을 종료한 다음, "
   .. "다음에 접속하기 전에 WTF\\Account\\<계정명>\\SavedVariables\\ 폴더에서 Ashmark.lua 파일을 "
@@ -35,8 +34,7 @@ L.CORE_MISSING_EVENTS = "이 클라이언트에 없는 이벤트: {events}"
 L.CORE_SETTING_CHAT_LINES = "대화창 메시지"
 L.CORE_SETTING_CHAT_LINES_DESC = "Ashmark가 대화창에 짧은 글을 남기도록 허용합니다."
 L.CORE_SETTING_SOUNDS = "효과음"
-L.CORE_SETTING_SOUNDS_DESC = "Ashmark가 게임에 들어 있는 책장 넘기는 소리와 책 여닫는 소리를 "
-  .. "재생합니다."
+L.CORE_SETTING_SOUNDS_DESC = "Ashmark가 게임의 책장 넘기는 소리와 책 여닫는 소리를 재생합니다."
 L.CORE_SETTING_SHARE = "다른 Ashmark 사용자와 공유"
 L.CORE_SETTING_SHARE_DESC = "당신의 유형과 출신, 소문을 Ashmark를 사용하는 다른 파티원에게 보냅니다. "
   .. "만남 기록과 메모는 결코 당신의 클라이언트 밖으로 나가지 않습니다."
@@ -89,8 +87,8 @@ L.CORE_RESET_ACCEPT = "지우기"
 L.CORE_CANCEL = "취소"
 L.CORE_RESET_DONE = "이 캐릭터의 기록을 지웠습니다."
 L.CORE_RESET_OTHERS_DONE = "만남 기록, 다른 사용자 정보, 들은 소문을 지웠습니다."
-L.CORE_RESET_READONLY = "저장된 데이터가 더 새로운 Ashmark에서 만들어졌으므로 아무것도 지울 수 "
-  .. "없습니다."
+L.CORE_RESET_READONLY = "저장된 데이터가 더 새로운 버전의 Ashmark에서 만들어졌으므로 아무것도 지울 "
+  .. "수 없습니다."
 
 -- UI shell (6.1, 6.2)
 L.CORE_TAB_CHRONICLE = "연대기"
@@ -116,7 +114,7 @@ L.TEST_FAIL = "실패"
 L.TEST_SKIP = "건너뜀"
 L.TEST_OPEN_QUEST_DIALOG = "스크린샷을 위해 먼저 퀘스트 제공자에게 말을 거십시오."
 L.TEST_RELOAD = "결과를 저장하려면 /reload를 입력하십시오."
-L.TEST_NOT_STORED = "저장된 데이터가 더 새로운 Ashmark에서 만들어졌으므로 아무것도 저장하지 "
+L.TEST_NOT_STORED = "저장된 데이터가 더 새로운 버전의 Ashmark에서 만들어졌으므로 아무것도 저장하지 "
   .. "않습니다. 전체 보고서가 이어집니다."
 L.TEST_LATE = "뒤늦은 결과: {what}"
 L.TEST_PROBE_DONE = "조사 결과 정보 {count}개를 기록했습니다."
@@ -127,8 +125,8 @@ L.TEST_PROBE_NEXT = "이번 접속 중에 퀘스트를 하나 수락하고 전�
 
 L.CONFLICT_MODULE_NAME = "분쟁"
 L.CONFLICT_MODULE_DESC = "어떤 퀘스트는 한쪽 편을 다른 편과 맞서게 합니다. Ashmark는 당신이 택한 "
-  .. "편을 기억하고, 그에 어긋나는 퀘스트는 퀘스트 창 아래에 표시하며, 당신이 맹세를 어기면 이를 "
-  .. "기록합니다."
+  .. "편을 기억하고, 그 편에 어긋나는 퀘스트에는 퀘스트 창 아래에 표시를 남기며, 당신이 맹세를 "
+  .. "어기면 이를 기록합니다."
 
 -- A side without a reputation faction; stands where a faction name would, before "편", "측" or "또는".
 L.CONFLICT_UNNAMED = "깃발 없는 이들"
@@ -161,8 +159,8 @@ L.CONFLICT_TAB_SIDES = "{a} 또는 {b}"
 L.CONFLICT_TAB_ALLIED = "{date}부터 {faction} 편에 서 있음"
 L.CONFLICT_TAB_OPEN = "미정"
 L.CONFLICT_TAB_BROKEN = "{count}회 어김"
-L.CONFLICT_TAB_VIOLATIONS = "어긴 맹세: {count}"
-L.CONFLICT_TAB_NO_VIOLATIONS = "아직 맹세를 어긴 적이 없습니다."
+L.CONFLICT_TAB_VIOLATIONS = "맹세를 어긴 횟수: {count}"
+L.CONFLICT_TAB_NO_VIOLATIONS = "맹세를 어긴 적이 없습니다."
 L.CONFLICT_TAB_EMPTY = "Ashmark는 아직 이 세계의 분쟁을 하나도 알지 못합니다."
 
 -- Profile --------------------------------------------------------------------------------------------------------
@@ -190,7 +188,7 @@ L.PROFILE_TEST_CRITTER_OFF = "이 클라이언트는 동물을 식별할 수 없
 
 L.MAP_MODULE_NAME = "세계 지도"
 L.MAP_MODULE_DESC = "세계 지도에 당신만의 이야기를 표시합니다. 당신이 아는 분쟁과 당신이 택한 편, "
-  .. "맹세를 어긴 곳, 장이 막을 내린 곳을 보여 줍니다. 이 표시는 당신에게만 보입니다."
+  .. "맹세를 어긴 곳, 연대기의 장이 막을 내린 곳을 보여 줍니다. 이 표시는 당신에게만 보입니다."
 
 -- Pin tooltips (7.3)
 L.MAP_PIN_SIDES = "{a} 또는 {b}"
@@ -229,8 +227,8 @@ L.ENC_NOTE_SAVE = "저장"
 -- Encounters tab (6.1)
 L.ENC_TAB = "만남"
 L.ENC_TAB_TOTAL = "만난 사람: {count}명 · 낯익은 얼굴: {recurring}명"
-L.ENC_TAB_EMPTY = "아직 당신의 길을 스쳐 간 사람이 없습니다. 누군가와 파티를 맺으면 Ashmark가 그 "
-  .. "사람을 기억합니다."
+L.ENC_TAB_EMPTY = "아직 길에서 마주친 사람이 없습니다. 누군가와 파티를 맺으면 Ashmark가 그 사람을 "
+  .. "기억합니다."
 L.ENC_TAB_MET = "{count}회 만남 · 최근 {place} · {date}"
 L.ENC_TAB_MET_NOPLACE = "{count}회 만남 · {date}"
 L.ENC_TAB_NOTE = "메모"
@@ -303,18 +301,18 @@ L.HOUSE_LEGACY_STANDING = "{faction}: {standing}"
 -- Campfire -------------------------------------------------------------------------------------------------------
 
 L.CAMP_MODULE_NAME = "모닥불"
-L.CAMP_MODULE_DESC = "야영지에서 그 효과가 나타날 때까지 쉬면, 지난 장 이후로 충분한 일이 있었을 "
-  .. "때 Ashmark가 그곳에서 연대기의 한 장을 마무리할 수 있습니다."
+L.CAMP_MODULE_DESC = "야영지에서 효과가 나타날 때까지 쉬면, 지난 장 이후로 일이 충분히 쌓였을 경우 "
+  .. "Ashmark가 그곳에서 연대기의 한 장을 마무리할 수 있습니다."
 
 -- Centre-screen notice (7.6)
 L.CAMP_CHAPTER_CLOSED = "제{roman}장이 막을 내립니다 · {place}"
 
 -- Knowledge ------------------------------------------------------------------------------------------------------
 
-L.KNOW_MODULE_NAME = "캐릭터의 지식"
+L.KNOW_MODULE_NAME = "캐릭터 지식"
 L.KNOW_MODULE_DESC = "아이템 툴팁에는 당신의 캐릭터가 알 수 있는 정보만 표시됩니다. 이 캐릭터의 "
-  .. "가방, 은행, 장비에 한 번도 들어온 적이 없는 아이템은 이름, 귀속, 착용 부위, 아이템 레벨, 종류, "
-  .. "요구 조건만 보이고 나머지는 숨겨집니다. 게임 자체가 아직 숨기고 있는 아이템은 게임이 보여 주는 "
+  .. "가방이나 은행에 들어온 적도, 장착된 적도 없는 아이템은 이름, 귀속, 착용 부위, 아이템 레벨, "
+  .. "종류, 요구 조건만 보이고 나머지는 숨겨집니다. 게임 자체가 아직 숨기고 있는 아이템은 게임이 보여 주는 "
   .. "그대로 둡니다."
 
 -- Last line of such a tooltip (7.7)
