@@ -394,12 +394,33 @@ describe("Conflicts", function()
                    .. "left behind.", render(switched))
     end)
 
-    it("names a side without a faction and survives a conflict the data no longer has", function()
+    it("names a side without a faction", function()
       boot()
       mock.turnIn(wow, 6001)
       assert.equal("You sided with those without a banner in Shen'dralas.", render(last("alliance")))
-      local gone = { n = 99, t = time(), k = "violation", c = "removed", side = "A", q = 1 }
-      assert.equal("You broke faith with a faction and finished a quest for a faction.", render(gone))
+    end)
+
+    it("tells nothing of a conflict the data no longer has, so a retired id leaves no line of placeholders", function()
+      local char = boot()
+      -- Entries a character wrote before a release retired the id (7.1): the id no longer ships.
+      ns.Log:Add("alliance", { c = "retired", side = "A" })
+      ns.Log:Add("alliance", { c = "retired", side = "B", rep = true })
+      ns.Log:Add("houseturn", { c = "retired", side = "A", q = 1001, h = "Ashford" })
+      ns.Log:Add("violation", { c = "retired", side = "B", q = 2001 })
+      ns.Log:Add("violation", { c = "retired", side = "A", q = 1001, o = 1 })
+      assert.is_nil(ns.Conflicts:Get("retired"))
+      local kept = 0
+      for _, entry in ipairs(char.log) do
+        if entry.c == "retired" then
+          kept = kept + 1
+          assert.is_nil(render(entry), entry.k)
+          assert.is_nil(render(entry, false, "Mira"), entry.k)
+        end
+      end
+      assert.equal(5, kept)
+      for _, line in ipairs(ns.Chronicle:Lines(char, ns.Chronicle:Chapters(char)[1])) do
+        assert.is_nil(line.entry.c, line.text)
+      end
     end)
   end)
 
@@ -410,10 +431,31 @@ describe("Conflicts", function()
       end
     end
 
-    it("passes when every quest has a title and every faction a name", function()
+    it("passes when every quest has a title, every faction a name and every map its info", function()
       boot()
-      assert.same({ true, "3 conflicts, 8 quests, 4 factions, verified 1/3" }, { run() })
+      assert.same({ true, "3 conflicts, 8 quests, 4 factions, 3 maps, verified 1/3; maps: 1443 Desolace, "
+                          .. "1434 Stranglethorn Vale, 2652 Shen'dralas" }, { run() })
       assert.same({}, wow.requests.quest)
+    end)
+
+    it("fails on a zone or an anchor map the client does not know", function()
+      local data = mock.data()
+      data.list[2].zone = 2521
+      data.list[3].anchor.m = 9999
+      wow.data.maps[2652] = nil
+      boot(nil, data)
+      local ok, detail = run()
+      assert.is_false(ok)
+      assert.equal("3 conflicts, 8 quests, 4 factions, 4 maps, verified 1/3; maps: 1443 Desolace; "
+                   .. "no map info: 2521, 2652, 9999", detail)
+    end)
+
+    it("treats secret map info as missing", function()
+      boot()
+      wow.stub("C_Map.GetMapInfo", function(m) return m == 1443 and wow.secret({}) or nil end)
+      local ok, detail = run()
+      assert.is_false(ok)
+      assert.matches("; no map info: 1443, 1434, 2652$", detail)
     end)
 
     it("asks for missing titles once, then fails on those still missing", function()

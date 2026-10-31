@@ -335,11 +335,14 @@ end
 -- Chronicle ---------------------------------------------------------------------------
 
 local function zoneName(conflict)
-  return ns.Names.Map(conflict and conflict.zone)
+  return ns.Names.Map(conflict.zone)
 end
 
+-- An entry of a retired id (7.1) renders nothing, as a forgotten contact does (7.4): its sides and zone
+-- no longer ship, and a line of placeholders would stay in the chronicle for good.
 local function renderAlliance(entry, ctx)
   local conflict = M:Get(entry.c)
+  if not conflict then return nil end
   return ns.Chronicle:Text(entry.rep and "CONFLICT_ALLIED_REP" or "CONFLICT_ALLIED", ctx, {
     faction = M:SideName(conflict, entry.side), zone = zoneName(conflict),
   })
@@ -348,6 +351,7 @@ end
 -- The wording was decided at write time (o), never from the current profile.
 local function renderViolation(entry, ctx)
   local conflict = M:Get(entry.c)
+  if not conflict then return nil end
   return ns.Chronicle:Text(entry.o == 1 and "CONFLICT_SWITCHED" or "CONFLICT_BROKE_WORD", ctx, {
     faction = M:SideName(conflict, entry.side), broken = M:SideName(conflict, OTHER[entry.side]),
     quest = ns.Names.Quest(entry.q),
@@ -356,6 +360,7 @@ end
 
 local function renderHouseturn(entry, ctx)
   local conflict = M:Get(entry.c)
+  if not conflict then return nil end
   return ns.Chronicle:Text("CONFLICT_HOUSETURN", ctx, {
     house = entry.h, faction = M:SideName(conflict, entry.side), zone = zoneName(conflict),
   })
@@ -392,6 +397,28 @@ local function factionGaps(list)
   return count, missing
 end
 
+-- Zones and anchor maps, each once in data order, as "<id> <client name>" so the tester can compare them
+-- with the dataset; and those the client has no map for (Rumours drops a rumour placed there).
+local function mapGaps(list)
+  local seen, named, missing = {}, {}, {}
+  local function check(m)
+    if type(m) ~= "number" or seen[m] then return end
+    seen[m] = true
+    local ok, info = Safe.Call(C_Map and C_Map.GetMapInfo, m)
+    local name = ok and Safe.Field(info, "name")
+    if type(name) == "string" and name ~= "" then
+      named[#named + 1] = m .. " " .. name
+    else
+      missing[#missing + 1] = tostring(m)
+    end
+  end
+  for _, conflict in ipairs(list) do
+    check(conflict.zone)
+    check(type(conflict.anchor) == "table" and conflict.anchor.m or nil)
+  end
+  return named, missing
+end
+
 -- A quest without a title is requested first (pending); still without one on a later run, it is missing.
 local function questGaps(list)
   local count, pending, missing = 0, {}, {}
@@ -413,21 +440,25 @@ local function questGaps(list)
   return count, pending, missing
 end
 
--- Every quest yields a title and every faction a name, so unverified entries can be checked in the client.
+-- Every quest yields a title, every faction a name and every zone and anchor map its map info, so
+-- unverified entries can be checked in the client.
 local function checkData()
   local list = index().list
   local factions, noName = factionGaps(list)
   local quests, pending, noTitle = questGaps(list)
+  local maps, noMap = mapGaps(list)
   local verified = 0
   for _, conflict in ipairs(list) do
     if conflict.verified == true then verified = verified + 1 end
   end
-  local detail = string.format("%d conflicts, %d quests, %d factions, verified %d/%d", #list, quests, factions,
-    verified, #list)
+  local detail = string.format("%d conflicts, %d quests, %d factions, %d maps, verified %d/%d", #list, quests,
+    factions, #maps + #noMap, verified, #list)
+  if #maps > 0 then detail = detail .. "; maps: " .. table.concat(maps, ", ") end
+  if #noMap > 0 then detail = detail .. "; no map info: " .. table.concat(noMap, ", ") end
   if #noName > 0 then detail = detail .. "; no faction name: " .. table.concat(noName, ", ") end
   if #noTitle > 0 then detail = detail .. "; no quest title: " .. table.concat(noTitle, ", ") end
   if #pending > 0 then detail = detail .. "; pending, run again: " .. table.concat(pending, ", ") end
-  if #noName > 0 or #noTitle > 0 then return false, detail end
+  if #noMap > 0 or #noName > 0 or #noTitle > 0 then return false, detail end
   if #pending > 0 then return nil, detail end
   return true, detail
 end
