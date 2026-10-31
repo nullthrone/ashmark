@@ -63,11 +63,44 @@ describe("Knowledge tooltip", function()
                     UNKNOWN }, hover(HAUBERK))
     end)
 
-    it("falls back to the item level pattern, type and subtype once another addon has added a line", function()
+    it("keeps the line types of its own lines once another addon has added a line after them", function()
       boot()
-      assert.same({ "Magram Hauberk", "", "Chest", "", "", "Item Level 20", "", "Armor", UNKNOWN },
-        hover(HAUBERK, { extra = "Armor" }))
+      local hidden = { unpack(SPEAR_HIDDEN, 1, #SPEAR_LINES) }
+      hidden[#hidden + 1] = ""
+      hidden[#hidden + 1] = UNKNOWN
+      assert.same(hidden, hover(SPEAR, { extra = "Item ID 9101" }))
+      assert.equal("Polearm", mock.rights(GameTooltip)[3])
+      assert.same({ "Magram Hauberk", "Binds when picked up", "Chest", "", "", "Item Level 20", "Classes: Warrior",
+                    "Armor", UNKNOWN }, hover(HAUBERK, { extra = "Armor" }))
       assert.equal("Plate", mock.rights(GameTooltip)[3])
+    end)
+
+    it("falls back to the client's binding, slot, level and requirement strings for lines off their data", function()
+      boot()
+      -- Another addon inserted a line after the name: every later line has moved off its data line.
+      local data = wow.deepcopy(C_TooltipInfo.GetItemByID(SPEAR))
+      local inserted = { type = Enum.TooltipDataLineType.None, leftText = "Item ID 9101" }
+      table.insert(wow.data.tooltips[SPEAR].lines, 2, inserted)
+      assert.same({ "Gelkis Spear", "", "Binds when equipped", "Two-Hand", "", "", "", "Item Level 22",
+                    "Requires Level 17", "", UNKNOWN }, hover(SPEAR, { data = data }))
+      assert.equal("Polearm", mock.rights(GameTooltip)[4])
+      assert.same({ "Magram Hauberk", "Binds when picked up", "Chest", "", "", "Item Level 20", "Classes: Warrior",
+                    UNKNOWN }, hover(HAUBERK, { data = { id = HAUBERK } }))
+    end)
+
+    it("reads positional and percent specifiers in the client's strings", function()
+      wow.stub("ITEM_CLASSES_ALLOWED", "Classes (100%%): %1$s")
+      boot()
+      wow.data.tooltips[HAUBERK].lines[7].leftText = "Classes (100%): Warrior"
+      assert.equal("Classes (100%): Warrior", hover(HAUBERK, { data = { id = HAUBERK } })[7])
+      wow.data.tooltips[HAUBERK].lines[7].leftText = "Classes (1000): Warrior"
+      assert.equal("", hover(HAUBERK, { data = { id = HAUBERK } })[7])
+    end)
+
+    it("leaves lines without text as they are", function()
+      boot()
+      local texts = hover(SPEAR, { extra = " " })
+      assert.same({ " ", UNKNOWN }, { texts[#SPEAR_LINES + 1], texts[#SPEAR_LINES + 2] })
     end)
 
     it("matches the item level only as a whole line", function()
@@ -174,6 +207,9 @@ describe("Knowledge tooltip", function()
       cases[#cases + 1] = d
       d = data()
       d.lines[4].type = wow.secret(0)
+      cases[#cases + 1] = d
+      d = data()
+      d.lines[4].leftText = wow.secret("21 - 32 Damage")
       cases[#cases + 1] = d
       for _, input in ipairs(cases) do
         hover(SPEAR, { data = input })

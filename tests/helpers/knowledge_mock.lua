@@ -67,6 +67,15 @@ local ITEMS = {
   },
 }
 
+-- Client strings the tooltip falls back to that the mock client lacks: binding, requirements and the INVTYPE_*
+-- slot names of the fixture items. mock.boot installs each one a spec has not set.
+mock.STRINGS = {
+  ITEM_BIND_ON_EQUIP = "Binds when equipped", ITEM_BIND_ON_PICKUP = "Binds when picked up",
+  ITEM_MIN_LEVEL = "Requires Level %d", ITEM_CLASSES_ALLOWED = "Classes: %s",
+  INVTYPE_2HWEAPON = "Two-Hand", INVTYPE_WEAPONMAINHAND = "Main Hand", INVTYPE_WEAPON = "One-Hand",
+  INVTYPE_CHEST = "Chest",
+}
+
 -- Puts a fixture item into the client: its item data (revealed unless opts.cached is false) and its tooltip
 -- data. Returns the tooltip data, which specs may edit.
 function mock.item(wow, id, opts)
@@ -108,6 +117,9 @@ end
 function mock.boot(wow, opts)
   opts = opts or {}
   if not wow.data.bags[mock.BACKPACK] then mock.bag(wow, mock.BACKPACK, 16) end
+  for key, text in pairs(mock.STRINGS) do
+    if _G[key] == nil then wow.stub(key, text) end
+  end
   local ns = wow.load(mock.FILES)
   if opts.setup then opts.setup(ns) end
   wow.login()

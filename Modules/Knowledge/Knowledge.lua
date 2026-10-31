@@ -23,14 +23,29 @@ local SIDES = { "TextLeft", "TextRight" }
 -- sample has stat lines to hide.
 local SAMPLES = { 25, 2092, 36, 12282, 2362, 2589, 159, 117 }
 
--- A client format string as an anchored pattern: magic characters escaped, %d a number, %s any text.
+-- A client format string as an anchored pattern: %d and %1$d a number, %s and %1$s any text, %% a percent
+-- sign, every other character itself.
 local function formatPattern(fmt)
-  local p = fmt:gsub("[%^%$%(%)%.%[%]%*%+%-%?]", "%%%0")
-  p = p:gsub("%%d", "%%d+"):gsub("%%s", ".+")
+  local p = fmt:gsub("%%%%", "\1"):gsub("%%%d*%$?d", "\2"):gsub("%%%d*%$?s", "\3")
+  p = p:gsub("[%^%$%(%)%%%.%[%]%*%+%-%?]", "%%%0")
+  p = p:gsub("\1", "%%%%"):gsub("\2", "%%d+"):gsub("\3", ".+")
   return "^" .. p .. "$"
 end
 
-local LEVEL = type(ITEM_LEVEL) == "string" and formatPattern(ITEM_LEVEL) or nil
+-- Lines step 7 keeps by the client's own strings, whatever their type: the item level, and the binding and
+-- requirement lines, so these stay on lines that match no data line. A string the client lacks is skipped.
+local STRINGS = {
+  "ITEM_LEVEL",
+  "ITEM_BIND_ON_EQUIP", "ITEM_BIND_ON_PICKUP", "ITEM_BIND_ON_USE", "ITEM_BIND_QUEST", "ITEM_SOULBOUND",
+  "ITEM_BIND_TO_ACCOUNT", "ITEM_BIND_TO_BNETACCOUNT", "ITEM_ACCOUNTBOUND", "ITEM_BNETACCOUNTBOUND",
+  "ITEM_MIN_LEVEL", "ITEM_CLASSES_ALLOWED", "ITEM_RACES_ALLOWED", "ITEM_MIN_SKILL", "ITEM_REQ_SKILL",
+  "ITEM_REQ_REPUTATION", "ITEM_REQ_ALLIANCE", "ITEM_REQ_HORDE",
+}
+local PATTERNS = {}
+for _, key in ipairs(STRINGS) do
+  local fmt = _G[key]
+  if type(fmt) == "string" and fmt ~= "" then PATTERNS[#PATTERNS + 1] = formatPattern(fmt) end
+end
 
 local FIRST_BAG, LAST_BAG = 0, 0
 local BANK = {}                   -- bank container IDs, from Enum.BagIndex in OnInitialize
@@ -208,22 +223,45 @@ local function textAt(tooltip, name, side, i)
   return text
 end
 
--- The type of data line i: nil, ok; ok is false when the line or its type is secret.
-local function lineType(lines, i)
+-- The type of data line i, used only while that line's left text is the tooltip's line i: other addons'
+-- post-calls add lines after the item's, and a line added or moved matches no data line. Returns nil, ok;
+-- ok is false when the line, its text or its type is secret.
+local function lineType(lines, i, left)
+  if type(lines) ~= "table" then return nil, true end
   local line, ok = Safe.Field(lines, i)
   if not ok then return nil, false end
   if type(line) ~= "table" then return nil, true end
+  local text
+  text, ok = Safe.Field(line, "leftText")
+  if not ok then return nil, false end
+  if text ~= left then return nil, true end
   return Safe.Field(line, "type")
 end
 
-local function same(text, a, b)
-  return text ~= nil and text ~= "" and (text == a or text == b)
+-- The slot as the tooltip names it ("Two-Hand"), from GetItemInfoInstant's INVTYPE_* key.
+local function slotName(equipLoc)
+  local text = type(equipLoc) == "string" and equipLoc ~= "" and _G[equipLoc]
+  if type(text) == "string" then return text end
 end
 
-local function keep(left, right, kind, itemType, subType)
+local function same(text, a, b, c)
+  return text ~= nil and text ~= "" and (text == a or text == b or text == c)
+end
+
+-- No text, or only spaces: a spacer, or the line a money frame sits on. Blanking it hides nothing.
+local function blank(text)
+  return text == nil or not text:find("%S")
+end
+
+local function keep(left, right, kind, itemType, subType, slot)
   if kind ~= nil and keepType[kind] then return true end
-  if LEVEL and type(left) == "string" and left:find(LEVEL) then return true end
-  return same(left, itemType, subType) or same(right, itemType, subType)
+  if blank(left) and blank(right) then return true end
+  if left ~= nil then
+    for p = 1, #PATTERNS do
+      if left:find(PATTERNS[p]) then return true end
+    end
+  end
+  return same(left, itemType, subType, slot) or same(right, itemType, subType, slot)
 end
 
 local kept = {}                   -- scratch for one tooltip, reused: the post-call allocates nothing per line
@@ -237,16 +275,14 @@ local function conceal(tooltip, data)
   local n, name = Safe.Value(tooltip:NumLines()), tooltip:GetName()
   local lines, readable = Safe.Field(data, "lines")
   if type(n) ~= "number" or type(name) ~= "string" or not readable then return nil end
-  -- Line types match tooltip lines only while no other addon has added lines.
-  local typed = type(lines) == "table" and #lines == n
-  local _, _, itemType, subType = Safe.Call(C_Item.GetItemInfoInstant, id)
+  local _, _, itemType, subType, equipLoc = Safe.Call(C_Item.GetItemInfoInstant, id)
+  local slot = slotName(equipLoc)
   for i = 2, n do
     local left, right = textAt(tooltip, name, "TextLeft", i), textAt(tooltip, name, "TextRight", i)
     if left == false or right == false then return nil end
-    local kind, known = nil, true
-    if typed then kind, known = lineType(lines, i) end
+    local kind, known = lineType(lines, i, left)
     if not known then return nil end
-    kept[i] = keep(left, right, kind, itemType, subType)
+    kept[i] = keep(left, right, kind, itemType, subType, slot)
   end
   local hidden = 0
   for i = 2, n do
