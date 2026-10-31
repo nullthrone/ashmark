@@ -87,7 +87,7 @@ TOC header:
 
 ### 3.1 Globals
 
-Every Lua file starts with `local ADDON, ns = ...`. `ns` is private. The only globals are `AshmarkDB`; `Ashmark_OnAddonCompartmentClick`, `Ashmark_OnAddonCompartmentEnter`, `Ashmark_OnAddonCompartmentLeave`; `SLASH_ASHMARK1`, `SLASH_ASHMARK2` and `SlashCmdList.ASHMARK`; `AshmarkMapPinMixin` (XML can only name a global mixin); and frame names prefixed `Ashmark` (`AshmarkFrame`, `AshmarkDialog`, `AshmarkNoticeFrame`, `AshmarkTestTooltip`). `.luacheckrc` lists exactly these as writable globals.
+Every Lua file with code starts with `local ADDON, ns = ...` (`Traces.lua` is a comment only, 4.5). `ns` is private. The only globals are `AshmarkDB`; `Ashmark_OnAddonCompartmentClick`, `Ashmark_OnAddonCompartmentEnter`, `Ashmark_OnAddonCompartmentLeave`; `SLASH_ASHMARK1`, `SLASH_ASHMARK2` and `SlashCmdList.ASHMARK`; `AshmarkMapPinMixin` (XML can only name a global mixin); and frame names prefixed `Ashmark` (`AshmarkFrame`, `AshmarkDialog`, `AshmarkNoticeFrame`, `AshmarkTestTooltip`). `.luacheckrc` lists exactly these as writable globals.
 
 ### 3.2 Modules
 
@@ -180,7 +180,7 @@ local args, n = { ... }, select("#", ...)
 xpcall(function() return handler(self, unpack(args, 1, n)) end, report)
 ```
 
-- Wrapped: lifecycle callbacks, event and bus handlers, hook bodies, Comm handlers, renderers, test checks.
+- Wrapped: lifecycle callbacks, event and bus handlers, hook bodies, Comm handlers, renderers, test checks, tab builders and list row initializers (6.1).
 - `report` calls `geterrorhandler()` at most once per (module, source) per session; source is the event, topic, hook key or message type.
 - After 10 caught errors in one module in a session, Core disables it for the session (`M.unavailable = { "error" }`), prints `CORE_MODULE_FAILED` once, and the test report lists it.
 
@@ -620,7 +620,7 @@ ns.Chronicle:Text(key, ctx, values) -> string             -- renderer helper: ke
 
 Renderers:
 - `render(entry, ctx) -> string|nil`, registered with the kind; nil means the entry is not shown.
-- They use only the entry, `ctx`, `ns.Names` and public services, never the current profile or other mutable state. Wording that depends on state is decided and stored at write time (`violation.o`).
+- They use only the entry, `ctx`, `ns.Names` and public services, never the current profile or other mutable state. Wording that depends on state is decided and stored at write time (`violation.o`). Records looked up by key through a service (contacts, sessions, peers) are the exception: the `group.end` sentence names members from contacts and shows a peer's current archetype (7.4).
 - With `ctx.own == false` they use the third-person key `<KEY>_THEY` with `{name}` (the member's name).
 - They run through the error wrapper under Core (a kind has no owner); an error renders nothing.
 
@@ -648,7 +648,8 @@ ns.Locale:Missing(code) -> { key, ... }   -- enUS keys the locale lacks
 
 - Locale files have no early return; `ns.Locale.tables[code]` keeps only the active locale (all locales when `loadAll` is set).
 - Keys are upper snake case. A key lives with the unit that owns the concept: in that unit's enUS file, with that unit's prefix (`CORE_`, `TEST_`, `CONFLICT_`, `PROFILE_`, `MAP_`, `ENC_`, `HOUSE_`, `CAMP_`, `KNOW_`, `RUMOUR_`, `FICTION_`). `TEST_` keys belong to Core's test mode (`enUS/Test.lua`).
-- Shared vocabularies that any unit may read: `PROFILE_<ARCHETYPE>` (Profile; shown by House, Encounters' tooltip, the `group.end` renderer and Rumours), `CORE_RULESET_<KEY>` and `CORE_UNKNOWN_*` (Core).
+- Shared vocabularies that any unit may read: `PROFILE_<ARCHETYPE>` (Profile; shown by House, Encounters' tooltip, the `group.end` renderer and Rumours), `CONFLICT_UNNAMED` (Conflicts; a side without a faction, also on Map's pins and the House tab), `CORE_RULESET_<KEY>` and `CORE_UNKNOWN_*` (Core).
+- `PROFILE_<ARCHETYPE>` is a label: capitalised, without an article ("Oathkeeper"). Sentences that embed it are written around a label ("Thalen (Oathkeeper from Westfall)", "People say the {archetype} from {place} …").
 - A unit's own test-check strings use its own prefix, e.g. `PROFILE_TEST_MERCY_HOWTO` in `enUS/Profile.lua`.
 - Rumours carry no sex, so `RUMOUR_HEARD_*` must phrase `{archetype}` in a gender-neutral way and have no `_F` forms; `enUS/Rumours.lua` says so to translators in a comment above these keys.
 - Placeholders are named, `{name}`, so translators can reorder them.
@@ -722,18 +723,19 @@ MainFrame creates `AshmarkFrame.Tabs[i]` from `PanelTabButtonTemplate` in `order
 Shared widgets in `UI/Widgets.lua`:
 
 ```lua
-ns.UI:List(parent, { extent = 20, init = function(button, data) end }) -> scrollBox, dataProvider
+ns.UI:List(parent, { extent = 20, init = function(button, data) end, owner = M }) -> scrollBox, dataProvider
   -- WowScrollBoxList + MinimalScrollBar, CreateScrollBoxListLinearView,
   -- view:SetElementInitializer("Button", init), view:SetElementExtent(extent),
   -- ScrollUtil.InitScrollBoxListWithScrollBar(scrollBox, scrollBar, view); no XML needed
   -- the box and its bar fill parent; new rows: scrollBox:SetDataProvider(CreateDataProvider(rows),
-  -- ScrollBoxConstants.RetainScrollPosition)
+  -- ScrollBoxConstants.RetainScrollPosition); each row's init runs through the error wrapper (3.6)
+  -- under owner, the tab's module (MainFrame when nil)
 ns.UI:Parchment(texture) -> bool
 ns.UI:ClassColored(text, classFile) -> string
 ns.UI:StatusBar(parent) -> StatusBar
 ```
 
-Every `UI/` file extends `ns.UI` (`local UI = ns.UI or {}; ns.UI = UI`) and never replaces it. Header rows are list rows with `data.header = true`; collapsing a header rebuilds the data provider without its children.
+Every `UI/` file extends `ns.UI` (`local UI = ns.UI or {}; ns.UI = UI`) and never replaces it. Header rows are list rows with `data.header = true`; the list draws them itself (the quest log's +/- toggle and `data.text`) and never hands them to `init`. A header's children are the rows after it up to the next header; collapsing a header rebuilds the data provider without them. The collapsed state is kept per list by `data.key`, else `data.text`, so callers always pass their full rows.
 
 ### 6.2 Other surfaces
 
@@ -776,7 +778,7 @@ Rules, active from `OnWorldReady`:
 5. **Turning from the house.** When rule 1 or 2 forms this character's first alliance in C on side S and `ns.House:SiblingAlliances(char)[C]` holds GUIDs only on the other side, Conflicts writes `houseturn { c, side = S, q, h = ns.House:Key(char) }` right after the `alliance` entry and sets `turned[C] = true`. At most once per conflict per character; never a violation.
 6. **House hint.** On `QUEST_DETAIL` for a quest on side S of C, with no alliance in C and siblings holding only the other side: `CONFLICT_HOUSE_STANDS_AGAINST` with `{house}`. Siblings on both sides: no hint.
 
-Quest-dialog line (`QuestDialog.lua`): one Ashmark frame, a child of `QuestFrameDetailPanel` inheriting `TooltipBackdropTemplate`, anchored `TOP` to `QuestFrame`'s `BOTTOM` with the dialog's width: a strip under the dialog, outside QuestInfo's layout chain. One `GameFontNormal` FontString, tinted `RED_FONT_COLOR` for contradictions and `NORMAL_FONT_COLOR` for house hints. Shown on `QUEST_DETAIL` when a line applies; hidden on `QUEST_FINISHED`, `QUEST_PROGRESS`, `QUEST_COMPLETE` and on `QuestFrame`'s `OnHide` (`HookScript` through `M:Hook`). It never touches a Blizzard region. The test screenshot confirms the placement.
+Quest-dialog line (`QuestDialog.lua`): one Ashmark frame, a child of `QuestFrameDetailPanel` inheriting `TooltipBackdropTemplate`, its top corners anchored to `QuestFrame`'s bottom corners so it keeps the dialog's width: a strip under the dialog, outside QuestInfo's layout chain. One `GameFontNormal` FontString, tinted `RED_FONT_COLOR` for contradictions and `NORMAL_FONT_COLOR` for house hints. Shown on `QUEST_DETAIL` when a line applies; hidden on `QUEST_FINISHED`, `QUEST_PROGRESS`, `QUEST_COMPLETE` and on `QuestFrame`'s `OnHide` (`HookScript` through `M:Hook`). It never touches a Blizzard region. The test screenshot confirms the placement.
 
 Decisions tab: the ReputationFrame pattern. Collapsible zone headers (`ns.Names.Map(zone)`), one row per conflict with both sides' faction names, the allied side and its date or "open", and the broken count; the violation total sits in the tab header.
 
@@ -784,7 +786,7 @@ Decisions tab: the ReputationFrame pattern. Collapsible zone headers (`ns.Names.
 
 Three axes in [-100, 100]. Positive Habitat = wild, negative = civil; positive Mercy = merciful. Profile keeps incremental accumulators in `char.profile` and never rebuilds from the log (time-based inputs are not in the log; a replay exists only as a test helper).
 
-- **Decay.** Before every change and in `Axes()`: `raw[a] = raw[a] * 0.5 ^ ((now - asOf) / (30 * 86400))`, then `asOf = now`. The displayed axis is `Clamp(Round(raw[a]), -100, 100)`. `PROFILE_CHANGED(axes)` fires when a displayed integer changes.
+- **Decay.** Before every change and on every ticker run: `raw[a] = raw[a] * 0.5 ^ ((now - asOf) / (30 * 86400))`, then `asOf = now`. `Axes()` computes the same decayed values without storing them, so it works for any character and in read-only mode. The displayed axis is `Clamp(Round(raw[a]), -100, 100)`. `PROFILE_CHANGED(axes)` fires when a displayed integer changes.
 - **Ticker.** `ns.Util.Ticker("Profile", 60)`, skipped while `UnitIsAFK("player")`. It adds 60 s to `wild` when `IsOutdoors() and not IsResting()`, or to `civil` when `IsResting()`; every full 600 s applies the weight. It also rolls the day.
 - **Day.** `day.key = date("%Y-%m-%d")`. When the ticker or `OnWorldReady` sees a new key, the finished day applies the gold rule, the calm-day rule and the 7-day alliance check, then `day` resets.
 
@@ -849,6 +851,8 @@ function AshmarkMapPinMixin:OnAcquired(info) self.info = info; self.Icon:SetAtla
 function AshmarkMapPinMixin:OnMouseEnter() end   -- GameTooltip from self.info: stored data and ns.Names only
 function AshmarkMapPinMixin:OnMouseLeave() GameTooltip:Hide() end
 function AshmarkMapPinMixin:SetPassThroughButtons() end   -- empty override: the real call is restricted in combat
+function AshmarkMapPinMixin:DisableInheritedMotionScriptsWarning() return true end   -- the XML sets OnEnter/OnLeave;
+                                                         -- without this, AcquirePin asserts on a new pin
 
 local provider = CreateFromMixins(MapCanvasDataProviderMixin)
 function provider:RemoveAllData() self:GetMap():RemoveAllPinsByTemplate("AshmarkMapPinTemplate") end
@@ -862,8 +866,8 @@ end
 ```
 
 - `OnEnable` adds the provider with `WorldMapFrame:AddDataProvider(provider)`, and `OnDisable` removes it with `RemoveDataProvider`, both through `ns.Combat.Run`. On `PLAYER_REGEN_ENABLED`, if `provider.dirty` and `WorldMapFrame:IsShown()`, Map calls `RefreshAllData()`. New `violation` and `chapter` entries and `ALLIANCE_*` topics refresh a shown map through `ns.Combat.Run("map:refresh")`.
-- **Zone and smaller maps** (`C_Map.GetMapInfo(shown).mapType` greater than `Enum.UIMapType.Continent`: Zone, Dungeon, Micro, Orphan): conflict anchors with `anchor.m == shown`; `violation` entries and chapter records whose `m` or `Where.Zone(m)` equals `shown` and that have `x` and `y` (divide by 100).
-- **Continent maps** (`Enum.UIMapType.Continent`): conflict anchors only. `minX, maxX, minY, maxY = C_Map.GetMapRectOnMap(a.m, shown)`; skip if nil; `x = minX + a.x * (maxX - minX)`, `y = minY + a.y * (maxY - minY)`.
+- **Zone and smaller maps** (`C_Map.GetMapInfo(shown).mapType` greater than `Enum.UIMapType.Continent`: Zone, Dungeon, Micro, Orphan): conflict anchors with `anchor.m == shown`; `violation` entries and chapter records whose `m` or `Where.Zone(m)` equals `shown` and that have `x` and `y` (divide by 100). A position recorded on a map `m ~= shown` is relative to `m` and is converted through `C_Map.GetMapRectOnMap(m, shown)` as on continent maps.
+- **Continent maps** (`Enum.UIMapType.Continent`): conflict anchors only. `minX, maxX, minY, maxY = C_Map.GetMapRectOnMap(a.m, shown)`; skip if nil or empty (zero width or height); `x = minX + a.x * (maxX - minX)`, `y = minY + a.y * (maxY - minY)`.
 - World and cosmic maps: no pins.
 - Anchor states: `open` (no alliance in C), `allied` (an alliance, never broken), `broken` (`broken[C] > 0`). Tooltip: both factions' names and the state. Atlases in `ns.Map.ATLAS = { open, allied, broken, violation, chapter }` are Blizzard atlas names chosen by Map; Map registers a test check for them and the template.
 - Map keeps a per-map cache of violation and chapter positions, appended on `LOG_ADDED` and rebuilt after `LOG_COMPACTED`.
@@ -887,7 +891,7 @@ Contacts are keyed by the contact's GUID account-wide; counts, dates and outcome
 
 - **Membership**, everywhere including instances: `GROUP_CHANGED(true)` (5.10) opens a session in `state.group` if none is open; `GROUP_CHANGED(false)` ends the open session. Encounters never decides the group boundary itself. While a session is open, it adds members when it opens and on every `GROUP_ROSTER_UPDATE` (coalesced 1 s).
 - **Snapshots** via `ns.Identity:Group("all")` only when `not IsInInstance()` and `not ns.Safe.InLockdown()`; `people` holds up to 40 Persons. A member who joins inside an instance is snapshotted at the first roster update outside it, or never; such members appear in `members` only.
-- **Context:** `zone` entries during the session add to `maps`; `PLAYER_ENTERING_WORLD` inside an instance adds `select(8, GetInstanceInfo())` (through Safe) to `inst`. `ENCOUNTER_END`: `success = Safe.Value(select(5, ...))`; `== 1` adds a boss, `== 0` a wipe, secret counts neither; `encounterName` is never read. `CHAPTER_CLOSED` with members sets `camp`. `CHAT_MSG_SYSTEM`: `msg = Safe.Value(...)`; `if msg and msg == ERR_UNINVITE_YOU` sets `kick` (kick detection is unavailable where the text is secret, e.g. inside instances).
+- **Context:** a new session starts with the current zone in `maps` (and the instance in `inst` when it opens inside one); `zone` entries during the session add to `maps`; `PLAYER_ENTERING_WORLD` inside an instance adds `select(8, GetInstanceInfo())` (through Safe) to `inst`. `ENCOUNTER_END`: `success = Safe.Value(select(5, ...))`; `== 1` adds a boss, `== 0` a wipe, secret counts neither; `encounterName` is never read. `CHAPTER_CLOSED` with members sets `camp`. `CHAT_MSG_SYSTEM`: `msg = Safe.Value(...)`; `if msg and msg == ERR_UNINVITE_YOU` sets `kick` (kick detection is unavailable where the text is secret, e.g. inside instances).
 - **Outcome** `e` at session end, first that applies: `kick`, `boss`, `wipe`, `camp`, `travel`.
 - **Session end:** `stop = now`. For each member in `people`: the contact's snapshot fields are overwritten; `byChar[current]` gets `count + 1`, `first` if unset, `last`, `lastPlace` (last of `maps`), `lastInstance`, `outcomes[e] + 1` and the session id (keep 10); a `contact { p }` entry on this character's first meeting; `CONTACT_UPDATED(guid)`. Then `group.end { g = id, size = #members, inst = last of inst, e }`, `sessions[id] = session` (without `people`), `state.group = nil`, `GROUP_SESSION_ENDED(session)`.
 - **Reload and login:** in `OnWorldReady`, an open `state.group` resumes if `ns.Identity:InGroup()` and at least one stored member is still in the group. Otherwise it ends with `stop = char.lastSeen`, the end of the previous session (5.10), not the login time; if the player is in a group, a new session then opens.
@@ -896,14 +900,14 @@ Contacts are keyed by the contact's GUID account-wide; counts, dates and outcome
 - **Unit tooltip** (`Tooltip.lua`, through `M:Hook`): `TooltipDataProcessor.AddTooltipPostCall(Enum.TooltipDataType.Unit, function(tooltip, data) ... end)`. Return unless `tooltip == GameTooltip` and not `tooltip:IsForbidden()`; `guid, ok = Safe.Field(data, "guid")` (`TooltipUtil.GetDisplayedUnit` only as a fallback); return unless ok and `byChar[current]` exists; add `ENC_TOOLTIP` ("Met: {count}× · last {place}"), plus `ENC_TOOLTIP_PEER` ("{archetype}") when `ns.Fiction:Peer(guid)` exists.
 - **Note editor:** `ns.UI.Dialog` with an edit box, `max = 120`; stored in `contact.note`, local only; fires `CONTACT_UPDATED`.
 - **Encounters tab:** friends-list pattern: contacts with a `byChar` entry for the current character, newest `last` first; name in class colour, times met, last place, note; a marker for recurring contacts; a note button.
-- **Chronicle:** the `group.end` renderer (Encounters) names up to 3 members from contacts ("You travelled with Thalen and Mira."), and appends a peer's archetype and origin through `ns.Fiction:Peer(guid)` and `ns.Names.Map` ("Thalen, an oathkeeper from Westfall").
+- **Chronicle:** the `group.end` renderer (Encounters) names up to 3 members from contacts ("You travelled with Thalen and Mira."), and appends a peer's archetype and origin through `ns.Fiction:Peer(guid)` and `ns.Names.Map` ("Thalen (Oathkeeper from Westfall)").
 - Contacts are never sent anywhere.
 
 ### 7.5 House (Module 5)
 
 - **House key** (`ns.House:Key(char)`): `char.houseOverride`, else `char.surname` exactly as stored (trimmed), else nil. A character without either has no house.
 - **Members:** every `AshmarkDB.chars` record with the same key.
-- `/ashmark house <name>`: if `<name>` equals the stored surname of an account character ignoring ASCII case, that stored surname becomes `houseOverride`; otherwise `<name>` as typed (trimmed). `house reset` clears it. Both fire `HOUSE_CHANGED`.
+- `/ashmark house <name>`: if `<name>` equals, ignoring ASCII case, the stored surname of an account character or the `houseOverride` of another one, that stored name becomes `houseOverride` (an exact match wins); otherwise `<name>` as typed (trimmed). `house reset` clears it. Both fire `HOUSE_CHANGED`.
 - `SiblingAlliances(char)`: the siblings' `conflicts.allied`, grouped per conflict into `A` and `B` GUID lists.
 - `FamilyChronicle(char, limit)`: all members' `alliance`, `violation`, `houseturn`, `chapter` and `level` (multiples of 10 only) entries, newest first, rendered with `ctx.own = (member == char)`.
 - **House tab:** members sorted by level (class icon, level, full name, ruleset tag when rulesets differ); the three axes as `ns.UI:StatusBar`s labelled with the archetype; inherited feuds = sibling alliances this character does not share; the family chronicle; family memory = siblings' recurring contacts from `ns.Encounters:Known(sibling, 3)` ("{sibling} knows {name}"); the Legacy level if `legacy` (`C_MajorFactions.GetMajorFactionData(2802).renownLevel`, else the standing label `GetText("FACTION_STANDING_LABEL" .. reaction, sex)`).
@@ -957,9 +961,9 @@ Rumour = { id, tpl, a = archetype, f = factionId (0 = none), m = mapId, hops, st
 
 - **Ids:** `ns.Util.Token()`, 8 random hex characters (`math.random` seeded once in `Core/Init.lua`), regenerated on collision. A rumour id never contains or derives from a GUID.
 - **Seeds**, from own entries via `LOG_ADDED`: `alliance` → `ALLIANCE` (f = the allied faction); `violation` → `BROKE` (f = the faction of the side broken with); `houseturn` → `TURNED` (f = the faction of the side taken). `a = ns.Profile:Archetype(char)`, `m` = the conflict's `zone`, `hops = 0`, `strength = 100`, `own = true`.
-- **Strength** on read: `strength * 0.5 ^ ((now - t) / (3 * 86400))`. Below 20 the rumour is dropped at the next prune.
+- **Strength** on read: `strength * 0.5 ^ ((now - heard) / (3 * 86400))`. A received copy's `strength` is already decayed by its sender, so it decays from `heard`, not from `t` (for own rumours `heard == t`); `t` only drives the age on the wire. Below 20 the rumour is dropped at the next prune.
 - **Exchange round:** on `PEER_SEEN` (coalesced 5 s) and on `CHAPTER_CLOSED` with members; at most one round per 2 minutes. Candidates are rumours with strength at least 20 that some peer in `ns.Fiction:PresentPeers()` has not been told; newest, then strongest, at most 3. Each goes out as `ns.Comm:Send("RU", { id, tpl, hops, strength, age, a, f, m }, "PARTY")` with the decayed strength and `age = floor((now - t) / 3600)`, and `told[id][peerGuid] = now` is set for every present peer.
-- **Receiving** (Comm accepts `RU` only from senders validated by `HI`): an id already in `heard` keeps the stronger copy and prints nothing. Otherwise `hops + 1`; `strength = floor(strength * 0.7)`; `t = now - age * 3600`; at `hops >= 2`, `m = ns.Where.Continent(m)`; at `hops >= 3`, `f = 0` (template variant `_VAGUE`). A map unknown to `C_Map.GetMapInfo`, or a strength below 20, drops the rumour. The complete record is built, then stored, then a `rumour { r }` entry, `RUMOUR_HEARD(rumour)` and one chat line `RUMOUR_HEARD_<TPL>` or `RUMOUR_HEARD_<TPL>_VAGUE` ("People say {archetype} from {place} sided with {faction}.") follow. `f = 0` always uses the `_VAGUE` form.
+- **Receiving** (Comm accepts `RU` only from senders validated by `HI`): an id already in `heard` keeps the stronger copy and prints nothing. Otherwise `hops + 1`; `strength = floor(strength * 0.7)`; `t = now - age * 3600`; at `hops >= 2`, `m = ns.Where.Continent(m)`; at `hops >= 3`, `f = 0` (template variant `_VAGUE`). A map unknown to `C_Map.GetMapInfo`, or a strength below 20, drops the rumour. The complete record is built, then stored, then a `rumour { r }` entry, `RUMOUR_HEARD(rumour)` and one chat line `RUMOUR_HEARD_<TPL>` or `RUMOUR_HEARD_<TPL>_VAGUE` ("People say the {archetype} from {place} has sided with {faction}.") follow. `f = 0` always uses the `_VAGUE` form.
 - **Re-print:** on `ZONE_CHANGED_NEW_AREA`, at most one rumour line: the strongest rumour whose `m` is the current zone or its continent and that was not shown in the last 24 hours (`state.shown`); at most 5 rumour lines per hour in total (`state.lines`).
 - At most 200 stored rumours (4).
 - No names: rumours describe an archetype and an origin, never a character.
@@ -1005,7 +1009,7 @@ Every unit registers its own checks in `OnInitialize`, in its own files; `Dev/Te
 
 Core checks:
 - Forever detection, TOC variant, build; every `Compat.Has` value; each module's `enabled`, `unavailable` and `missingEvents`.
-- Templates: `ButtonFrameTemplate`, `PanelTabButtonTemplate`, `WowScrollBoxList`, `MinimalScrollBar`, `UIPanelButtonTemplate`, `InputBoxTemplate`, `DialogBorderTemplate`, `TooltipBackdropTemplate` (Map adds `AshmarkMapPinTemplate`). `info = C_XMLUtil.GetTemplateInfo(name)`: missing fails; otherwise `pcall(CreateFrame, info.type, nil, UIParent, name)`, then hide it; the detail reports the type.
+- Templates: `ButtonFrameTemplate`, `PanelTabButtonTemplate`, `WowScrollBoxList`, `MinimalScrollBar`, `UIPanelButtonTemplate`, `InputBoxTemplate`, `DialogBorderTemplate`, `TooltipBackdropTemplate` (Map checks `AshmarkMapPinTemplate` in its own `Map.template`). `info = C_XMLUtil.GetTemplateInfo(name)`: missing fails; otherwise `pcall(CreateFrame, info.type, nil, UIParent, name)`, then hide it; the detail reports the type.
 - Parchment atlases (`C_Texture.GetAtlasInfo`), font objects, every `SOUNDKIT` constant used.
 - Locale completeness: `ns.Locale:Missing(GetLocale())`.
 - `Identity:Player()` fields and `surnameSource`.
