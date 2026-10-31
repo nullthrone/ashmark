@@ -2,7 +2,6 @@ name: CI
 
 on:
   push:
-    branches: [main]
   pull_request:
 
 jobs:
@@ -26,6 +25,9 @@ jobs:
 
       - name: Conflict data is current
         run: python3 tools/conflicts.py --check
+
+      - name: Conflict generator tests
+        run: python3 -B -m unittest discover -s tools -p "test_*.py"
 
       - name: TOC files agree and list only existing files
         run: python3 tools/toc_check.py --strict
