@@ -43,7 +43,7 @@ L.CORE_UNKNOWN_ITEM = "un objet"
 L.CORE_UNKNOWN_FACTION = "une faction"
 L.CORE_UNKNOWN_PLACE = "un lieu inconnu"
 L.CORE_UNKNOWN_PLAYER = "quelqu'un"
-L.CORE_UNKNOWN_CLASS = "aventurier"
+L.CORE_UNKNOWN_CLASS = "Aventurier"   -- opens ENC_TAB_WHO, like the client's class names
 L.CORE_UNKNOWN_RACE = "d'un peuple inconnu"   -- follows the class in ENC_TAB_WHO
 L.CORE_RULESET_NORMAL = "Normal"
 L.CORE_RULESET_PVP = "JcJ"
@@ -105,7 +105,7 @@ L.CORE_COMPARTMENT_RIGHT_CLICK = "Clic droit pour ouvrir les options."
 L.TEST_HELP = "lance l'autotest sur ce client et prend une capture d'écran"
 L.TEST_HELP_PROBE = "consigne des données brutes sur ce client pour les développeurs"
 L.TEST_NOT_IN_COMBAT = "Le test ne se lance pas en combat. Réessayez une fois le combat terminé."
-L.TEST_SUMMARY = "Test terminé. Réussis : {passed}, échecs : {failed}, ignorés : {skipped}."
+L.TEST_SUMMARY = "Test terminé. Réussis : {passed}, échoués : {failed}, ignorés : {skipped}."
 L.TEST_LINE = "{state} {id} : {detail}"
 L.TEST_PASS = "réussi"
 L.TEST_FAIL = "ÉCHEC"
@@ -122,8 +122,8 @@ L.TEST_PROBE_NEXT = "Acceptez une quête et engagez un combat pendant cette sess
 
 L.CONFLICT_MODULE_NAME = "Conflits"
 L.CONFLICT_MODULE_DESC = "Certaines quêtes dressent un camp contre un autre. Ashmark retient le camp que vous "
-  .. "choisissez, signale sous la fenêtre de quête celles qui le contredisent et consigne chaque fois que vous "
-  .. "manquez à votre parole."
+  .. "choisissez, signale sous la fenêtre de quête celles qui le contredisent et consigne chaque manquement à "
+  .. "votre parole."
 
 -- Stands where a faction name would: after "pour", "avec", "contre" and as a direct object.
 L.CONFLICT_UNNAMED = "ceux qui vont sans bannière"
@@ -153,16 +153,17 @@ L.CONFLICT_TAB = "Décisions"
 L.CONFLICT_TAB_SIDES = "{a} ou {b}"
 L.CONFLICT_TAB_ALLIED = "Vous soutenez {faction} depuis le {date}"
 L.CONFLICT_TAB_OPEN = "Aucun camp choisi"
-L.CONFLICT_TAB_BROKEN = "Parole trahie {count} fois"
-L.CONFLICT_TAB_VIOLATIONS = "Paroles trahies : {count}"
+L.CONFLICT_TAB_BROKEN = "Parole rompue {count} fois"
+L.CONFLICT_TAB_VIOLATIONS = "Paroles rompues : {count}"
 L.CONFLICT_TAB_NO_VIOLATIONS = "Vous n'avez jamais manqué à votre parole."
 L.CONFLICT_TAB_EMPTY = "Ashmark ne connaît encore aucun conflit dans ce monde."
 
 -- Profile ------------------------------------------------------------------------------------------------
 
 L.PROFILE_MODULE_NAME = "Profil"
-L.PROFILE_MODULE_DESC = "Ashmark lit votre personnage à travers vos actes : si vous tenez parole, si vous vivez "
-  .. "dans la nature ou en ville, et comment vous traitez les créatures qui ne veulent de mal à personne."
+L.PROFILE_MODULE_DESC = "Ashmark dresse le portrait de votre personnage d'après vos actes : si vous tenez parole, "
+  .. "si vous vivez dans la nature ou en ville, et comment vous traitez les créatures qui ne veulent de mal à "
+  .. "personne."
 
 -- Archetypes (7.2): labels without an article. _F forms where the character's sex is known.
 L.PROFILE_OATHKEEPER = "Gardien de serment"
@@ -192,7 +193,7 @@ L.MAP_MODULE_DESC = "Inscrit votre propre histoire sur la carte du monde : les c
 
 -- Pin tooltips (7.3)
 L.MAP_PIN_SIDES = "{a} ou {b}"
-L.MAP_PIN_OPEN = "Vous n'avez pris aucun parti ici."
+L.MAP_PIN_OPEN = "Vous n'avez choisi aucun camp ici."
 L.MAP_PIN_ALLIED = "Vous soutenez {faction}."
 L.MAP_PIN_BROKEN = "Vous soutenez {faction} ; ici, vous avez manqué {count} fois à votre parole."
 L.MAP_PIN_VIOLATION = "Ici, vous avez manqué à votre parole"
@@ -257,7 +258,7 @@ L.ENC_LOG_KICK_THEY_F = "{name} a été écartée du groupe qu'elle formait avec
 -- Parts of {people}
 L.ENC_LOG_PEER = "{who} ({archetype}, {place})"
 L.ENC_LOG_PEER_NOPLACE = "{who} ({archetype})"
-L.ENC_LOG_OTHER = "un autre"
+L.ENC_LOG_OTHER = "quelqu'un d'autre"
 L.ENC_LOG_OTHERS = "{count} autres"
 L.ENC_LOG_STRANGER = "un inconnu"
 L.ENC_LOG_STRANGERS = "{count} inconnus"
@@ -269,7 +270,7 @@ L.ENC_LIST_AND = "{list} et {last}"
 
 L.HOUSE_MODULE_NAME = "Maison"
 L.HOUSE_MODULE_DESC = "Les personnages de ce compte qui partagent un nom de famille forment une maison. L'onglet "
-  .. "Maison en montre les membres, les querelles que vos proches ont embrassées, la chronique familiale et les "
+  .. "Maison en montre les membres, les querelles que vos proches ont épousées, la chronique familiale et les "
   .. "personnes qu'ils connaissent."
 
 -- /ashmark house (5.9)
@@ -278,8 +279,8 @@ L.HOUSE_HELP = "affiche votre maison ; « house <nom> » rejoint la maison de ce
 L.HOUSE_SLASH_CURRENT = "Vous appartenez à la maison {house}."
 L.HOUSE_SLASH_NONE = "Vous n'appartenez à aucune maison. Tapez /ashmark house <nom> pour en rejoindre une."
 L.HOUSE_SLASH_SET = "Vous appartenez désormais à la maison {house}."
-L.HOUSE_SLASH_RESET = "Votre maison suit de nouveau votre nom de famille : la maison {house}."
-L.HOUSE_SLASH_RESET_NONE = "Votre maison suit de nouveau votre nom de famille. Sans nom de famille, vous "
+L.HOUSE_SLASH_RESET = "Votre maison redevient celle de votre nom de famille : la maison {house}."
+L.HOUSE_SLASH_RESET_NONE = "Votre maison redevient celle de votre nom de famille. Sans nom de famille, vous "
   .. "n'appartenez à aucune maison."
 L.HOUSE_SLASH_OFF = "Le module Maison est désactivé ou indisponible : votre maison ne peut pas changer pour le "
   .. "moment."
