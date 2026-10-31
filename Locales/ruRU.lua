@@ -15,14 +15,14 @@ L.CORE_TITLE = "Ashmark"
 
 -- Load safety (4.4)
 L.CORE_NOT_FOREVER = "Ashmark работает только в World of Warcraft Forever и в этом клиенте остается отключенным."
-L.CORE_SV_NEW = "Ashmark начал записи с чистого листа. Если на этой учетной записи Ashmark уже использовался, "
+L.CORE_SV_NEW = "Ashmark начал вести записи с чистого листа. Если на этой учетной записи Ashmark уже использовался, "
   .. "сохраненные данные не загрузились: больше не выполняйте /reload и не выходите из игрового мира. "
   .. "Закройте игру, затем замените Ashmark.lua на Ashmark.lua.bak в папке "
   .. "WTF\\Account\\<учетная запись>\\SavedVariables\\ до следующего входа в игру."
 L.CORE_SV_NEWER = "Эти сохраненные данные созданы более новой версией Ashmark. Пока вы не обновите аддон, "
   .. "Ashmark будет их только читать."
-L.CORE_SV_RECOVERED = "Сохраненные данные имели формат, незнакомый Ashmark. Записи начаты с чистого листа; "
-  .. "старые данные сохранены нетронутыми в AshmarkDB.recovered."
+L.CORE_SV_RECOVERED = "Сохраненные данные имели формат, незнакомый Ashmark. Ashmark начал вести "
+  .. "записи с чистого листа, а старые данные сохранены нетронутыми в AshmarkDB.recovered."
 L.CORE_SV_MIGRATE_FAILED = "Ashmark не удалось обновить сохраненные данные, поэтому в этом сеансе он их только "
   .. "читает."
 
@@ -35,7 +35,7 @@ L.CORE_SETTING_CHAT_LINES = "Строки в чате"
 L.CORE_SETTING_CHAT_LINES_DESC = "Ashmark может выводить короткие строки в окно чата."
 L.CORE_SETTING_SOUNDS = "Звуки"
 L.CORE_SETTING_SOUNDS_DESC = "Ashmark воспроизводит игровые звуки страниц и книг."
-L.CORE_SETTING_SHARE = "Делиться с другими пользователями Ashmark"
+L.CORE_SETTING_SHARE = "Делиться с пользователями Ashmark"
 L.CORE_SETTING_SHARE_DESC = "Передавать ваш архетип, происхождение и слухи участникам группы, которые тоже "
   .. "пользуются Ashmark. Контакты и заметки никогда не покидают ваш клиент."
 
@@ -72,8 +72,8 @@ L.CORE_LOG_LEVEL_THEY_F = "{name} достигла {level}-го уровня."
 L.CORE_LOG_DEATH = "Вы погибли в зоне {place}."
 L.CORE_LOG_DEATH_THEY = "{name} погиб в зоне {place}."
 L.CORE_LOG_DEATH_THEY_F = "{name} погибла в зоне {place}."
-L.CORE_LOG_REP = "Отношение к вам изменилось: {faction} — {standing}."
-L.CORE_LOG_REP_THEY = "Отношение к персонажу {name} изменилось: {faction} — {standing}."
+L.CORE_LOG_REP = "Ваша репутация теперь: {faction} — {standing}."
+L.CORE_LOG_REP_THEY = "Репутация персонажа {name} теперь: {faction} — {standing}."
 L.CORE_LOG_CHAPTER = "Глава {roman} завершается в зоне {place}."
 L.CORE_LOG_CHAPTER_THEY = "{name} завершает главу {roman} в зоне {place}."
 
@@ -123,19 +123,19 @@ L.TEST_RELOAD = "Введите /reload, чтобы сохранить резу�
 L.TEST_NOT_STORED = "Сохраненные данные созданы более новой версией Ashmark, поэтому ничего не сохраняется. "
   .. "Далее следует полный отчет."
 L.TEST_LATE = "Поздний результат: {what}"
-L.TEST_PROBE_DONE = "Зонд записал фактов: {count}."
-L.TEST_PROBE_NEXT = "Примите задание и вступите в бой в этом сеансе: зонд запишет и то, и другое."
+L.TEST_PROBE_DONE = "Записано фактов о клиенте: {count}."
+L.TEST_PROBE_NEXT = "Примите задание и вступите в бой в этом сеансе: будет записано и то, и другое."
 
 -- Conflicts ----------------------------------------------------------------------------------------------
 
 L.CONFLICT_MODULE_NAME = "Конфликты"
-L.CONFLICT_MODULE_DESC = "Некоторые задания ставят одну сторону против другой. Ashmark запоминает, какую сторону "
-  .. "вы выбрали, отмечает под окном задания те задания, что противоречат этому выбору, и записывает, когда вы "
-  .. "нарушаете слово."
+L.CONFLICT_MODULE_DESC = "Некоторые задания сталкивают одну сторону с другой. Ashmark запоминает, какую сторону "
+  .. "вы выбрали, отмечает строкой под окном задания те задания, что противоречат этому выбору, и записывает, "
+  .. "когда вы нарушаете слово."
 
 -- A side without a reputation faction. It stands where a faction name would: alone, after a colon or a dash,
 -- in parentheses and in "{a} или {b}", never after "фракция".
-L.CONFLICT_UNNAMED = "вольный люд"
+L.CONFLICT_UNNAMED = "люди без знамени"
 
 -- Quest-dialog line (7.1)
 L.CONFLICT_CONTRADICTS = "Противоречит вашему союзу: {faction}."
@@ -144,11 +144,11 @@ L.CONFLICT_HOUSE_STANDS_AGAINST = "Ваш дом, {house}, выступает п
 L.CONFLICT_TEST_DIALOG = "Здесь появляется строка Ashmark под окном задания."
 
 -- Chronicle sentences; _THEY forms are used in the family chronicle with {name}.
-L.CONFLICT_ALLIED = "Вы выбрали сторону в зоне {zone}: {faction}."
-L.CONFLICT_ALLIED_THEY = "{name} выбрал сторону в зоне {zone}: {faction}."
-L.CONFLICT_ALLIED_THEY_F = "{name} выбрала сторону в зоне {zone}: {faction}."
-L.CONFLICT_ALLIED_REP = "Ваша репутация решила, чью сторону вы займете в зоне {zone}: {faction}."
-L.CONFLICT_ALLIED_REP_THEY = "Репутация решила, чью сторону {name} займет в зоне {zone}: {faction}."
+L.CONFLICT_ALLIED = "В зоне {zone} вы выбрали сторону: {faction}."
+L.CONFLICT_ALLIED_THEY = "В зоне {zone} {name} выбрал сторону: {faction}."
+L.CONFLICT_ALLIED_THEY_F = "В зоне {zone} {name} выбрала сторону: {faction}."
+L.CONFLICT_ALLIED_REP = "В зоне {zone} вашу сторону определила репутация: {faction}."
+L.CONFLICT_ALLIED_REP_THEY = "В зоне {zone} сторону персонажа {name} определила репутация: {faction}."
 L.CONFLICT_BROKE_WORD = "Вы нарушили слово, данное одной стороне ({broken}), и выполнили задание «{quest}» "
   .. "для другой ({faction})."
 L.CONFLICT_BROKE_WORD_THEY = "{name} нарушил слово, данное одной стороне ({broken}), и выполнил задание "
@@ -161,9 +161,9 @@ L.CONFLICT_SWITCHED_THEY = "{name} снова сменил сторону: за�
   .. "а прежняя ({broken}) осталась позади."
 L.CONFLICT_SWITCHED_THEY_F = "{name} снова сменила сторону: задание «{quest}» выполнено для новой ({faction}), "
   .. "а прежняя ({broken}) осталась позади."
-L.CONFLICT_HOUSETURN = "Вы отвернулись от дома {house} и выбрали сторону в зоне {zone}: {faction}."
-L.CONFLICT_HOUSETURN_THEY = "{name} отвернулся от дома {house} и выбрал сторону в зоне {zone}: {faction}."
-L.CONFLICT_HOUSETURN_THEY_F = "{name} отвернулась от дома {house} и выбрала сторону в зоне {zone}: {faction}."
+L.CONFLICT_HOUSETURN = "Вы отвернулись от дома {house} и в зоне {zone} выбрали сторону: {faction}."
+L.CONFLICT_HOUSETURN_THEY = "{name} отвернулся от дома {house} и в зоне {zone} выбрал сторону: {faction}."
+L.CONFLICT_HOUSETURN_THEY_F = "{name} отвернулась от дома {house} и в зоне {zone} выбрала сторону: {faction}."
 
 -- Decisions tab (6.1)
 L.CONFLICT_TAB = "Решения"
@@ -178,7 +178,7 @@ L.CONFLICT_TAB_EMPTY = "Ashmark пока не знает ни одного ко�
 -- Profile ------------------------------------------------------------------------------------------------
 
 L.PROFILE_MODULE_NAME = "Профиль"
-L.PROFILE_MODULE_DESC = "Ashmark узнает характер вашего персонажа по вашим делам: держите ли вы слово, живете "
+L.PROFILE_MODULE_DESC = "Ashmark судит о характере вашего персонажа по вашим делам: держите ли вы слово, живете "
   .. "ли в глуши или в городах и как обращаетесь с существами, которые никому не желают зла."
 
 -- Archetypes (7.2): capitalised labels without an article, used as epithets ("Тален (Хранитель клятв,
@@ -197,7 +197,7 @@ L.PROFILE_RUTHLESS = "Безжалостная душа"
 L.PROFILE_PRAGMATIST = "Прагматик"
 
 -- Test mode (7.10)
-L.PROFILE_TEST_MERCY_HOWTO = "Убейте 3 зверьков и 3 спокойных нейтральных животных, затем снова введите "
+L.PROFILE_TEST_MERCY_HOWTO = "Убейте 3 зверька и 3 спокойных нейтральных животных, затем снова введите "
   .. "/ashmark test."
 L.PROFILE_TEST_CRITTER_TARGET = "Выберите целью любое существо, затем снова введите /ashmark test."
 L.PROFILE_TEST_CRITTER_OFF = "Этот клиент не различает зверьков, поэтому убитые зверьки не учитываются."
@@ -243,7 +243,7 @@ L.ENC_NOTE_SAVE = "Сохранить"
 
 -- Encounters tab (6.1)
 L.ENC_TAB = "Встречи"
-L.ENC_TAB_TOTAL = "Всего встречено: {count} · знакомых лиц: {recurring}"
+L.ENC_TAB_TOTAL = "Встречено персонажей: {count} · знакомых лиц: {recurring}"
 L.ENC_TAB_EMPTY = "Ваш путь еще ни с кем не пересекался. Вступите с кем-нибудь в группу, и Ashmark запомнит "
   .. "ваших спутников."
 L.ENC_TAB_MET = "Встреч: {count} · последняя — {place} · {date}"
@@ -265,12 +265,12 @@ L.ENC_LOG_BOSS_THEY_F = "{name} сражалась бок о бок со спу�
 L.ENC_LOG_WIPE = "Вы сражались бок о бок со спутниками: {people} — и пали."
 L.ENC_LOG_WIPE_THEY = "{name} сражался бок о бок со спутниками: {people} — и пал."
 L.ENC_LOG_WIPE_THEY_F = "{name} сражалась бок о бок со спутниками: {people} — и пала."
-L.ENC_LOG_CAMP = "Вы делили костер со спутниками: {people}."
-L.ENC_LOG_CAMP_THEY = "{name} делил костер со спутниками: {people}."
-L.ENC_LOG_CAMP_THEY_F = "{name} делила костер со спутниками: {people}."
-L.ENC_LOG_KICK = "Вас исключили из группы; в ее составе: {people}."
-L.ENC_LOG_KICK_THEY = "{name} был исключен из группы; в ее составе: {people}."
-L.ENC_LOG_KICK_THEY_F = "{name} была исключена из группы; в ее составе: {people}."
+L.ENC_LOG_CAMP = "Вы сидели у костра со спутниками: {people}."
+L.ENC_LOG_CAMP_THEY = "{name} сидел у костра со спутниками: {people}."
+L.ENC_LOG_CAMP_THEY_F = "{name} сидела у костра со спутниками: {people}."
+L.ENC_LOG_KICK = "Вас исключили из группы, в которую входили ваши спутники: {people}."
+L.ENC_LOG_KICK_THEY = "{name} был исключен из группы, в которую входили его спутники: {people}."
+L.ENC_LOG_KICK_THEY_F = "{name} была исключена из группы, в которую входили ее спутники: {people}."
 
 -- Parts of {people}, all in the nominative
 L.ENC_LOG_PEER = "{who} ({archetype}, {place})"
@@ -323,8 +323,8 @@ L.HOUSE_LEGACY_STANDING = "{faction}: {standing}"
 -- Campfire -----------------------------------------------------------------------------------------------
 
 L.CAMP_MODULE_NAME = "Костер"
-L.CAMP_MODULE_DESC = "Отдохните у костра, пока не подействует его благотворный эффект, и Ashmark сможет завершить "
-  .. "там главу вашей летописи, если с прошлой главы произошло достаточно событий."
+L.CAMP_MODULE_DESC = "Отдохните в лагере, пока не проявится его благотворное действие, и Ashmark сможет "
+  .. "завершить там главу вашей летописи, если с прошлой главы произошло достаточно событий."
 
 -- Centre-screen notice (7.6)
 L.CAMP_CHAPTER_CLOSED = "Глава {roman} завершается · {place}"
@@ -335,22 +335,22 @@ L.KNOW_MODULE_NAME = "Знания персонажа"
 L.KNOW_MODULE_DESC = "Подсказки предметов показывают только то, что может знать ваш персонаж. У предмета, который "
   .. "ни разу не побывал в сумках, банке или экипировке этого персонажа, видны название, привязка, ячейка, "
   .. "уровень предмета, тип и требования; остальное скрыто. Предметы, которые игра сама по-прежнему скрывает, "
-  .. "показываются так, как их показывает игра."
+  .. "остаются в том виде, в каком их показывает игра."
 
 -- Last line of such a tooltip (7.7)
 L.KNOW_UNKNOWN = "Ваш персонаж никогда не владел этим предметом."
 
 -- Setting (4.3)
-L.KNOW_SETTING_QUEST_REWARDS = "Награды за задания полностью"
+L.KNOW_SETTING_QUEST_REWARDS = "Полные подсказки наград"
 L.KNOW_SETTING_QUEST_REWARDS_DESC = "Никогда не скрывать подсказки наград в окне задания, чтобы вы могли выбрать "
   .. "награду, зная, что она дает."
 
 -- Fiction ------------------------------------------------------------------------------------------------
 
-L.FICTION_MODULE_NAME = "Общий вымысел"
+L.FICTION_MODULE_NAME = "Общая история"
 L.FICTION_MODULE_DESC = "Участники группы, которые тоже пользуются Ashmark, без единого слова в чате узнают ваш "
-  .. "архетип и происхождение, а вы — их. Так ваша летопись и подсказки знают, с кем вы странствовали. Другим "
-  .. "игрокам ничего не показывается."
+  .. "архетип и происхождение, а вы — их. Благодаря этому летопись и подсказки могут рассказать, с кем вы "
+  .. "странствовали. Другим игрокам ничего не показывается."
 
 -- Test mode (7.10)
 L.FICTION_TEST_HOWTO = "Вступите в группу с другим пользователем Ashmark, затем снова введите /ashmark test."
@@ -367,7 +367,7 @@ L.RUMOUR_MODULE_DESC = "Ваши поступки в конфликте расх
 L.RUMOUR_HEARD_ALLIANCE = "Говорят, в краях под названием {place} некто по прозвищу «{archetype}» выбрал "
   .. "сторону: {faction}."
 L.RUMOUR_HEARD_BROKE = "Говорят, в краях под названием {place} некто по прозвищу «{archetype}» предал "
-  .. "союзника: {faction}."
+  .. "союзников: {faction}."
 L.RUMOUR_HEARD_TURNED = "Говорят, в краях под названием {place} некто по прозвищу «{archetype}» отвернулся "
   .. "от своего дома и выбрал сторону: {faction}."
 -- Without a faction: after three hops, or when the side has none.
