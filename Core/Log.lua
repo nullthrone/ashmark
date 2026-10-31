@@ -6,7 +6,7 @@ ns.Log = Log
 local RESERVED = { n = true, t = true, k = true, m = true, x = true, y = true, i = true }
 local COMPACT_AT = 4000          -- an Add above this schedules a compaction
 local KEEP_TOTAL = 3000          -- entries left after a compaction
-local KEEP_KINDS_MAX = 2000      -- beyond this, the oldest peer and then contact entries go
+local KEEP_KINDS_MAX = 2000      -- beyond this, the oldest chapter, then peer, then contact entries go
 local MAX_AGE = 180 * 86400      -- non-keep entries older than this go
 local AUTO_CHAPTER_SIZE = 1000
 local AUTO_CHAPTER_AGE = 7 * 86400
@@ -194,9 +194,10 @@ function Log:Compact(char)
       nOther = nOther + 1
     end
   end
-  -- Keep kinds beyond 2,000: peer entries (written on other clients' word) go before the
-  -- player's own first meetings.
-  for _, kind in ipairs({ "peer", "contact" }) do
+  -- Keep kinds beyond 2,000: chapter entries first, whose record (char.chapters) keeps all they say, so
+  -- a character who rests at camp for years never crowds out its meetings or this session's entries;
+  -- then peer entries (written on other clients' word) before the player's own first meetings.
+  for _, kind in ipairs({ "chapter", "peer", "contact" }) do
     if nKeep > KEEP_KINDS_MAX then
       nKeep = nKeep - dropOldest(log, stay, nKeep - KEEP_KINDS_MAX, function(_, entry) return entry.k == kind end)
     end

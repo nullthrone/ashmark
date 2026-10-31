@@ -218,6 +218,25 @@ describe("Core Log", function()
       assert.equal(101, ns.DB:Char().log[1].n)
     end)
 
+    it("drops the oldest chapter entries first, so years of camp rests keep meetings and the newest entries", function()
+      local log = {}
+      local push = pusher(log)
+      push(30, "contact")
+      for _ = 1, 2950 do
+        push(1, "test.shown")
+        push(1, "chapter", { no = 1 })
+      end
+      local chapters = {}
+      for i = 1, 2950 do chapters[i] = { no = i, from = 30 + 2 * i - 1, to = 30 + 2 * i, closed = time() } end
+      local seq = push(200, "test.shown")
+      boot(log, seq, chapters)
+      local char = ns.DB:Char()
+      local c = kinds(char)
+      assert.same({ chapter = 1970, contact = 30, ["test.shown"] = 1000 }, c)
+      assert.equal(seq, char.log[#char.log].n)
+      assert.equal(2950, #char.chapters)
+    end)
+
     it("drops entries the chronicle never shows before older ones it shows", function()
       local log = {}
       local push = pusher(log)
