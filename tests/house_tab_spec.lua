@@ -79,9 +79,18 @@ describe("UI House tab", function()
     return lists[1].box.provider.items
   end
 
+  local function draw(data)
+    local button = CreateFrame("Button")
+    lists[1].opts.init(button, data)
+    return button
+  end
+
+  -- Headers carry their text; other rows show what the row initializer writes.
   local function texts()
     local out = {}
-    for _, row in ipairs(rows()) do out[#out + 1] = (row.header and "# " or "") .. row.text end
+    for _, row in ipairs(rows()) do
+      out[#out + 1] = row.header and ("# " .. row.text) or draw(row).label:GetText()
+    end
     return out
   end
 
@@ -195,6 +204,50 @@ describe("UI House tab", function()
     }, { unpack(list, 5) })
   end)
 
+  it("words the family memory only for the rows it draws", function()
+    boot()
+    _G.AshmarkDB.contacts[THALEN] = { guid = THALEN, name = "Thalen", class = "HUNTER" }
+    _G.AshmarkDB.contacts[ODA] = { guid = ODA, name = "Oda", class = "SHAMAN" }
+    known[mock.MIRA] = { [THALEN] = { count = 4 }, [ODA] = { count = 3 } }
+    local colored = {}
+    local classColored = ns.UI.ClassColored
+    ns.UI.ClassColored = function(ui, text, class)
+      colored[#colored + 1] = text
+      return classColored(ui, text, class)
+    end
+    tab()
+    assert.same({ "Mira Ashvale", "Aren Ashvale", "Tobin Ashvale", "Mira" }, colored)
+    local last = rows()[#rows()]
+    assert.equal("[MAGE:Mira] knows [HUNTER:Thalen].", draw(last).label:GetText())
+    assert.equal("Thalen", colored[#colored])
+  end)
+
+  it("redraws for family entries and the Legacy, never for entries it does not show", function()
+    boot()
+    tab()
+    local shown = lists[1].box.provider
+    local function redrawn()
+      wow.advance(0.5)
+      local now = lists[1].box.provider
+      local changed = now ~= shown
+      shown = now
+      return changed
+    end
+    ns.Log:Add("gold", { src = "loot", c = 25 })
+    ns.Log:Add("quest.turnin", { q = 1382 })
+    ns.Log:Add("rep", { f = 92, s = 5, d = 25 })
+    ns.Bus:Fire("NAMES_UPDATED", "item", 2589)
+    assert.is_false(redrawn())
+    char.level = 21
+    ns.Log:Add("level", { l = 21 })
+    assert.is_true(redrawn())
+    assert.equal("[WARRIOR:Aren Ashvale], level 21", rows()[3].text)
+    ns.Log:Add("rep", { f = 2802, s = 5, d = 25 })
+    assert.is_true(redrawn())
+    ns.Bus:Fire("NAMES_UPDATED", "quest", 1382)
+    assert.is_true(redrawn())
+  end)
+
   it("shows how to choose a house when the character has none, with the axes still there", function()
     boot()
     char.surname = nil
@@ -237,12 +290,6 @@ describe("UI House tab", function()
   end)
 
   describe("rows", function()
-    local function draw(data)
-      local button = CreateFrame("Button")
-      lists[1].opts.init(button, data)
-      return button
-    end
-
     it("draw members with the class icon and other rows indented as text", function()
       boot()
       tab()

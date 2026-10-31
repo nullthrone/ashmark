@@ -49,6 +49,12 @@ local function onRowLeave(button)
   if GameTooltip:GetOwner() == button then GameTooltip:Hide() end
 end
 
+-- A family-memory row holds its sibling and contact; the sentence is made only when it is drawn.
+local function rowText(data)
+  if not data.knows then return nil end
+  return ns.Format(L.HOUSE_TAB_KNOWS, { sibling = data.sibling, name = UI:ClassColored(data.name, data.class) })
+end
+
 -- Header rows are drawn by the list (6.1); members carry a class icon, other rows a sentence.
 local function initRow(button, data)
   if not button.label then
@@ -74,7 +80,7 @@ local function initRow(button, data)
     label:SetPoint("LEFT", INDENT, 0)
   end
   label:SetPoint("RIGHT", -PAD, 0)
-  label:SetText(data.text)
+  label:SetText(data.text or rowText(data))
 end
 
 local function fullName(char)
@@ -132,7 +138,7 @@ local function feudRows(char, members)
     })
     rows[#rows + 1] = row
   end
-  for id, split in pairs(House:SiblingAlliances(char)) do
+  for id, split in pairs(House:SiblingAlliances(char, members)) do
     local conflict = conflicts:Get(id)
     local own = conflicts:Alliance(char, id)
     for _, side in ipairs(SIDES) do
@@ -145,9 +151,11 @@ local function feudRows(char, members)
   return rows
 end
 
-local function chronicleRows(char)
+local function chronicleRows(char, members)
   local rows = {}
-  for _, item in ipairs(House:FamilyChronicle(char, FAMILY_LIMIT)) do rows[#rows + 1] = { text = item.text } end
+  for _, item in ipairs(House:FamilyChronicle(char, FAMILY_LIMIT, members)) do
+    rows[#rows + 1] = { text = item.text }
+  end
   return rows
 end
 
@@ -156,7 +164,7 @@ local function byName(a, b)
   return a.guid < b.guid
 end
 
--- Each sibling's recurring contacts (7.4), by name.
+-- Each sibling's recurring contacts (7.4), by name; rowText words them once they are drawn.
 local function memoryRows(char, members)
   local encounters = ns.Encounters
   if not encounters then return {} end
@@ -166,13 +174,14 @@ local function memoryRows(char, members)
       local known = {}
       for guid in pairs(encounters:Known(sibling, RECURRING) or {}) do
         local contact = encounters:Contact(guid)
-        known[#known + 1] = { guid = guid, name = ns.Names.Player(guid), class = contact and contact.class }
+        known[#known + 1] = { knows = true, guid = guid, name = ns.Names.Player(guid),
+                              class = contact and contact.class }
       end
       table.sort(known, byName)
-      for _, contact in ipairs(known) do
-        rows[#rows + 1] = { text = ns.Format(L.HOUSE_TAB_KNOWS, {
-          sibling = UI:ClassColored(sibling.name, sibling.class), name = UI:ClassColored(contact.name, contact.class),
-        }) }
+      local name = #known > 0 and UI:ClassColored(sibling.name, sibling.class)
+      for _, row in ipairs(known) do
+        row.sibling = name
+        rows[#rows + 1] = row
       end
     end
   end
@@ -190,7 +199,7 @@ local function sections(char)
   end
   section("members", "HOUSE_TAB_MEMBERS", memberRows(members))
   section("feuds", "HOUSE_TAB_FEUDS", feudRows(char, members))
-  section("chronicle", "HOUSE_TAB_CHRONICLE", chronicleRows(char))
+  section("chronicle", "HOUSE_TAB_CHRONICLE", chronicleRows(char, members))
   section("memory", "HOUSE_TAB_MEMORY", memoryRows(char, members))
   return rows
 end
@@ -277,4 +286,10 @@ local function build(parent)
   return parent
 end
 
-UI.MainFrame:AddTab("house", { label = "HOUSE_TAB", order = 40, module = "House", build = build })
+-- Entries the tab never shows (gold, quest.turnin, item.held, ...) and item names redraw nothing.
+local function ignore(topic, payload)
+  if topic == "NAMES_UPDATED" then return payload == "item" end
+  return topic == "LOG_ADDED" and type(payload) == "table" and not House:Concerns(payload)
+end
+
+UI.MainFrame:AddTab("house", { label = "HOUSE_TAB", order = 40, module = "House", build = build, ignore = ignore })

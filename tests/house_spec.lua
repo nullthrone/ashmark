@@ -185,6 +185,13 @@ describe("House", function()
       boot({ extra = { [mock.MIRA] = allied({ grove = "B" }), [mock.TOBIN] = allied({ grove = "B" }) } })
       assert.same({ grove = { A = {}, B = { mock.MIRA, mock.TOBIN } } }, ns.House:SiblingAlliances(char))
     end)
+
+    it("come from the members the caller hands over, when it holds them already", function()
+      local function allied(t) return { conflicts = { allied = t } } end
+      boot({ extra = { [mock.MIRA] = allied({ grove = "B" }), [mock.TOBIN] = allied({ grove = "A" }) } })
+      assert.same({ grove = { A = {}, B = { mock.MIRA } } },
+        ns.House:SiblingAlliances(char, { mock.char(mock.MIRA), char }))
+    end)
   end)
 
   describe("family chronicle", function()
@@ -255,6 +262,53 @@ describe("House", function()
       local nym = mock.char(mock.NYM)
       mock.entry(nym, "level", T, { l = 10 })
       assert.same({}, ns.House:FamilyChronicle(nym))
+    end)
+
+    it("reads a member's log once, then only the entries written after it", function()
+      boot()
+      local mira = mock.char(mock.MIRA)
+      local reads = 0
+      -- A gold entry that counts how often its kind is read.
+      local function gold(t)
+        local entry = mock.entry(mira, "gold", t, { src = "loot", c = 1 })
+        entry.k = nil
+        return setmetatable(entry, { __index = function(_, key)
+          if key == "k" then
+            reads = reads + 1
+            return "gold"
+          end
+        end })
+      end
+      for i = 1, 40 do gold(T - 1000 + i) end
+      mock.entry(mira, "level", T - 900, { l = 30 })
+      assert.same({ "Mira reached level 30." }, lines(ns.House:FamilyChronicle(char)))
+      assert.equal(40, reads)
+      reads = 0
+      assert.same({ "Mira reached level 30." }, lines(ns.House:FamilyChronicle(char)))
+      assert.equal(0, reads)
+      gold(T - 800)
+      mock.entry(mira, "level", T - 700, { l = 40 })
+      ns.Log:Add("level", { l = 20 })
+      assert.same({ "You reached level 20.", "Mira reached level 40.", "Mira reached level 30." },
+        lines(ns.House:FamilyChronicle(char)))
+      assert.equal(1, reads)
+    end)
+
+    it("reads a log afresh once a new table replaced it", function()
+      boot()
+      local mira = mock.char(mock.MIRA)
+      mock.entry(mira, "level", T - 20, { l = 10 })
+      local kept = mock.entry(mira, "level", T - 10, { l = 20 })
+      assert.same({ "Mira reached level 20.", "Mira reached level 10." }, lines(ns.House:FamilyChronicle(char)))
+      mira.log = { kept }
+      assert.same({ "Mira reached level 20." }, lines(ns.House:FamilyChronicle(char)))
+    end)
+
+    it("comes from the members the caller hands over, when it holds them already", function()
+      boot()
+      local mira = seed()
+      assert.same({ "Mira's chapter I closes in Desolace.", "Mira reached level 30.", "Mira sided in clan_choice." },
+        lines(ns.House:FamilyChronicle(char, nil, { mira, char })))
     end)
 
     it("skips kinds that have no renderer in this load", function()

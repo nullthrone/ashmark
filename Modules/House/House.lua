@@ -73,9 +73,10 @@ function M:Members(char)
   return members(char)
 end
 
-function M:SiblingAlliances(char)
+-- list: what House:Members(char) returned, when the caller holds it already (the tab).
+function M:SiblingAlliances(char, list)
   local out = {}
-  for _, member in ipairs(members(char)) do
+  for _, member in ipairs(list or members(char)) do
     local rec = isSibling(member, char) and type(member.conflicts) == "table" and member.conflicts.allied
     if type(rec) == "table" then
       for id, side in pairs(rec) do
@@ -93,9 +94,13 @@ function M:SiblingAlliances(char)
   return out
 end
 
-local function worthTelling(entry)
+local function familyKind(entry)
   if type(entry) ~= "table" or not FAMILY_KINDS[entry.k] then return false end
-  if entry.k == "level" and not (type(entry.l) == "number" and entry.l % 10 == 0) then return false end
+  return entry.k ~= "level" or (type(entry.l) == "number" and entry.l % 10 == 0)
+end
+
+-- A kind's renderer is looked up when the entry is told, not when it is read.
+local function worthTelling(entry)
   local spec = ns.Log:Kind(entry.k)
   return spec ~= nil and spec.render ~= nil
 end
@@ -107,18 +112,43 @@ local function newestFirst(a, b)
   return (tonumber(a.entry.n) or 0) > (tonumber(b.entry.n) or 0)
 end
 
--- Each item also carries its rendered sentence (text), so the tab renders nothing twice. The log is
--- read from its end, so a member contributes at most `limit` candidates.
-function M:FamilyChronicle(char, limit)
+-- The family entries of each log read so far, oldest first, and the newest sequence number read.
+-- Logs only grow at their end, so a later call reads just the entries after that number. Compaction
+-- and /ashmark reset put a new table in char.log, which is read afresh; the old one is let go.
+local readLogs = setmetatable({}, { __mode = "k" })
+
+local function familyEntries(log)
+  local read = readLogs[log]
+  if not read then
+    read = { entries = {} }
+    readLogs[log] = read
+  end
+  local fresh, newest = {}, read.last
+  for i = #log, 1, -1 do
+    local entry = log[i]
+    local n = type(entry) == "table" and tonumber(entry.n)
+    if read.last and not (n and n > read.last) then break end
+    if n and (newest == nil or n > newest) then newest = n end
+    if familyKind(entry) then fresh[#fresh + 1] = entry end
+  end
+  local entries = read.entries
+  for i = #fresh, 1, -1 do entries[#entries + 1] = fresh[i] end
+  read.last = newest
+  return entries
+end
+
+-- Each item also carries its rendered sentence (text), so the tab renders nothing twice. A member
+-- contributes at most `limit` candidates, its newest. list: as in SiblingAlliances.
+function M:FamilyChronicle(char, limit, list)
   limit = tonumber(limit) or math.huge
   local found = {}
-  for _, member in ipairs(members(char)) do
-    local log = type(member.log) == "table" and member.log or EMPTY
+  for _, member in ipairs(list or members(char)) do
+    local entries = type(member.log) == "table" and familyEntries(member.log) or EMPTY
     local taken = 0
-    for i = #log, 1, -1 do
+    for i = #entries, 1, -1 do
       if taken >= limit then break end
-      if worthTelling(log[i]) then
-        found[#found + 1] = { entry = log[i], char = member }
+      if worthTelling(entries[i]) then
+        found[#found + 1] = { entry = entries[i], char = member }
         taken = taken + 1
       end
     end
@@ -134,6 +164,13 @@ function M:FamilyChronicle(char, limit)
 end
 
 -- For this unit's tab ---------------------------------------------------------------
+
+-- True when a new log entry of the character changes what the tab shows: a family kind (every
+-- level, for the member list) or a standing change of the Legacy faction.
+function M:Concerns(entry)
+  if type(entry) ~= "table" then return false end
+  return FAMILY_KINDS[entry.k] == true or (entry.k == "rep" and entry.f == LEGACY_FACTION)
+end
 
 -- The Legacy line (7.5): the renown level of faction 2802, else its standing label; nil without
 -- the legacy capability or when nothing readable comes back.
