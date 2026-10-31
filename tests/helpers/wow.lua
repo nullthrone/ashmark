@@ -8,6 +8,9 @@
 --   wow.fire("QUEST_ACCEPTED", 1382); wow.advance(1); wow.combat(true)
 --   wow.reload()                         -- logout, SavedVariables round trip, same files, login as a /reload
 --   wow.saved({ schema = 1 })            -- AshmarkDB before ADDON_LOADED (specs have their own globals: use _G)
+--   wow.secret(v), wow.lock(t)           -- an opaque secret value; a real table made inaccessible
+--   wow.tooltip(Enum.TooltipDataType.Item, GameTooltip, data)   -- runs the registered post-calls
+--   wow.invalidEvents.X = true           -- RegisterEvent("X") raises and C_EventUtils.IsEventValid("X") is false
 --
 -- World fixtures live in wow.state (units, map, money, auras, ...) and wow.data (quests, items, factions,
 -- maps, ...); edit them directly or replace any API with wow.stub("C_Map.GetMapInfo", fn). Records of what
@@ -446,6 +449,13 @@ function wow.fire(event, ...)
         for _, hook in ipairs(frame.__hooks.OnEvent or {}) do hook(frame, event, ...) end
       end
     end
+  end
+end
+
+-- Runs the TooltipDataProcessor post-calls registered for a data type, then those for AllTypes.
+function wow.tooltip(kind, tooltip, data)
+  for _, list in ipairs({ wow.postCalls[kind] or {}, wow.postCalls.ALL or {} }) do
+    for _, fn in ipairs(list) do fn(tooltip, data) end
   end
 end
 
