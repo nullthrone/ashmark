@@ -16,7 +16,8 @@ L.HOUSE_SLASH_RESET_NONE = "Your house follows your surname again. Without one, 
 L.HOUSE_SLASH_OFF = "House is turned off or unavailable, so your house cannot change now."
 
 -- House tab (6.1, 7.5). {name} and {sibling} are character names, {faction} a faction name and {zone} a
--- zone name from the client, {level} and {count} numbers, {ruleset} a ruleset name.
+-- zone name from the client, {title} a conflict's title (the client's title of its first quest, as in the
+-- Decisions tab), {level} and {count} numbers, {ruleset} a ruleset name.
 L.HOUSE_TAB = "House"
 L.HOUSE_TAB_HEADING = "House {house}"
 L.HOUSE_TAB_NO_HOUSE = "Without a house"
@@ -27,7 +28,7 @@ L.HOUSE_TAB_MEMBERS = "Members"
 L.HOUSE_TAB_MEMBER = "{name}, level {level}"
 L.HOUSE_TAB_MEMBER_RULESET = "{member} · {ruleset}"
 L.HOUSE_TAB_FEUDS = "Inherited feuds"
-L.HOUSE_TAB_FEUD = "{name} sided with {faction} in {zone}."
+L.HOUSE_TAB_FEUD = "{title}: {name} sided with {faction} in {zone}."
 L.HOUSE_TAB_CHRONICLE = "Family chronicle"
 L.HOUSE_TAB_MEMORY = "Family memory"
 L.HOUSE_TAB_KNOWS = "{sibling} knows {name}."

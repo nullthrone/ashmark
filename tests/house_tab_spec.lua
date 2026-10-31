@@ -1,10 +1,12 @@
 local wow = require("tests.helpers.wow")
 local mock = require("tests.helpers.house_mock")
 
+-- Two conflicts of one faction pair in Desolace, as in the shipped data; title stands for Conflicts:Title.
 local CONFLICTS = {
-  clan_choice = { id = "clan_choice", zone = 1443, A = { faction = 92 }, B = { faction = 93 } },
-  grove = { id = "grove", zone = 2652, A = { faction = 92 }, B = { faction = 0 } },
-  coast = { id = "coast", zone = 1434, A = { faction = 21 }, B = { faction = 87 } },
+  clan_choice = { id = "clan_choice", zone = 1443, A = { faction = 92 }, B = { faction = 93 }, title = "Clan Choice" },
+  valley = { id = "valley", zone = 1443, A = { faction = 92 }, B = { faction = 93 }, title = "Valley of Bones" },
+  grove = { id = "grove", zone = 2652, A = { faction = 92 }, B = { faction = 0 }, title = "The Grove" },
+  coast = { id = "coast", zone = 1434, A = { faction = 21 }, B = { faction = 87 }, title = "Smugglers" },
 }
 local THALEN, ODA = "Player-1-00000010", "Player-1-00000011"
 
@@ -46,6 +48,7 @@ describe("UI House tab", function()
         local allied = c and c.conflicts and c.conflicts.allied
         return allied and allied[id]
       end,
+      Title = function(_, conflict) return conflict.title end,
     }
     known = {}
     ns.Encounters = {
@@ -174,11 +177,33 @@ describe("UI House tab", function()
     local list = texts()
     assert.same({
       "# Inherited feuds",
-      "[ROGUE:Tobin] sided with Magram Clan Centaur in Desolace.",
-      "[ROGUE:Tobin] sided with those without a banner in Shen'dralas.",
-      "[MAGE:Mira] sided with Bloodsail Buccaneers in Stranglethorn Vale.",
+      "Clan Choice: [ROGUE:Tobin] sided with Magram Clan Centaur in Desolace.",
+      "The Grove: [ROGUE:Tobin] sided with those without a banner in Shen'dralas.",
+      "Smugglers: [MAGE:Mira] sided with Bloodsail Buccaneers in Stranglethorn Vale.",
     }, { list[5], list[6], list[7], list[8] })
     assert.equal(8, #list)
+  end)
+
+  it("tells apart by title the feuds of one faction pair in one zone, one row per conflict", function()
+    boot({ extra = {
+      [mock.MIRA] = allied({ valley = "A", clan_choice = "A" }),
+      [mock.TOBIN] = allied({ clan_choice = "B" }),
+    } })
+    char.conflicts = { allied = { valley = "A" } }
+    tab()
+    assert.same({
+      "# Inherited feuds",
+      "Clan Choice: [MAGE:Mira] sided with Gelkis Clan Centaur in Desolace.",
+      "Clan Choice: [ROGUE:Tobin] sided with Magram Clan Centaur in Desolace.",
+    }, { unpack(texts(), 5) })
+    char.conflicts = nil
+    tab()
+    assert.same({
+      "# Inherited feuds",
+      "Clan Choice: [MAGE:Mira] sided with Gelkis Clan Centaur in Desolace.",
+      "Clan Choice: [ROGUE:Tobin] sided with Magram Clan Centaur in Desolace.",
+      "Valley of Bones: [MAGE:Mira] sided with Gelkis Clan Centaur in Desolace.",
+    }, { unpack(texts(), 5) })
   end)
 
   it("tells the family chronicle and the people the siblings keep meeting", function()

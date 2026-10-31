@@ -119,11 +119,13 @@ end
 
 local function byFeud(a, b)
   if a.zone ~= b.zone then return a.zone < b.zone end
+  if a.title ~= b.title then return a.title < b.title end
   if a.faction ~= b.faction then return a.faction < b.faction end
   return a.name < b.name
 end
 
--- Sides siblings took in conflicts where this character stands elsewhere or nowhere yet.
+-- Sides siblings took in conflicts where this character stands elsewhere or nowhere yet. One row per
+-- conflict, side and sibling; the conflict's title tells apart conflicts of one faction pair in one zone.
 local function feudRows(char, members)
   local conflicts = ns.Conflicts
   if not conflicts then return {} end
@@ -131,10 +133,10 @@ local function feudRows(char, members)
   for _, member in ipairs(members) do byGuid[member.guid] = member end
   local rows = {}
   local function add(conflict, side, sibling)
-    local row = { zone = ns.Names.Map(conflict.zone), faction = sideName(conflict, side),
-                  name = tostring(sibling.name or "") }
+    local row = { zone = ns.Names.Map(conflict.zone), title = conflicts:Title(conflict) or L.CORE_UNKNOWN_QUEST,
+                  faction = sideName(conflict, side), name = tostring(sibling.name or "") }
     row.text = ns.Format(L.HOUSE_TAB_FEUD, {
-      name = UI:ClassColored(row.name, sibling.class), faction = row.faction, zone = row.zone,
+      title = row.title, name = UI:ClassColored(row.name, sibling.class), faction = row.faction, zone = row.zone,
     })
     rows[#rows + 1] = row
   end
