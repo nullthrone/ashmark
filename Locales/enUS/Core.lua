@@ -61,7 +61,8 @@ L.CORE_HELP_HEADER = "Commands:"
 L.CORE_HELP_TOGGLE = "open or close the chronicle"
 L.CORE_HELP_HELP = "list these commands"
 L.CORE_HELP_DEBUG = "turn debug output on or off for this session"
-L.CORE_HELP_RESET = "wipe this character's record; \"reset others\" wipes contacts, peers and heard rumours"
+L.CORE_HELP_RESET = "wipe this character's record; \"reset others\" wipes contacts, peers and heard rumours; "
+  .. "\"reset <name>\" forgets another character of this account"
 L.CORE_UNKNOWN_COMMAND = "Unknown command: {command}"
 L.CORE_DEBUG_ON = "Debug output is on for this session."
 L.CORE_DEBUG_OFF = "Debug output is off."
@@ -73,6 +74,14 @@ L.CORE_CANCEL = "Cancel"
 L.CORE_RESET_DONE = "This character's record was wiped."
 L.CORE_RESET_OTHERS_DONE = "Contacts, peers and heard rumours were wiped."
 L.CORE_RESET_READONLY = "The saved data comes from a newer Ashmark, so nothing can be wiped."
+-- /ashmark reset <name>: {name} is a character name as typed or as stored, {level} a number, {guid} the
+-- character's GUID, which the player types to pick one of several characters with the same name.
+L.CORE_RESET_CHAR_UNKNOWN = "No other character named {name} is stored on this account."
+L.CORE_RESET_CHAR_AMBIGUOUS = "Several characters are named {name}. Type /ashmark reset <GUID> with one of these:"
+L.CORE_RESET_CHAR_LINE = "{name}, level {level}: {guid}"
+L.CORE_RESET_CHAR_CONFIRM = "Forget {name}? Ashmark deletes this character's chronicle, decisions, profile and "
+  .. "meetings. Do this only for a character you deleted or moved."
+L.CORE_RESET_CHAR_DONE = "{name} is forgotten."
 
 -- UI shell (6.1, 6.2): main window tabs, the Chronicle tab and the Addon Compartment ---------------
 -- {roman} is a Roman numeral, {date} a short date from the client, {place} a zone name.

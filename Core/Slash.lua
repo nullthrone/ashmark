@@ -26,10 +26,17 @@ local function toggle()
   if main then main:Toggle() end
 end
 
-local function confirm(textKey, onAccept)
+local function confirm(textKey, onAccept, values)
   local dialog = ns.UI and ns.UI.Dialog
   if not dialog then return end
-  dialog:Show({ text = L[textKey], accept = "CORE_RESET_ACCEPT", cancel = "CORE_CANCEL", onAccept = onAccept })
+  dialog:Show({ text = ns.Format(L[textKey], values or {}), accept = "CORE_RESET_ACCEPT", cancel = "CORE_CANCEL",
+                onAccept = onAccept })
+end
+
+-- The visible tab redraws: a wipe changes what every tab shows, and no topic tells of it.
+local function redraw()
+  local main = ns.UI and ns.UI.MainFrame
+  if main and main.Refresh then main:Refresh() end
 end
 
 -- This character's part of the account stores: its meetings in contacts (a contact no other
@@ -74,16 +81,75 @@ local function wipeOthers()
     end
   end
   db.rumours.heard, db.rumours.told = heard, told
+  redraw()
   ns.Print(L.CORE_RESET_OTHERS_DONE)
+end
+
+local function fullName(char)
+  local name = type(char.name) == "string" and char.name or ""
+  if type(char.surname) == "string" and char.surname ~= "" then return name .. " " .. char.surname end
+  return name
+end
+
+-- Other stored characters that `query` names: the GUID exactly, else the full name or the first name,
+-- ignoring ASCII case. Never the current character. Sorted by name, then GUID.
+local function others(query)
+  local chars, me = type(AshmarkDB.chars) == "table" and AshmarkDB.chars or {}, ns.playerGUID
+  local own = chars[query]
+  if query ~= me and type(own) == "table" then return { { guid = query, char = own } } end
+  local wanted, out = query:lower(), {}
+  for guid, char in pairs(chars) do
+    if guid ~= me and type(char) == "table" and type(char.name) == "string"
+      and (char.name:lower() == wanted or fullName(char):lower() == wanted) then
+      out[#out + 1] = { guid = guid, char = char }
+    end
+  end
+  table.sort(out, function(a, b)
+    local na, nb = fullName(a.char), fullName(b.char)
+    if na ~= nb then return na < nb end
+    return tostring(a.guid) < tostring(b.guid)
+  end)
+  return out
+end
+
+-- Another character of this account, deleted or moved in the game: its record and its share of the
+-- account stores go (5.9). The House, the quest-dialog hint and houseturn read AshmarkDB.chars live.
+local function forgetOther(guid, name)
+  return function()
+    if ns.DB.readOnly or guid == ns.playerGUID or type(AshmarkDB.chars[guid]) ~= "table" then return end
+    AshmarkDB.chars[guid] = nil
+    forgetCharacter(AshmarkDB, guid)
+    redraw()
+    ns.Print(ns.Format(L.CORE_RESET_CHAR_DONE, { name = name }))
+  end
+end
+
+local function resetOther(query)
+  local found = others(query)
+  if #found == 0 then
+    ns.Print(ns.Format(L.CORE_RESET_CHAR_UNKNOWN, { name = query }))
+  elseif #found > 1 then
+    ns.Print(ns.Format(L.CORE_RESET_CHAR_AMBIGUOUS, { name = query }))
+    for _, hit in ipairs(found) do
+      ns.Print(ns.Format(L.CORE_RESET_CHAR_LINE, {
+        name = fullName(hit.char), level = tonumber(hit.char.level) or "?", guid = hit.guid,
+      }))
+    end
+  else
+    local name = fullName(found[1].char)
+    confirm("CORE_RESET_CHAR_CONFIRM", forgetOther(found[1].guid, name), { name = name })
+  end
 end
 
 local function reset(args)
   if ns.DB.readOnly then
     ns.Print(L.CORE_RESET_READONLY)
-  elseif args == "others" then
+  elseif args == "" or args == nil then
+    confirm("CORE_RESET_CONFIRM", wipeCharacter)
+  elseif args:lower() == "others" then
     confirm("CORE_RESET_OTHERS_CONFIRM", wipeOthers)
   else
-    confirm("CORE_RESET_CONFIRM", wipeCharacter)
+    resetOther(args)
   end
 end
 

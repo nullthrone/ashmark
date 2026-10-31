@@ -110,9 +110,77 @@ describe("Core Slash", function()
     assert.same({ mine = { p = 1 } }, db.rumours.told)
   end)
 
+  it("redraws the visible tab after a wipe of others", function()
+    local refreshed = 0
+    ns.UI.MainFrame = { Refresh = function(_, id) refreshed = refreshed + 1 assert.is_nil(id) end }
+    SlashCmdList.ASHMARK("reset OTHERS")
+    dialog.onAccept()
+    assert.equal(1, refreshed)
+  end)
+
+  describe("another character", function()
+    local MIRA, THALEN1, THALEN2 = "Player-1-0000000c", "Player-1-0000000d", "Player-1-0000000e"
+    local refreshed
+
+    before_each(function()
+      local db = _G.AshmarkDB
+      db.chars[MIRA] = { guid = MIRA, name = "Mira", surname = "Ashvale", level = 20, log = {} }
+      db.chars[THALEN1] = { guid = THALEN1, name = "Thalen", surname = "Ashvale", level = 12, log = {} }
+      db.chars[THALEN2] = { guid = THALEN2, name = "Thalen", level = 31, log = {} }
+      db.contacts = {
+        mine = { guid = "mine", note = "", byChar = { [MIRA] = { count = 1 }, [ns.playerGUID] = { count = 1 } } },
+        hers = { guid = "hers", note = "", byChar = { [MIRA] = { count = 5 } } },
+      }
+      db.peers = { p = { guid = "p", seenBy = { [MIRA] = "GENTLE" }, logged = { [MIRA] = 5 } } }
+      refreshed = 0
+      ns.UI.MainFrame = { Refresh = function() refreshed = refreshed + 1 end }
+    end)
+
+    it("is forgotten by first or full name after confirmation, with its meetings and sightings", function()
+      SlashCmdList.ASHMARK("reset mira ashvale")
+      assert.equal(ns.Format(ns.L.CORE_RESET_CHAR_CONFIRM, { name = "Mira Ashvale" }), dialog.text)
+      assert.is_table(_G.AshmarkDB.chars[MIRA])
+      dialog.onAccept()
+      local db = _G.AshmarkDB
+      assert.is_nil(db.chars[MIRA])
+      assert.is_table(db.chars[ns.playerGUID])
+      assert.same({ mine = { guid = "mine", note = "", byChar = { [ns.playerGUID] = { count = 1 } } } }, db.contacts)
+      assert.same({}, db.peers.p.seenBy)
+      assert.equal(1, refreshed)
+      assert.is_true(printed(ns.Format(ns.L.CORE_RESET_CHAR_DONE, { name = "Mira Ashvale" })))
+      dialog = nil
+      SlashCmdList.ASHMARK("reset Mira")
+      assert.is_nil(dialog)
+      assert.is_true(printed(ns.Format(ns.L.CORE_RESET_CHAR_UNKNOWN, { name = "Mira" })))
+    end)
+
+    it("lists characters that share a name with their GUIDs, and takes one by GUID", function()
+      SlashCmdList.ASHMARK("reset thalen")
+      assert.is_nil(dialog)
+      assert.is_true(printed(ns.Format(ns.L.CORE_RESET_CHAR_AMBIGUOUS, { name = "thalen" })))
+      assert.is_true(printed(ns.Format(ns.L.CORE_RESET_CHAR_LINE, { name = "Thalen", level = 31, guid = THALEN2 })))
+      assert.is_true(printed(ns.Format(ns.L.CORE_RESET_CHAR_LINE,
+        { name = "Thalen Ashvale", level = 12, guid = THALEN1 })))
+      SlashCmdList.ASHMARK("reset " .. THALEN2)
+      dialog.onAccept()
+      assert.is_nil(_G.AshmarkDB.chars[THALEN2])
+      assert.is_table(_G.AshmarkDB.chars[THALEN1])
+    end)
+
+    it("never names the current character", function()
+      local me = _G.AshmarkDB.chars[ns.playerGUID]
+      SlashCmdList.ASHMARK("reset " .. me.name)
+      SlashCmdList.ASHMARK("reset " .. ns.playerGUID)
+      assert.is_nil(dialog)
+      assert.is_true(printed(ns.Format(ns.L.CORE_RESET_CHAR_UNKNOWN, { name = me.name })))
+      assert.is_true(printed(ns.Format(ns.L.CORE_RESET_CHAR_UNKNOWN, { name = ns.playerGUID })))
+    end)
+  end)
+
   it("refuses to reset in read-only mode", function()
     ns.DB.readOnly = true
     SlashCmdList.ASHMARK("reset")
+    SlashCmdList.ASHMARK("reset Mira")
     assert.is_nil(dialog)
     assert.is_true(printed(ns.L.CORE_RESET_READONLY))
   end)
