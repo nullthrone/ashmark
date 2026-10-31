@@ -257,6 +257,16 @@ local function collect(facts)
 
   call(facts, "UnitCreatureType", "target")
   call(facts, "C_CreatureInfo.GetCreatureTypeInfo", 8)
+  -- Whether UnitRace names a race for the unit's sex where C_CreatureInfo gives the masculine form
+  -- (Names.Race, 5.7): target a female character of another race, e.g. a dwarf in deDE.
+  call(facts, "UnitRace", "target")
+  call(facts, "UnitSex", "target")
+  custom(facts, "C_CreatureInfo.GetRaceInfo(<target race>)", function()
+    local ok, _, _, id = pcall(UnitRace, "target")
+    if not ok or Safe.IsSecret(id) or type(id) ~= "number" then return { scalar(id) } end
+    local got, info = Safe.Call(C_CreatureInfo and C_CreatureInfo.GetRaceInfo, id)
+    return { got and str(info) or "<missing>" }
+  end)
 
   enum(facts, "Enum.BagIndex")
   tooltipLines(facts)

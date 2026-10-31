@@ -42,6 +42,7 @@ local function person(unit, guid, name, surname)
     full = surname and (name .. " " .. surname) or name,
     class = read(UnitClass, unit, 2),
     race = read(UnitRace, unit, 3),
+    raceName = read(UnitRace, unit, 1),    -- the client's name for the unit's sex (Names.Race, 5.7)
     sex = read(UnitSex, unit, 1),
     faction = read(UnitFactionGroup, unit, 1),
     level = read(UnitLevel, unit, 1),

@@ -78,8 +78,15 @@ describe("Dev probe", function()
     assert.same({ "false" }, fact(record, 'C_Secrets.ShouldUnitIdentityBeSecret("party1")').r)
     assert.same({ "<nil>" }, fact(record, 'C_Map.GetBestMapForUnit("player")').r)
     assert.same({}, fact(record, 'UnitCreatureType("target")').r)
+    assert.same({ "<nil>" }, fact(record, "C_CreatureInfo.GetRaceInfo(<target race>)").r)
     wow.unit("target", { guid = "Creature-0-1", name = "Boar", creatureType = "Beast", creatureTypeID = 1 })
     assert.same({ "Beast", "1" }, fact(probe(), 'UnitCreatureType("target")').r)
+    wow.unit("target", { guid = "Player-1-9", name = "Bryn", raceID = 3, raceFile = "Dwarf", raceName = "Zwergin",
+                         sex = 3, isPlayer = true })
+    local race = probe()
+    assert.same({ "Zwergin", "Dwarf", "3" }, fact(race, 'UnitRace("target")').r)
+    assert.same({ "3" }, fact(race, 'UnitSex("target")').r)
+    assert.truthy(fact(race, "C_CreatureInfo.GetRaceInfo(<target race>)").r[1]:find("raceName=Dwarf", 1, true))
     record = probes()[1]
     assert.same({ "{name=Critter}" }, fact(record, "C_CreatureInfo.GetCreatureTypeInfo(8)").r)
     local faction = fact(record, "C_Reputation.GetFactionDataByID(92)").r[1]

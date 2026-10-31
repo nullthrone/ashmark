@@ -50,9 +50,16 @@ describe("Core Identity", function()
     local p = Identity:Player()
     assert.same({
       guid = "Player-1-00000001", name = "Aren", surname = "Ashvale", full = "Aren Ashvale", class = "WARRIOR",
-      race = 1, sex = 2, faction = "Alliance", level = 20, ruleset = "Normal", unit = "player",
+      race = 1, raceName = "Human", sex = 2, faction = "Alliance", level = 20, ruleset = "Normal", unit = "player",
       surnameSource = "UnitNameUnmodified",
     }, p)
+  end)
+
+  it("keeps the race name the client gives for the unit's sex, and no secret one", function()
+    wow.unit("party1", { guid = "Player-1-2", name = "Mira", raceID = 3, raceName = "Zwergin", sex = 3 })
+    wow.unit("party2", { guid = "Player-1-3", name = "Thalen", raceID = 3, raceName = wow.secret("Zwerg") })
+    assert.same({ 3, "Zwergin" }, { Identity:Unit("party1").race, Identity:Unit("party1").raceName })
+    assert.is_nil(Identity:Unit("party2").raceName)
   end)
 
   it("returns nil for a unit with a missing or secret GUID or name", function()

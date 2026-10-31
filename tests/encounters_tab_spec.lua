@@ -28,6 +28,10 @@ describe("Encounters tab", function()
   end
 
   -- Thalen recurring with a note, Mira met once more recently, Kel only by the alt, Orla met long ago.
+  local function ns_locale()
+    return GetLocale()
+  end
+
   local function stored()
     return {
       schema = 1,
@@ -223,6 +227,15 @@ describe("Encounters tab", function()
     assert.equal("Human Paladin", list[2].who)
     drawn(list[2])
     assert.equal(1, calls)
+  end)
+
+  it("names the race as the client gave it at the meeting while the client runs that locale", function()
+    local db = stored()
+    db.contacts[MIRA].raceName, db.contacts[MIRA].locale = "Gnomin", ns_locale()
+    db.contacts[ORLA].raceName, db.contacts[ORLA].locale = "Nachtelfe", "xxXX"
+    boot(db)
+    assert.equal("Gnomin Mage", find(MIRA).who)
+    assert.equal("Night Elf Priest", find(ORLA).who)
   end)
 
   it("leaves a race or class the client does not know out of the who line", function()

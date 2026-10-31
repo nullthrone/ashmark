@@ -9,7 +9,7 @@ local cache = { quest = {}, item = {}, faction = {}, map = {}, race = {} }
 local requested = { quest = {}, item = {} }
 
 local function text(v)
-  if type(v) == "string" and v ~= "" and not Safe.IsSecret(v) then return v end
+  if type(v) == "string" and not Safe.IsSecret(v) and v ~= "" then return v end
 end
 
 local function field(fn, id, key)
@@ -77,15 +77,24 @@ function Names.Map(id)
   return lookup("map", id, readMap) or L.CORE_UNKNOWN_PLACE
 end
 
-function Names.Race(raceID)
-  return lookup("race", raceID, readRace) or L.CORE_UNKNOWN_RACE
+-- Race and class names; the second return tells whether the client knew the name (false: the fallback).
+-- C_CreatureInfo names a race in its masculine form only. UnitRace names it for the unit's sex, so a name
+-- stored from it (Person.raceName, 5.3) wins while the client still runs the locale it was read in.
+function Names.Race(raceID, storedName, storedLocale)
+  local stored = storedLocale ~= nil and storedLocale == ns.Locale.active and text(storedName)
+  if stored then return stored, true end
+  local name = lookup("race", raceID, readRace)
+  if name then return name, true end
+  return L.CORE_UNKNOWN_RACE, false
 end
 
 function Names.Class(classFile, sex)
-  if type(classFile) ~= "string" then return L.CORE_UNKNOWN_CLASS end
+  if type(classFile) ~= "string" then return L.CORE_UNKNOWN_CLASS, false end
   local female = sex == 3 and type(LOCALIZED_CLASS_NAMES_FEMALE) == "table" and LOCALIZED_CLASS_NAMES_FEMALE[classFile]
   local male = type(LOCALIZED_CLASS_NAMES_MALE) == "table" and LOCALIZED_CLASS_NAMES_MALE[classFile]
-  return text(female) or text(male) or L.CORE_UNKNOWN_CLASS
+  local name = text(female) or text(male)
+  if name then return name, true end
+  return L.CORE_UNKNOWN_CLASS, false
 end
 
 -- Contact or character record name; not cached, because both stores change during a session.

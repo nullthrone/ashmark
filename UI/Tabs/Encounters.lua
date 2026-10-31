@@ -95,8 +95,8 @@ end
 -- Race and class as the client names them. A name the client does not know is left out instead of
 -- filling the label's slot with CORE_UNKNOWN_*; without either, there is no line.
 local function who(contact)
-  local race, class = ns.Names.Race(contact.race), ns.Names.Class(contact.class, contact.sex)
-  local hasRace, hasClass = race ~= L.CORE_UNKNOWN_RACE, class ~= L.CORE_UNKNOWN_CLASS
+  local race, hasRace = ns.Names.Race(contact.race, contact.raceName, contact.locale)
+  local class, hasClass = ns.Names.Class(contact.class, contact.sex)
   if hasRace and hasClass then return ns.Format(L.ENC_TAB_WHO, { race = race, class = class }) end
   if hasRace then return race end
   if hasClass then return class end

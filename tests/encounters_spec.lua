@@ -327,6 +327,15 @@ describe("Encounters", function()
       assert.equal(THALEN, last("contact").p)
     end)
 
+    it("keep the race name the client gave for the member's sex, with the locale it was read in", function()
+      boot()
+      local dwarf = { guid = THALEN, name = "Thalen", classFile = "PALADIN", raceID = 3, raceName = "Zwergin",
+                      sex = 3, faction = "Alliance", level = 20, isPlayer = true }
+      mock.session(wow, ns, { dwarf })
+      local contact = M:Contact(THALEN)
+      assert.same({ 3, "Zwergin", ns.Locale.active }, { contact.race, contact.raceName, contact.locale })
+    end)
+
     it("overwrite a snapshot field the newest snapshot lacks", function()
       boot()
       mock.session(wow, ns, { "thalen" })
@@ -616,6 +625,17 @@ describe("Encounters", function()
       assert.equal("You travelled with Thalen, Mira, Kel and one other.", render(last("group.end")))
     end)
 
+    it("tells of a first meeting only while the contact is stored", function()
+      boot()
+      mock.session(wow, ns, { "mira" })
+      local entry = last("contact")
+      assert.equal("You met Mira for the first time.", render(entry))
+      _G.AshmarkDB.contacts[entry.p] = nil
+      assert.is_nil(render(entry))
+      _G.AshmarkDB.contacts = {}
+      assert.is_nil(render(entry))
+    end)
+
     it("counts members without a contact as others or strangers", function()
       boot()
       wow.state.instance = { instanceID = 389 }
@@ -685,7 +705,7 @@ describe("Encounters", function()
       assert.equal("You travelled with 2 companions.", render(last("group.end")))
       assert.equal("You travelled with a companion.", render({ k = "group.end", g = "gone", size = 1, e = "travel" }))
       assert.equal("You travelled with strangers.", render({ k = "group.end", g = "gone", size = 0, e = "odd" }))
-      assert.equal("You met someone for the first time.", render({ k = "contact", p = "Player-1-0" }))
+      assert.is_nil(render({ k = "contact", p = "Player-1-0" }))
     end)
 
     it("writes no second first meeting for a contact the store forgot", function()
@@ -693,7 +713,7 @@ describe("Encounters", function()
       mock.session(wow, ns, { "thalen" })
       local entry = last("contact")
       _G.AshmarkDB.contacts[THALEN] = nil
-      assert.equal("You met someone for the first time.", render(entry))
+      assert.is_nil(render(entry))
       mock.session(wow, ns, { "thalen", "mira" })
       assert.same({ "contact", "group.end", "contact", "group.end" }, mock.kinds(char))
       assert.equal(MIRA, last("contact").p)

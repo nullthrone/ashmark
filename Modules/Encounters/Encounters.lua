@@ -25,8 +25,10 @@ local ROSTER_DELAY = 1
 M.RECURRING = 3                  -- byChar.count of a recurring contact (ENC_RECURRING)
 
 -- Fields of a contact's snapshot, and of a Person kept in session.people (5.3, without the unit token).
-local SNAPSHOT = { "guid", "name", "surname", "class", "race", "sex", "faction", "ruleset" }
-local PERSON = { "guid", "name", "surname", "full", "class", "race", "sex", "faction", "level", "ruleset" }
+-- raceName is read in the client's locale, so both keep that locale with it (Names.Race, 5.7).
+local SNAPSHOT = { "guid", "name", "surname", "class", "race", "raceName", "locale", "sex", "faction", "ruleset" }
+local PERSON = { "guid", "name", "surname", "full", "class", "race", "raceName", "sex", "faction", "level",
+                 "ruleset" }
 
 local SENTENCES = {
   kick = "ENC_LOG_KICK", boss = "ENC_LOG_BOSS", wipe = "ENC_LOG_WIPE", camp = "ENC_LOG_CAMP",
@@ -190,6 +192,7 @@ local function snapshot(session, index)
   for guid, person in pairs(ns.Identity:Group("all")) do
     local rec = (people[guid] or n < MAX_PEOPLE) and copyFields(person, PERSON)
     if rec then
+      rec.locale = ns.Locale.active
       if not people[guid] then n = n + 1 end
       people[guid] = rec
       if not index[guid] then
@@ -587,7 +590,10 @@ local function renderGroupEnd(entry, ctx)
   return ns.Chronicle:Text(SENTENCES[entry.e] or SENTENCES.travel, ctx, { people = people(session, entry.size) })
 end
 
+-- A first meeting is told while the contact is stored. Once the store forgets it (pruned, 4, or
+-- /ashmark reset others) the entry stays, but says nothing rather than "You met someone".
 local function renderContact(entry, ctx)
+  if not M:Contact(entry.p) then return nil end
   return ns.Chronicle:Text("ENC_LOG_CONTACT", ctx, { contact = ns.Names.Player(entry.p) })
 end
 
