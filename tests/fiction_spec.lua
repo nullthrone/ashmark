@@ -185,10 +185,10 @@ describe("Fiction", function()
 
     it("carries the ruleset and a version stripped to the wire's characters", function()
       wow.state.rules[Enum.GameRule.RPRuleset] = true
-      wow.data.metadata.Version = "@project-version@ (build 12345678901234)"
+      wow.data.metadata.Version = "v1.2.0 (build 12345678901234)"
       boot()
       mock.join(wow, "mira")
-      assert.equal("1|HI|" .. ME .. "|OATHKEEPER|1443|RP|project-versionbuild", wow.sent[1].text)
+      assert.equal("1|HI|" .. ME .. "|OATHKEEPER|1443|RP|v1.2.0build123456789", wow.sent[1].text)
     end)
 
     it("names an unset version dev", function()

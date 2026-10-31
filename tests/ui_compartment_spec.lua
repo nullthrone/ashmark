@@ -38,9 +38,9 @@ describe("UI Compartment", function()
     _G.Ashmark_OnAddonCompartmentEnter("Ashmark", menuButton)
     assert.is_true(GameTooltip:IsShown())
     assert.equal(menuButton, GameTooltip:GetOwner())
-    assert.same({ "Ashmark", ns.L.CORE_COMPARTMENT_CLICK, ns.L.CORE_COMPARTMENT_RIGHT_CLICK },
+    assert.same({ "Ashmark", "1.0.0-test", ns.L.CORE_COMPARTMENT_CLICK, ns.L.CORE_COMPARTMENT_RIGHT_CLICK },
                 { _G.GameTooltipTextLeft1:GetText(), _G.GameTooltipTextLeft2:GetText(),
-                  _G.GameTooltipTextLeft3:GetText() })
+                  _G.GameTooltipTextLeft3:GetText(), _G.GameTooltipTextLeft4:GetText() })
     _G.Ashmark_OnAddonCompartmentLeave("Ashmark", CreateFrame("Button"))
     assert.is_true(GameTooltip:IsShown())
     _G.Ashmark_OnAddonCompartmentLeave("Ashmark", menuButton)

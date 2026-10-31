@@ -78,6 +78,7 @@ L.CORE_LOG_CHAPTER_NOZONE_THEY = "{name} clôt son chapitre {roman} dans {place}
 L.CORE_HELP_HEADER = "Commandes :"
 L.CORE_HELP_TOGGLE = "ouvre ou ferme la chronique"
 L.CORE_HELP_HELP = "affiche ces commandes"
+L.CORE_HELP_VERSION = "affiche la version installée d'Ashmark"
 L.CORE_HELP_DEBUG = "active ou désactive les messages de débogage pour cette session"
 L.CORE_HELP_RESET = "efface le registre de ce personnage ; « reset others » efface les contacts, les pairs et les "
   .. "rumeurs entendues ; « reset <nom> » oublie un autre personnage de ce compte"

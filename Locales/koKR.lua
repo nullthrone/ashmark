@@ -79,6 +79,7 @@ L.CORE_LOG_CHAPTER_NOZONE_THEY = "{place}에서 {name}의 제{roman}장이 막�
 L.CORE_HELP_HEADER = "명령어:"
 L.CORE_HELP_TOGGLE = "연대기 열기 또는 닫기"
 L.CORE_HELP_HELP = "이 명령어 목록 보기"
+L.CORE_HELP_VERSION = "설치된 Ashmark 버전 보기"
 L.CORE_HELP_DEBUG = "이번 접속 동안 디버그 출력 켜기 또는 끄기"
 L.CORE_HELP_RESET = "이 캐릭터의 기록 지우기 (\"reset others\": 만남 기록, 다른 사용자 정보, 들은 소문 지우기, "
   .. "\"reset <이름>\": 이 계정의 다른 캐릭터 잊기)"

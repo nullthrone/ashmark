@@ -496,7 +496,8 @@ function TestMode:Run()
   local build = {}
   for k, v in pairs(ns.Compat.build) do build[k] = v end
   local record = {
-    t = time(), build = build, locale = GetLocale(), project = WOW_PROJECT_ID, tocVariant = ns.Compat.tocVariant,
+    t = time(), version = ns.version, build = build, locale = GetLocale(), project = WOW_PROJECT_ID,
+    tocVariant = ns.Compat.tocVariant,
     db = dbState(), comm = commStats(), results = runAll(),
   }
   local stored = self:Keep("tests", record, MAX_TESTS)

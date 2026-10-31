@@ -90,6 +90,7 @@ L.CORE_LOG_CHAPTER_NOZONE_THEY = "{name} завершает главу {roman}. 
 L.CORE_HELP_HEADER = "Команды:"
 L.CORE_HELP_TOGGLE = "открыть или закрыть летопись"
 L.CORE_HELP_HELP = "вывести список этих команд"
+L.CORE_HELP_VERSION = "показать установленную версию Ashmark"
 L.CORE_HELP_DEBUG = "включить или выключить отладочный вывод на этот сеанс"
 L.CORE_HELP_RESET = "стереть записи этого персонажа; «reset others» — стереть контакты, сведения о других "
   .. "пользователях Ashmark и услышанные слухи; «reset <имя>» — забыть другого персонажа этой учетной записи"

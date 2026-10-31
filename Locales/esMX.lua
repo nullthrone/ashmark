@@ -77,6 +77,7 @@ L.CORE_LOG_CHAPTER_NOZONE_THEY = "El capítulo {roman} de {name} se cierra en {p
 L.CORE_HELP_HEADER = "Comandos:"
 L.CORE_HELP_TOGGLE = "abre o cierra la crónica"
 L.CORE_HELP_HELP = "muestra estos comandos"
+L.CORE_HELP_VERSION = "muestra la versión instalada de Ashmark"
 L.CORE_HELP_DEBUG = "activa o desactiva los mensajes de depuración durante esta sesión"
 L.CORE_HELP_RESET = "borra el registro de este personaje; \"reset others\" borra los contactos, los datos de otros "
   .. "usuarios de Ashmark y los rumores escuchados; \"reset <nombre>\" olvida a otro personaje de esta cuenta"

@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Ashmark</title>
 <meta name="description" content="Ashmark: solo role-play for World of Warcraft Forever. Decisions leave a mark.">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400&amp;family=Jost:wght@500&amp;family=Public+Sans:wght@400;600&amp;display=swap">
 <style>
 /* Nullthrone Design System tokens. Light is the default; dark inverts at primitive level. */
@@ -145,6 +147,7 @@ pre { font-variant-ligatures: none; }
 .band a:hover { text-decoration-color: var(--accent); }
 .hero { padding: var(--space-9) 0 var(--space-8); text-align: center; }
 .hero .eyebrow { color: var(--text-inverse-muted); }
+.hero-logo { display: block; width: 128px; height: 128px; margin: 0 auto var(--space-5); }
 .wordmark {
   font-family: var(--font-display);
   font-weight: 500;
@@ -383,6 +386,7 @@ td.wrap-ok { white-space: normal; }
 
 <header class="band hero">
   <div class="wrap">
+    <img class="hero-logo" src="assets/ashmark-logo.png" width="128" height="128" alt="">
     <p class="eyebrow"><span class="nowrap">World of Warcraft Forever</span> · <span class="nowrap">MIT License</span></p>
     <h1 class="wordmark">Ashmark</h1>
     <div class="hero-rule" aria-hidden="true"></div>
@@ -547,6 +551,7 @@ td.wrap-ok { white-space: normal; }
             <tbody>
               <tr><td><code>/ashmark</code>, <code>/amk</code></td><td>Open or close the main window.</td></tr>
               <tr><td><code>/ashmark help</code></td><td>List the commands. An unknown command prints the list too.</td></tr>
+              <tr><td><code>/ashmark version</code></td><td>Show the installed version, the release tag it was built from. The window title and the Addon Compartment tooltip show it too; a copy run from the source reads <code>dev</code>.</td></tr>
               <tr><td><code>/ashmark house</code></td><td>Show the house this character belongs to.</td></tr>
               <tr><td><code>/ashmark house &lt;name&gt;</code></td><td>Join the house of that name. A surname or house already on the account matches regardless of case; any other name is taken as typed.</td></tr>
               <tr><td><code>/ashmark house reset</code></td><td>Follow your surname again.</td></tr>

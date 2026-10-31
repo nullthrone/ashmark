@@ -44,6 +44,14 @@ describe("Core Slash", function()
     assert.is_true(printed("/ashmark help - "))
   end)
 
+  it("prints the installed version and lists the command in help", function()
+    SlashCmdList.ASHMARK("version")
+    assert.is_true(printed("1.0.0-test"))
+    wow.chat = {}
+    SlashCmdList.ASHMARK("help")
+    assert.is_true(printed("/ashmark version - " .. ns.L.CORE_HELP_VERSION))
+  end)
+
   it("toggles debug output", function()
     SlashCmdList.ASHMARK("debug")
     assert.is_true(ns.debug)

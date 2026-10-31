@@ -78,6 +78,7 @@ L.CORE_LOG_CHAPTER_NOZONE_THEY = "Für {name} endet Kapitel {roman}. Ort: {place
 L.CORE_HELP_HEADER = "Befehle:"
 L.CORE_HELP_TOGGLE = "die Chronik öffnen oder schließen"
 L.CORE_HELP_HELP = "diese Befehle auflisten"
+L.CORE_HELP_VERSION = "die installierte Version von Ashmark anzeigen"
 L.CORE_HELP_DEBUG = "Debug-Ausgabe für diese Sitzung ein- oder ausschalten"
 L.CORE_HELP_RESET = "die Aufzeichnungen dieses Charakters löschen; „reset others“ löscht Kontakte, Mitspieler und "
   .. "gehörte Gerüchte; „reset <Name>“ vergisst einen anderen Charakter dieses Accounts"

@@ -99,7 +99,8 @@ Every Lua file with code starts with `local ADDON, ns = ...` (`Traces.lua` is a 
 
 ```lua
 -- Core/Init.lua
-ns.version                       -- C_AddOns.GetAddOnMetadata(ADDON, "Version")
+ns.version                       -- C_AddOns.GetAddOnMetadata(ADDON, "Version"): the release tag the packager wrote;
+                                 -- "dev" when it is missing, empty or still the unreplaced @project-version@
 local M = ns:NewModule("Conflicts", {
   requires = { "questLog", "reputation" },   -- ns.Compat.Has keys; all must be true
   optional = { "questFrame" },               -- read by the module, never blocking
@@ -714,6 +715,7 @@ ns.Locale:Missing(code) -> { key, ... }   -- enUS keys the locale lacks
 | --- | --- | --- |
 | (none) | Core | toggle the main window |
 | `help` | Core | list subcommands |
+| `version` | Core | print `ns.version`; the main window's title and the Addon Compartment tooltip show it too |
 | `test`, `probe` | Core (Dev) | 7.10 |
 | `debug` | Core | toggle debug output for the session |
 | `reset` | Core | `AshmarkDialog` confirmation, then wipe this character's record and its share of the account stores: its `byChar` entries in contacts (a contact left with nobody and no note goes), and its `seenBy` and `logged` entries in peers. The new record keeps `state.senders` and `selfSender` of the party the player is in (nobody re-sends `HI`, 5.6); then Core runs the group check (5.10), so while grouped `GROUP_CHANGED(true)` opens a session and Fiction greets the party again. Conflicts forms its reputation alliances again on the `LOG_COMPACTED` of the new record (7.1) |
@@ -1059,7 +1061,7 @@ Every unit registers its own checks in `OnInitialize`, in its own files; `Dev/Te
 `/ashmark test`:
 1. In combat (`InCombatLockdown()`): print `TEST_NOT_IN_COMBAT` and stop.
 2. Run every registered check synchronously, each through the error wrapper.
-3. Store `AshmarkDB.dev.tests[#+1] = { t, build, locale, project, tocVariant, db = { created, fresh, readOnly, recovered, entries, seq }, comm = <copy of ns.Comm.stats>, results = { { id, ok, detail }, ... }, questDialog, screenshot, blocked }` (the last three from steps 5 and 6). `recovered` is only `type(AshmarkDB.recovered)` or nil, never the value, which can be a whole old DB. In read-only mode nothing is stored (4.4), and the test and the probe print `TestMode:NotStoredText()`: `TEST_NOT_STORED_MIGRATION` after a failed update, else `TEST_NOT_STORED`.
+3. Store `AshmarkDB.dev.tests[#+1] = { t, version, build, locale, project, tocVariant, db = { created, fresh, readOnly, recovered, entries, seq }, comm = <copy of ns.Comm.stats>, results = { { id, ok, detail }, ... }, questDialog, screenshot, blocked }` (the last three from steps 5 and 6). `recovered` is only `type(AshmarkDB.recovered)` or nil, never the value, which can be a whole old DB. In read-only mode nothing is stored (4.4), and the test and the probe print `TestMode:NotStoredText()`: `TEST_NOT_STORED_MIGRATION` after a failed update, else `TEST_NOT_STORED`.
 4. Print a summary (`TEST_SUMMARY`).
 5. Show `AshmarkFrame` on the Chronicle tab. If `QuestFrame:IsShown()`, anchor `AshmarkFrame` to the right of it; otherwise print `TEST_OPEN_QUEST_DIALOG` ("Talk to a quest giver first for the screenshot."). Ashmark never opens the quest log or the world map.
 6. Call `Screenshot()` directly in the slash handler (the key press is the hardware event). `SCREENSHOT_SUCCEEDED`, `SCREENSHOT_FAILED`, and `ADDON_ACTION_BLOCKED` / `ADDON_ACTION_FORBIDDEN` with arg1 == `ADDON` within the next 10 s are added to the same test record.
@@ -1126,6 +1128,7 @@ wow.combat(on)                     -- InCombatLockdown and the REGEN events
 | `core_db` | fresh, recovered, newer schema read-only (Core writes nothing: Identity, settings binding, `stats`, `state`, `dev.*`), migrations, a failed migration leaves the stored table untouched and reads `"migration"`, not `"schema"` |
 | `core_comm` | field whitelist, size limit, schema validation, throttle, priorities, lockdown pause, GUID check against party units, self drop, sender map: `RU` accepted after a /reload from a sender learned before it (`state.senders`), cleared on `GROUP_CHANGED(false)`, relearned from the `HI` of a member who left and rejoined, cap; GUID binding to the sender (a sender named like a unit token takes no member's GUID), per-type receive budgets, the queue dropped when sharing or sending is lost and on leaving the group |
 | `core_safe`, `core_events`, `core_errors` | secret proxy; shared and unit frames with refcounts, invalid events; once per source, disable after 10 |
+| `core_version` | `ns.version` from the release tag, `dev` for a missing, empty or unreplaced `## Version` |
 | `core_bus` | subscription order; a `Fire` inside a handler is queued and delivered FIFO after the current topic reached every subscriber |
 | `core_lifecycle` | ready flag at the start of step 3, Core's zone, group, chapter and compaction writes after every `OnWorldReady` |
 | `core_locale` | fallback, `Format`, `Gender`, `Missing` for every locale (`loadAll`), `_F` only on keys shown with a sex |
@@ -1165,5 +1168,5 @@ Every file in the repository belongs to exactly one unit.
 | Dataset | `data/conflicts/*` (the CSV files, `registry.csv`, `renamed.csv` and `README.md`), `tools/conflicts.py`, `tools/test_conflicts.py`, `Data/Conflicts.lua` |
 | Localization | `Locales/deDE.lua`, `frFR.lua`, `esES.lua`, `esMX.lua`, `ptBR.lua`, `ruRU.lua`, `koKR.lua`, `zhTW.lua`, `zhCN.lua`; delivers the TOC `## Notes-<locale>` texts in its report, Core inserts them |
 | Packaging | `.pkgmeta`, `.github/workflows/*`, `tools/toc_check.py` |
-| Docs | `README.md`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `docs/index.html`, `.github/ISSUE_TEMPLATE/*`, `.github/FUNDING.yml` |
+| Docs | `README.md`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `docs/index.html`, `docs/assets/*`, `.github/ISSUE_TEMPLATE/*`, `.github/FUNDING.yml` |
 | Lead | `docs/ARCHITECTURE.md`, `docs/DECISIONS.md`, `docs/research/*`, `LICENSE`, `.claude/*` |
