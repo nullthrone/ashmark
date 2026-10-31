@@ -2,6 +2,19 @@ local wow = require("tests.helpers.wow")
 
 local LOCALES = { "enUS", "deDE", "frFR", "esES", "esMX", "ptBR", "ruRU", "koKR", "zhTW", "zhCN" }
 
+-- The keys shown with a sex (5.8): Chronicle:Text keys and their _THEY forms, the map pins and the archetypes.
+local GENDERED = {}
+for _, key in ipairs({ "CORE_LOG_TURNIN", "CORE_LOG_ABANDON", "CORE_LOG_ZONE_FIRST", "CORE_LOG_LEVEL",
+                       "CORE_LOG_DEATH", "CORE_LOG_REP", "CORE_LOG_CHAPTER", "CONFLICT_ALLIED", "CONFLICT_ALLIED_REP",
+                       "CONFLICT_BROKE_WORD", "CONFLICT_SWITCHED", "CONFLICT_HOUSETURN", "ENC_LOG_TRAVEL",
+                       "ENC_LOG_BOSS", "ENC_LOG_WIPE", "ENC_LOG_CAMP", "ENC_LOG_KICK", "ENC_LOG_CONTACT" }) do
+  GENDERED[key], GENDERED[key .. "_THEY"] = true, true
+end
+for _, key in ipairs({ "MAP_PIN_OPEN", "MAP_PIN_ALLIED", "MAP_PIN_BROKEN" }) do GENDERED[key] = true end
+for _, key in ipairs({ "OATHKEEPER", "OPPORTUNIST", "WANDERER", "TOWNSFOLK", "GENTLE", "RUTHLESS", "PRAGMATIST" }) do
+  GENDERED["PROFILE_" .. key] = true
+end
+
 local function exists(path)
   local f = io.open(wow.ROOT .. path, "r")
   if f then f:close() end
@@ -75,6 +88,15 @@ describe("Core Locale", function()
       loaded = wow.load(nil, { loadAll = true })
     end)
 
+    it("names only enUS keys as shown with a sex, and none of the rumour lines", function()
+      local base, unknown = loaded.Locale:Base(), {}
+      for key in pairs(GENDERED) do
+        if base[key] == nil or key:match("^RUMOUR_") then unknown[#unknown + 1] = key end
+      end
+      table.sort(unknown)
+      assert.same({}, unknown)
+    end)
+
     for _, code in ipairs(LOCALES) do
       local file = code == "enUS" and "Locales/enUS/Core.lua" or ("Locales/" .. code .. ".lua")
       if exists(file) then
@@ -91,6 +113,15 @@ describe("Core Locale", function()
             end
             table.sort(unknown)
             assert.same({}, unknown)
+          end)
+          it(code .. " has _F forms only for the keys shown with a sex", function()
+            local dead = {}
+            for key in pairs(loaded.Locale.tables[code]) do
+              local stem = key:match("^(.+)_F$")
+              if stem and not GENDERED[stem] then dead[#dead + 1] = key end
+            end
+            table.sort(dead)
+            assert.same({}, dead)
           end)
           it(code .. " keeps every placeholder of the enUS text", function()
             local base, wrong = loaded.Locale:Base(), {}

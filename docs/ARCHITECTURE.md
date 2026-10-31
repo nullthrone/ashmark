@@ -656,6 +656,7 @@ ns.Locale:Missing(code) -> { key, ... }   -- enUS keys the locale lacks
 - Placeholders are named, `{name}`, so translators can reorder them.
 - Every unit defines `<PREFIX>_MODULE_NAME` and `<PREFIX>_MODULE_DESC`.
 - A key ending in `_F` is the feminine form, used for languages that inflect (de, fr, es, pt, ru). `esMX` and `esES` are separate files.
+- `_F` forms exist only for the keys shown with a sex: the `Chronicle:Text` keys (`CORE_LOG_TURNIN`, `CORE_LOG_ABANDON`, `CORE_LOG_ZONE_FIRST`, `CORE_LOG_LEVEL`, `CORE_LOG_DEATH`, `CORE_LOG_REP`, `CORE_LOG_CHAPTER`, `CONFLICT_ALLIED`, `CONFLICT_ALLIED_REP`, `CONFLICT_BROKE_WORD`, `CONFLICT_SWITCHED`, `CONFLICT_HOUSETURN`, `ENC_LOG_TRAVEL`, `ENC_LOG_BOSS`, `ENC_LOG_WIPE`, `ENC_LOG_CAMP`, `ENC_LOG_KICK`, `ENC_LOG_CONTACT`) and their `_THEY` forms (`_THEY_F`), `MAP_PIN_OPEN`, `MAP_PIN_ALLIED`, `MAP_PIN_BROKEN`, and `PROFILE_<ARCHETYPE>`. A locale adds one only where its text inflects; `core_locale` fails on any other `_F` key.
 - The test mode lists missing keys for the active locale; the specs check every locale.
 
 ### 5.9 Slash commands
@@ -1071,7 +1072,7 @@ wow.combat(on)                     -- InCombatLockdown and the REGEN events
 | `core_safe`, `core_events`, `core_errors` | secret proxy; shared and unit frames with refcounts, invalid events; once per source, disable after 10 |
 | `core_bus` | subscription order; a `Fire` inside a handler is queued and delivered FIFO after the current topic reached every subscriber |
 | `core_lifecycle` | ready flag at the start of step 3, Core's zone, group, chapter and compaction writes after every `OnWorldReady` |
-| `core_locale` | fallback, `Format`, `Gender`, `Missing` for every locale (`loadAll`) |
+| `core_locale` | fallback, `Format`, `Gender`, `Missing` for every locale (`loadAll`), `_F` only on keys shown with a sex |
 | `core_identity`, `core_where`, `core_names` | surname order and rejection, ruleset; nil map, nil position, secret map; placeholders and requests |
 | `core_watch` | `QUEST_ACCEPTED` argument, abandon in both event orders, gold contexts, rep baseline and standing change, first zone visit, no zone entry for a nil zone, `GROUP_CHANGED` only on change and after login outside the stored group, `lastSeen` never written at login |
 | `conflicts` | alliance by accept and turn-in, reputation trigger (`reaction`, both sides), contradiction line, violation with `o` read before the write, `began` set by alliance and violation, `houseturn`, no hint when siblings are split, faction 0 |
