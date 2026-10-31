@@ -1,12 +1,12 @@
 # Decisions
 
-Decisions for Ashmark v1, set in the design interview on 2026-10-30 and revised the same day after the platform research (`docs/research/forever-platform.md`). The project started under the working name Embertale. The concept itself lives in the Claude Doc "Ashmark: Addon-Konzept für Solo-Rollenspiel in WoW Forever" (German; titled "Embertale: …" until 2026-10-31). Where this file and the concept disagree, this file wins.
+Decisions for Ashmark v1, set in the design interview on 2026-10-30 and revised the same day after the platform research (`docs/research/forever-platform.md`). The concept itself lives in the Claude Doc "Ashmark: Addon-Konzept für Solo-Rollenspiel in WoW Forever" (German). Where this file and the concept disagree, this file wins.
 
 ## Platform
 
 | Decision | Detail |
 | --- | --- |
-| Name | Ashmark. "Embertale" is taken on CurseForge by a Forever campfire addon ("EmberTales", slash command `/et`). Ashmark was free on CurseForge and WoWInterface on 2026-10-30; Wago and trademark registers are unchecked. |
+| Name | Ashmark. Free on CurseForge and WoWInterface on 2026-10-30; Wago and trademark registers are unchecked. |
 | Target | World of Warcraft Forever only. Retail and Classic Era are not supported targets. The addon is built around the character of Forever. Technically Forever is its own client (`wowf`, 1.60.x) built from the Mainline code branch, so the addon uses the Mainline `C_*` API. |
 | Identity keys | Characters are keyed by player GUID; names are display only. Full names are unique per region, first names and surnames are not. Account-wide SavedVariables only. |
 | Libraries | None. Blizzard APIs only, including map pins and addon-message throttling. |

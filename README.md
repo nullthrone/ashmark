@@ -106,4 +106,4 @@ Push a tag that starts with `v`. The release workflow runs the BigWigs packager,
 
 ## License
 
-MIT, see [LICENSE](LICENSE). Ashmark started under the working name Embertale.
+MIT, see [LICENSE](LICENSE).

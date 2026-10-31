@@ -1,8 +1,8 @@
 # WoW Forever: platform research
 
-Research for Embertale v1, run on 2026-10-30, five days before the Forever launch (2026-11-04, 23:00 UTC). Four researchers covered platform, addon API, game systems and ecosystem; an adversarial verifier re-checked contested and load-bearing claims; a completeness critic listed what is still unknown. Nothing here was tested in the client. Every value marked unverified must be checked with the in-game test mode at launch.
+Research for Ashmark v1, run on 2026-10-30, five days before the Forever launch (2026-11-04, 23:00 UTC). Four researchers covered platform, addon API, game systems and ecosystem; an adversarial verifier re-checked contested and load-bearing claims; a completeness critic listed what is still unknown. Nothing here was tested in the client. Every value marked unverified must be checked with the in-game test mode at launch.
 
-## What this means for Embertale
+## What this means for Ashmark
 
 | Topic | Finding | Consequence for the build |
 | --- | --- | --- |
@@ -22,7 +22,6 @@ Research for Embertale v1, run on 2026-10-30, five days before the Forever launc
 | Account progress | Legacy is account-wide horizontal progression (65 challenges at launch). Faction `2802` "Legacy Track" exists in client data. | Module 5 can show Legacy as the house's shared heritage if the faction is readable. |
 | Presets | First login chooses an Experience Preset, Classic or Enhanced. `C_GameRules.GetForeverExperiencePreset()` exists. | The main window inherits Blizzard templates so it follows the preset. |
 | Locales | The `wowf` product config lists 10 locales: enUS, deDE, esES, esMX, frFR, ruRU, koKR, ptBR, zhTW, zhCN. The global shop sells 10 languages without Italian; zhCN serves the China/NetEase region (launch 2026-11-05). | v1 ships all ten client locales, zhCN included (decided after this research; see DECISIONS.md). No itIT. |
-| Name | "Embertale" is taken on CurseForge by "EmberTales" (Bollinea, project 1750062, Forever-only campfire roleplay, slash command `/et`). | The CurseForge project name and the slash command must change before release. |
 | Ecosystem | Overlapping Forever addons exist: Emberpath (campfire tales, map pins, addon-message sync), Ember: Camping Companion, I Remember You (384.7K downloads, remembered players), SocialForever, Forever Wayfinder (discovery journal). | The differentiator is the coupling: consequences, identity and house written into one character log, not any single module. |
 
 ## Settle at launch
@@ -63,13 +62,13 @@ Sources: <https://warcraft.wiki.gg/wiki/Patch_1.60.1/API_changes/notes>, <https:
 
 ### Confirmed: Concept doc: the combat log is locked for addons on Forever (COMBAT_LOG_EVENT_UNFILTERED unavailable).
 
-Confirmed in practice, although no Blizzard text names the combat log for Forever. The chain of evidence: (1) the wiki CLEU page says 'This event is no longer accessible to addons in Midnight since Patch 12.0.0' and 'Fires ADDON_ACTION_FORBIDDEN when attempting to register this event'; (2) the TOC page says Forever 1.60.1 'Includes all Modern changes up to 12.1.5'; (3) the dev statement says Midnight disarmament is active. In shipped code, BigWigs v427.8 sets isModern = isRetail or isForever (Loader.lua) and returns before RegisterEvent('COMBAT_LOG_EVENT_UNFILTERED') when isModern (BossPrototype.lua). The ForeverUI CurseForge page says 'Skada and Recount can't read the combat log on Forever.' kami-labs never mentions the combat log, so the concept doc's attribution is wrong. Embertale must never register CLEU. C_CombatLog.IsCombatLogRestricted() is listed for forever 1.60.1 (69913) and can be used as a runtime check.
+Confirmed in practice, although no Blizzard text names the combat log for Forever. The chain of evidence: (1) the wiki CLEU page says 'This event is no longer accessible to addons in Midnight since Patch 12.0.0' and 'Fires ADDON_ACTION_FORBIDDEN when attempting to register this event'; (2) the TOC page says Forever 1.60.1 'Includes all Modern changes up to 12.1.5'; (3) the dev statement says Midnight disarmament is active. In shipped code, BigWigs v427.8 sets isModern = isRetail or isForever (Loader.lua) and returns before RegisterEvent('COMBAT_LOG_EVENT_UNFILTERED') when isModern (BossPrototype.lua). The ForeverUI CurseForge page says 'Skada and Recount can't read the combat log on Forever.' kami-labs never mentions the combat log, so the concept doc's attribution is wrong. Ashmark must never register CLEU. C_CombatLog.IsCombatLogRestricted() is listed for forever 1.60.1 (69913) and can be used as a runtime check.
 
 Sources: <https://warcraft.wiki.gg/wiki/COMBAT_LOG_EVENT_UNFILTERED>, <https://warcraft.wiki.gg/wiki/TOC_format>, <https://warcraft.wiki.gg/wiki/API_C_CombatLog.IsCombatLogRestricted>, <https://mediafilez.forgecdn.net/files/9299/959/BigWigs-v427.8.zip>, <https://www.curseforge.com/wow/addons/foreverui>, <https://kami-labs.fr/en/wow-classic/wow-forever-addons-restreints-comme-sur-midnight/>
 
 ### Confirmed: TOC suffixes: _Forever.toc and _Camelot.toc (game type), _Mainline.toc (family); game-specific beats family; use AllowLoadGameType forever + ExcludeLoadGameType standard, classic.
 
-Confirmed on warcraft.wiki.gg: game types 'forever' and 'camelot' with suffixes AddOnName_Forever.toc and AddOnName_Camelot.toc; the mainline family (standard, forever, camelot, plunderstorm, wowhack) uses AddOnName_Mainline.toc; footnote 'The Camelot value may be changed to Forever in the future.' Build 70291 (Oct 7, 2026) 'Added the "forever" TOC game type which is equivalent to "camelot"'. The two wiki pages use different example names: TOC_format uses 'ForeverOnly.lua [AllowLoadGameType camelot][ExcludeLoadGameType standard, classic]', while Patch_1.60.1/API_changes uses '## AllowLoadGameType: forever' plus '## ExcludeLoadGameType: standard, classic'. Warning from the TOC page: if none of the listed game types is recognized, the condition is still satisfied, so always add the Exclude. Shipped Forever addons do it differently: Questie ships only Questie_Camelot.toc (Interface 16001) plus a fallback Questie.toc with Interface 00000. QuestieDB ships identical _Camelot and _Forever TOCs. LFG Forever ships a plain LFGForever.toc with 16001. BigWigs uses one multi-interface TOC plus 'Init_[Game].lua', which resolves to Init_Camelot.lua, so [Game] still expands to 'Camelot'. Recommendation: ship Embertale_Camelot.toc and Embertale_Forever.toc (both '## Interface: 16001'), with no plain or _Mainline TOC. Midnight 12.1.7 'TOC directives no longer expand variables such as [Game] or [Family]', so do not rely on '## X-Game: [Game]'. Not verified: which file the client picks when both _Camelot and _Forever exist.
+Confirmed on warcraft.wiki.gg: game types 'forever' and 'camelot' with suffixes AddOnName_Forever.toc and AddOnName_Camelot.toc; the mainline family (standard, forever, camelot, plunderstorm, wowhack) uses AddOnName_Mainline.toc; footnote 'The Camelot value may be changed to Forever in the future.' Build 70291 (Oct 7, 2026) 'Added the "forever" TOC game type which is equivalent to "camelot"'. The two wiki pages use different example names: TOC_format uses 'ForeverOnly.lua [AllowLoadGameType camelot][ExcludeLoadGameType standard, classic]', while Patch_1.60.1/API_changes uses '## AllowLoadGameType: forever' plus '## ExcludeLoadGameType: standard, classic'. Warning from the TOC page: if none of the listed game types is recognized, the condition is still satisfied, so always add the Exclude. Shipped Forever addons do it differently: Questie ships only Questie_Camelot.toc (Interface 16001) plus a fallback Questie.toc with Interface 00000. QuestieDB ships identical _Camelot and _Forever TOCs. LFG Forever ships a plain LFGForever.toc with 16001. BigWigs uses one multi-interface TOC plus 'Init_[Game].lua', which resolves to Init_Camelot.lua, so [Game] still expands to 'Camelot'. Recommendation: ship Ashmark_Camelot.toc and Ashmark_Forever.toc (both '## Interface: 16001'), with no plain or _Mainline TOC. Midnight 12.1.7 'TOC directives no longer expand variables such as [Game] or [Family]', so do not rely on '## X-Game: [Game]'. Not verified: which file the client picks when both _Camelot and _Forever exist.
 
 Sources: <https://warcraft.wiki.gg/wiki/TOC_format>, <https://warcraft.wiki.gg/wiki/Patch_1.60.1/API_changes>, <https://warcraft.wiki.gg/wiki/Patch_12.1.7/API_changes>, <https://mediafilez.forgecdn.net/files/9334/933/Questie-v12.3.1%2Bv1.0.9.zip>, <https://mediafilez.forgecdn.net/files/9263/876/LFGForever.zip>, <https://mediafilez.forgecdn.net/files/9299/959/BigWigs-v427.8.zip>
 
@@ -99,7 +98,7 @@ Sources: <https://warcraft.wiki.gg/wiki/Secret_values>, <https://warcraft.wiki.g
 
 ### Confirmed: Client locales: exactly 10 (enUS, deDE, esES, esMX, frFR, ruRU, koKR, ptBR, zhTW, zhCN); no itIT; zhCN only for the China/NetEase region.
 
-The list is confirmed; the China-only point is an inference. The wowf product config lists supported_locales and display_locales as enUS, deDE, esES, esMX, frFR, ruRU, koKR, ptBR, zhTW, zhCN, and the 'cn' region's display_locales as [zhCN]. The Battle.net shop page lists Forever (product 5730135|19) as: English (US), Español (AL), Português (BR), English (EU), Deutsch, Español (EU), Français, Русский, 한국어, 繁體中文 (no Italiano). Midnight (5730135|18) lists the same plus Italiano. Regions: Americas & Oceania, Europe, Korea, Taiwan. Retail's product config includes itIT; Classic Era's has the same 10 as Forever. CORRECTION: zhCN appears in the global ('all') locale lists for Forever, retail and Classic Era alike. The shop's not listing Simplified Chinese does not prove global clients cannot select zhCN. GetLocale codes: enUS, koKR, frFR, deDE, zhCN, esES, zhTW, esMX, ruRU, ptBR, itIT, and 'enGB clients return enUS'. Embertale should ship enUS, deDE, esES, esMX, frFR, ruRU, koKR, ptBR, zhTW, plus zhCN at low cost, and drop itIT.
+The list is confirmed; the China-only point is an inference. The wowf product config lists supported_locales and display_locales as enUS, deDE, esES, esMX, frFR, ruRU, koKR, ptBR, zhTW, zhCN, and the 'cn' region's display_locales as [zhCN]. The Battle.net shop page lists Forever (product 5730135|19) as: English (US), Español (AL), Português (BR), English (EU), Deutsch, Español (EU), Français, Русский, 한국어, 繁體中文 (no Italiano). Midnight (5730135|18) lists the same plus Italiano. Regions: Americas & Oceania, Europe, Korea, Taiwan. Retail's product config includes itIT; Classic Era's has the same 10 as Forever. CORRECTION: zhCN appears in the global ('all') locale lists for Forever, retail and Classic Era alike. The shop's not listing Simplified Chinese does not prove global clients cannot select zhCN. GetLocale codes: enUS, koKR, frFR, deDE, zhCN, esES, zhTW, esMX, ruRU, ptBR, itIT, and 'enGB clients return enUS'. Ashmark should ship enUS, deDE, esES, esMX, frFR, ruRU, koKR, ptBR, zhTW, plus zhCN at low cost, and drop itIT.
 
 Sources: <https://level3.ssl.blizzard.com/tpr/configs/data/2c/ed/2ced73c17301c297ca062bc7c3583420>, <https://level3.ssl.blizzard.com/tpr/configs/data/53/02/53020d32e1a25648c8e1eafd5771935f>, <https://level3.ssl.blizzard.com/tpr/configs/data/c9/93/c9934edfc8f217a2e01c47e4deae8454>, <https://us.shop.battle.net/en-us/product/world-of-warcraft-forever>, <https://warcraft.wiki.gg/wiki/API_GetLocale>
 
@@ -117,7 +116,7 @@ Sources: <https://warcraft.wiki.gg/wiki/API_UnitName>, <https://mediafilez.forge
 
 ### Confirmed: Quest IDs match Classic (original quests keep Classic IDs; new Forever quests use 9xxxx IDs).
 
-IDs carry over, but the content behind them can differ. Quest 1368 'Gelkis Alliance' exists on both Wowhead Classic and Wowhead Forever. In Classic it rewards Gelkis +100 and Magram -500, in a 6-part series ending with Khan Jehn / Khan Hratha. On Wowhead Forever the same ID shows Gelkis +250 and no Magram penalty, and the series continues into Forever-only quests, e.g. 93034 'Valley of Bones' (Honored Gelkis, +125). Blizzard dev notes (Kaivax, Oct 8, 2026): 'The new quests for the Gelkis and the Magram beginning with "Valley of Bones" now require a minimum level of 35 (was 30).' Questie's Forever database is built from the Era database plus Forever corrections. foreverQuestFixes.lua has 88 entries with IDs from 78124 to 97286, so Season of Discovery IDs (78xxx/79xxx/81xxx) are reused. eraToForever.lua re-projects coordinates for Mulgore (uiMapID 1412), Eastern Plaguelands (1423), Redridge (1433) and Stormwind City (1453) from DBC 1.15.9.69722 to 1.60.1.69893, which also shows Classic-era uiMapIDs are kept. Unresolved: whether Forever keeps the Gelkis/Magram reputation penalty (Wowhead may simply not show it), so Embertale must read standings at runtime and not hard-code Classic reputation values.
+IDs carry over, but the content behind them can differ. Quest 1368 'Gelkis Alliance' exists on both Wowhead Classic and Wowhead Forever. In Classic it rewards Gelkis +100 and Magram -500, in a 6-part series ending with Khan Jehn / Khan Hratha. On Wowhead Forever the same ID shows Gelkis +250 and no Magram penalty, and the series continues into Forever-only quests, e.g. 93034 'Valley of Bones' (Honored Gelkis, +125). Blizzard dev notes (Kaivax, Oct 8, 2026): 'The new quests for the Gelkis and the Magram beginning with "Valley of Bones" now require a minimum level of 35 (was 30).' Questie's Forever database is built from the Era database plus Forever corrections. foreverQuestFixes.lua has 88 entries with IDs from 78124 to 97286, so Season of Discovery IDs (78xxx/79xxx/81xxx) are reused. eraToForever.lua re-projects coordinates for Mulgore (uiMapID 1412), Eastern Plaguelands (1423), Redridge (1433) and Stormwind City (1453) from DBC 1.15.9.69722 to 1.60.1.69893, which also shows Classic-era uiMapIDs are kept. Unresolved: whether Forever keeps the Gelkis/Magram reputation penalty (Wowhead may simply not show it), so Ashmark must read standings at runtime and not hard-code Classic reputation values.
 
 Sources: <https://www.wowhead.com/forever/quest=1368/gelkis-alliance>, <https://www.wowhead.com/classic/quest=1368/gelkis-alliance>, <https://www.wowhead.com/forever/quest=93034/valley-of-bones>, <https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-september-24/2360696>, <https://mediafilez.forgecdn.net/files/9334/933/Questie-v12.3.1%2Bv1.0.9.zip>
 
@@ -129,7 +128,7 @@ Sources: <https://warcraft.wiki.gg/wiki/Patch_1.60.1/API_changes>, <https://www.
 
 ### Unresolved: Item-stat discovery (~40% of items hidden) has addon-visible events / a discovery API.
 
-No dedicated event or API exists in the 1.60.1 additions: no event names contain REVEAL, DISCOVER or ITEM. What is confirmed (Josh Greenfield, via Warcraft Tavern citing MMORPG.com, Sep 16, 2026): 'we're actually obfuscating all items in the game', and stats appear once an item drops 'for you, until it drops for someone on your server'. The article does not say whether discovery is per character or server-wide. The '~40%' figure (12,594 of about 31,800) comes from Icy Veins and MassivelyOP, both of which returned HTTP 403, so it is supported only by search snippets. foreverchanges.pro, an aggregator updated 2026-10-30 at build 70707, says 4,928 of 12,715 tracked hidden items are revealed. It also says the client asks the server when you loot, view at a vendor, click a link or an addon requests the item; the tooltip shows 'Retrieving item information' until the reply; and the reply is cached in the WoW folder. Whether GET_ITEM_INFO_RECEIVED / ITEM_DATA_LOAD_RESULT fire on a reveal is unverified. For module 7: the client cache is per installation, not per character, so 'never held by this character' has to be Embertale's own record, keyed on item IDs and filled from loot, bag and bank scans.
+No dedicated event or API exists in the 1.60.1 additions: no event names contain REVEAL, DISCOVER or ITEM. What is confirmed (Josh Greenfield, via Warcraft Tavern citing MMORPG.com, Sep 16, 2026): 'we're actually obfuscating all items in the game', and stats appear once an item drops 'for you, until it drops for someone on your server'. The article does not say whether discovery is per character or server-wide. The '~40%' figure (12,594 of about 31,800) comes from Icy Veins and MassivelyOP, both of which returned HTTP 403, so it is supported only by search snippets. foreverchanges.pro, an aggregator updated 2026-10-30 at build 70707, says 4,928 of 12,715 tracked hidden items are revealed. It also says the client asks the server when you loot, view at a vendor, click a link or an addon requests the item; the tooltip shows 'Retrieving item information' until the reply; and the reply is cached in the WoW folder. Whether GET_ITEM_INFO_RECEIVED / ITEM_DATA_LOAD_RESULT fire on a reveal is unverified. For module 7: the client cache is per installation, not per character, so 'never held by this character' has to be Ashmark's own record, keyed on item IDs and filled from loot, bag and bank scans.
 
 Sources: <https://warcraft.wiki.gg/wiki/Patch_1.60.1/API_changes>, <https://www.warcrafttavern.com/forever/news/item-stats-will-not-be-known-in-advance-for-wow-forever/>, <https://foreverchanges.pro/hidden-items>, <https://www.icy-veins.com/wow-forever/news/wow-forever-hid-over-12500-items-from-dataminers-heres-whats-still-secret/>
 
@@ -141,7 +140,7 @@ Sources: <https://www.warcrafttavern.com/forever/news/no-group-finder-or-summoni
 
 ### Refuted: Concept doc: 'Classic addons do not load' on Forever.
 
-kami-labs does not say this. It says Classic Era, Classic and TBC Anniversary 'stay on the old, unrestricted API, unchanged'. What is true: Classic-family TOC suffixes (_Classic, _Vanilla, _TBC, etc.) are never selected on Forever. However, any addon whose TOC includes 16001 loads, for example BigWigs.toc ('11508, 11509, 16001, ... 120107') and IRememberYou.toc ('11509, 16001, 20506, 38002, 50504, 120105'). Classic Era code fails at runtime when it uses removed globals. API_GetSpellInfo lists no Forever availability ('Removed, replaced by C_Spell.GetSpellInfo'), and API_GetFactionInfo lists no Forever availability (its header points to C_Reputation.GetFactionDataByIndex/ByID). So Embertale must use the Mainline C_* API.
+kami-labs does not say this. It says Classic Era, Classic and TBC Anniversary 'stay on the old, unrestricted API, unchanged'. What is true: Classic-family TOC suffixes (_Classic, _Vanilla, _TBC, etc.) are never selected on Forever. However, any addon whose TOC includes 16001 loads, for example BigWigs.toc ('11508, 11509, 16001, ... 120107') and IRememberYou.toc ('11509, 16001, 20506, 38002, 50504, 120105'). Classic Era code fails at runtime when it uses removed globals. API_GetSpellInfo lists no Forever availability ('Removed, replaced by C_Spell.GetSpellInfo'), and API_GetFactionInfo lists no Forever availability (its header points to C_Reputation.GetFactionDataByIndex/ByID). So Ashmark must use the Mainline C_* API.
 
 Sources: <https://kami-labs.fr/en/wow-classic/wow-forever-addons-restreints-comme-sur-midnight/>, <https://warcraft.wiki.gg/wiki/TOC_format>, <https://mediafilez.forgecdn.net/files/9299/959/BigWigs-v427.8.zip>, <https://mediafilez.forgecdn.net/files/9175/624/IRememberYou%201.75.zip>, <https://warcraft.wiki.gg/wiki/API_GetSpellInfo>, <https://warcraft.wiki.gg/wiki/API_GetFactionInfo>
 
@@ -153,13 +152,13 @@ Sources: <https://mediafilez.forgecdn.net/files/9263/876/LFGForever.zip>, <https
 
 ### Confirmed: Windows install: addons go in <WoW root>\_forever_\Interface\AddOns and settings in _forever_\WTF; beta used _classic_beta_.
 
-Confirmed. The wowf product config has shared_container_default_subfolder '_forever_' and a shared_container_move_list of Cache, Interface, Screenshots, WTF. On Windows the binaries are Wow.exe and Wow-arm64.exe; minimum OS 10.0.0.18362; 4 CPU cores, 8192 MB RAM, 128,000,000,000 bytes required space; supports_multibox true. The CurseForge blog (Niv Hajaj, Oct 25, 2026) says the beta was 'World of Warcraft\_classic_beta_' and live is 'World of Warcraft\_forever_\Interface\AddOns'; when migrating, rename the beta account folder under WTF\Account to the live account name. SavedVariables go in WTF\[account]\SavedVariables\Embertale.lua. Unresolved: the exact default root. The config only says form.game_dir default 'Program Files' with dirname 'World of Warcraft', which does not settle whether it is 'Program Files' or 'Program Files (x86)'. Check the Battle.net app on the owner's PC.
+Confirmed. The wowf product config has shared_container_default_subfolder '_forever_' and a shared_container_move_list of Cache, Interface, Screenshots, WTF. On Windows the binaries are Wow.exe and Wow-arm64.exe; minimum OS 10.0.0.18362; 4 CPU cores, 8192 MB RAM, 128,000,000,000 bytes required space; supports_multibox true. The CurseForge blog (Niv Hajaj, Oct 25, 2026) says the beta was 'World of Warcraft\_classic_beta_' and live is 'World of Warcraft\_forever_\Interface\AddOns'; when migrating, rename the beta account folder under WTF\Account to the live account name. SavedVariables go in WTF\[account]\SavedVariables\Ashmark.lua. Unresolved: the exact default root. The config only says form.game_dir default 'Program Files' with dirname 'World of Warcraft', which does not settle whether it is 'Program Files' or 'Program Files (x86)'. Check the Battle.net app on the owner's PC.
 
 Sources: <https://level3.ssl.blizzard.com/tpr/configs/data/2c/ed/2ced73c17301c297ca062bc7c3583420>, <https://blog.curseforge.com/wow-forever-migrate-addons-beta-to-live/>, <https://warcraft.wiki.gg/wiki/TOC_format>
 
 ### Refuted: Forever client does not read SavedVariables back after reload/restart (ForeverUI page, updated Oct 20 2026).
 
-This was a beta bug that appears to be fixed. The wiki's 1.60.1 notes say '70009 (Sep 23 2026): Fixed SavedVariables not loading.' In the EU forum thread (bug reported on 1.60.1.69913 on Sep 19), players reported on Sep 24-25 that 'the issue has finally been resolved with version 1.60.1.70009'. There was no blue post. One remaining report concerns built-in chat customizations, not addon SavedVariables. The ForeverUI page text is probably stale. Embertale still needs a SavedVariables round-trip test on live build 70707 or later. ADDON_LOADED should treat nil SavedVariables carefully, so that a load failure cannot overwrite good data with defaults.
+This was a beta bug that appears to be fixed. The wiki's 1.60.1 notes say '70009 (Sep 23 2026): Fixed SavedVariables not loading.' In the EU forum thread (bug reported on 1.60.1.69913 on Sep 19), players reported on Sep 24-25 that 'the issue has finally been resolved with version 1.60.1.70009'. There was no blue post. One remaining report concerns built-in chat customizations, not addon SavedVariables. The ForeverUI page text is probably stale. Ashmark still needs a SavedVariables round-trip test on live build 70707 or later. ADDON_LOADED should treat nil SavedVariables carefully, so that a load failure cannot overwrite good data with defaults.
 
 Sources: <https://warcraft.wiki.gg/wiki/Patch_1.60.1/API_changes>, <https://eu.forums.blizzard.com/en/wow/t/solvedforever-beta-160169913-savedvariables-fail-to-load-on-client-startupreload-%E2%80%94-all-addon-settings-reset-on-restart/629888>, <https://www.curseforge.com/wow/addons/foreverui>
 
@@ -169,12 +168,6 @@ Confirmed: signature result = C_ChatInfo.SendAddonMessage(prefix, message [, cha
 
 Sources: <https://warcraft.wiki.gg/wiki/API_C_ChatInfo.SendAddonMessage>, <https://warcraft.wiki.gg/wiki/Patch_1.60.1/API_changes/notes>
 
-### Confirmed: The name 'Embertale' is already taken on CurseForge by a Forever-only campfire roleplay addon.
-
-Confirmed: CurseForge project 'Embertale' by Bollinea, project ID 1750062, latest file 'EmberTales v1.0.1.zip' dated Oct 22, 2026, game version 1.60.1, flavor Forever. Categories: Camping, Roleplay, Chat & Communication, Miscellaneous. All Rights Reserved, 18 downloads. It is a campfire roleplay companion that detects fires through their buff, with slash command /et. It overlaps directly with module 6. I did not re-check the zip internals the researcher reported (prefix 'EMBERTALES', SavedVariables 'EmberTalesDB', Interface 16001). The CurseForge project name must change, or the owner has to settle it with the author or CurseForge.
-
-Sources: <https://www.curseforge.com/wow/addons/embertale>
-
 ### Refuted: Module 1 pilot naming: 'Shen'dralas' is the faction.
 
 The faction is Shen'dralar ('A remnant of the once powerful elves living in Dire Maul', Wowhead Forever faction page; standard thresholds Neutral 42,000 / Friendly 45,000 / Honored 51,000 / Revered 63,000 / Exalted 84,000; no related quests listed). Shen'dralas is a new contested zone 'exclusive to World of Warcraft: Forever' (added in 1.60.1), 'southeast of Desolace and between Feralas and Mulgore'. Its level range is unknown. Affiliated groups: Shen'dralar, Magram clan, Bristleback tribe. Subzones: Bristleback Retreat, Evenshade Overlook, Magram Front, Outcast Hideaway, Shen'dralas, Valley of Bones. The zone's uiMapID is unknown.
@@ -183,7 +176,7 @@ Sources: <https://www.wowhead.com/forever/faction=809/shendralar>, <https://warc
 
 ### Confirmed: Rulesets replace realms (Normal, PvP, Roleplay, Roleplay PvP; Hardcore later); no cross-ruleset grouping; PvP ruleset is single-faction per account; Collections/Legacy account-wide.
 
-Confirmed in Blizzard's 'Choose Your Ruleset in World of Warcraft: Forever' (October 22): 'Hardcore will be available sometime after launch'; 'Cross-ruleset grouping is not supported'; 'Battlegrounds may include players from other rulesets, with the exception of Hardcore'; 'On the PvP ruleset, players can only create characters for one faction'; Preferred Online Language 'applies to all characters and has a 24-hour cooldown'; 'Collections and Legacy Points are account-wide across rulesets, with Hardcore handled differently'. Launch is Nov 4, 2026, 3:00 p.m. PST (23:00 UTC; 12:00 a.m. CET Nov 5). Raids open Dec 9. For Embertale: store the ruleset (C_GameRules.IsGameRuleActive with Enum.GameRule.HardcoreRuleset/RPRuleset/PvPRuleset, as Questie's AceDB does) and the faction with every House, companion and rumour record.
+Confirmed in Blizzard's 'Choose Your Ruleset in World of Warcraft: Forever' (October 22): 'Hardcore will be available sometime after launch'; 'Cross-ruleset grouping is not supported'; 'Battlegrounds may include players from other rulesets, with the exception of Hardcore'; 'On the PvP ruleset, players can only create characters for one faction'; Preferred Online Language 'applies to all characters and has a 24-hour cooldown'; 'Collections and Legacy Points are account-wide across rulesets, with Hardcore handled differently'. Launch is Nov 4, 2026, 3:00 p.m. PST (23:00 UTC; 12:00 a.m. CET Nov 5). Raids open Dec 9. For Ashmark: store the ruleset (C_GameRules.IsGameRuleActive with Enum.GameRule.HardcoreRuleset/RPRuleset/PvPRuleset, as Questie's AceDB does) and the faction with every House, companion and rumour record.
 
 Sources: <https://worldofwarcraft.blizzard.com/en-us/news/24302070/>, <https://news.blizzard.com/en-us/article/24315820/world-of-warcraft-forever-goes-live-globally-november-4>, <https://mediafilez.forgecdn.net/files/9334/933/Questie-v12.3.1%2Bv1.0.9.zip>
 
@@ -191,7 +184,7 @@ Sources: <https://worldofwarcraft.blizzard.com/en-us/news/24302070/>, <https://n
 
 - **Can any in-client test run before launch (2026-11-04 23:00 UTC, which is 00:00 CET on Nov 5)? Name reservation allows 'Create up to 3 characters', but Blizzard's reservation article never says you can enter the world, and addons only load in the world.**
   - Impact: If no one can enter the world before launch, every /dump check below waits until launch night. v0.1 then has to be built on assumptions plus a throwaway probe addon that records all checks at once into SavedVariables.
-  - How to settle: Try 'Enter World' on a reserved character now. If it fails, prepare an 'EmbertaleProbe' addon that runs the checks below on PLAYER_LOGIN and writes the results to its SavedVariables. Source checked: https://news.blizzard.com/en-gb/article/24303866/world-of-warcraft-forever-early-name-reservations-are-now-live (silent on world login).
+  - How to settle: Try 'Enter World' on a reserved character now. If it fails, prepare an 'AshmarkProbe' addon that runs the checks below on PLAYER_LOGIN and writes the results to its SavedVariables. Source checked: https://news.blizzard.com/en-gb/article/24303866/world-of-warcraft-forever-early-name-reservations-are-now-live (silent on world login).
 - **Can the Forever FrameXML be read before launch? Does ExportInterfaceFiles work in the Forever client, and which repository holds a Forever dump?**
   - Impact: This one step would settle, before launch, whether these exist and are unchanged: PortraitFrameTemplate/ButtonFrameTemplate, ScrollBox/ScrollUtil, Settings, TooltipDataProcessor, MapCanvasDataProviderMixin/WorldMapFrame:AddDataProvider, NameUtil (surname separator), Blizzard_LegacySystem, Blizzard_LFGVanilla, and any Camelot-specific skins or atlases. Today these are known only by inference from other addons' code.
   - How to settle: Windows: Battle.net app > WoW Forever > Game Settings > Additional command line arguments '-console'. At the login screen press ` and run 'exportInterfaceFiles code' and 'exportInterfaceFiles art', then check <WoW root>\_forever_\BlizzardInterfaceCode. The command runs at the login screen, so it may work before launch. Fallback: read Ketho/wow-ui-source-forever (its existence is unverified) or a Forever branch of Gethe/wow-ui-source.
@@ -199,7 +192,7 @@ Sources: <https://worldofwarcraft.blizzard.com/en-us/news/24302070/>, <https://n
   - Impact: Decides the TOC files to ship and the runtime guard. If a rename lands at launch, a TOC set up only for _Camelot or only for 'forever' could silently fail to load.
   - How to settle: /dump select(4, GetBuildInfo()); /dump WOW_PROJECT_ID, WOW_PROJECT_CAMELOT, WOW_PROJECT_FOREVER. Ship the probe as Probe_Forever.toc and Probe_Camelot.toc with different '## Title' values, then /dump C_AddOns.GetAddOnMetadata('Probe','Title'). Watch https://wago.tools/api/builds key 'wowf' (1.60.1.70707 as of today) and the live row on https://warcraft.wiki.gg/wiki/TOC_format.
 - **How does Forever handle out-of-date addons? Is there a 'Load out of date AddOns' option, and does a TOC with Interface 120105 (as Emberpath ships) or without 16001 (HandyNotes core) load?**
-  - Impact: Decides whether Embertale must bump its Interface line on every Forever patch. It also explains why Emberpath and HandyNotes-based plugins are reported as working on Forever.
+  - Impact: Decides whether Ashmark must bump its Interface line on every Forever patch. It also explains why Emberpath and HandyNotes-based plugins are reported as working on Forever.
   - How to settle: Check the AddOns list in game. Install a probe copy with '## Interface: 120105' and see whether it loads.
 - **How are two-part names exposed? Does UnitName/UnitFullName/UnitNameUnmodified return (first, surname) or (name, realm)? What do GetRealmName()/GetNormalizedRealmName() return? What sender string do CHAT_MSG_* and CHAT_MSG_ADDON carry? What target string does SendAddonMessage 'WHISPER' expect? Which character is the surname separator?**
   - Impact: Sets the identity key format for modules 4 and 5 and how WHISPER addon messages are addressed. Shipped code (IRememberYou, Questie's AceDB) assumes (first, surname); the wiki still documents realm.
@@ -208,10 +201,10 @@ Sources: <https://worldofwarcraft.blizzard.com/en-us/news/24302070/>, <https://n
   - Impact: If the GUID is stable, it should be the primary key for House members, companions and rumours, with names as display only. Name-based keys break when a character is renamed or moved to another ruleset.
   - How to settle: /dump UnitGUID('player') across sessions; compare before and after a rename or transfer once services exist. Check the Battle.net shop for Forever character services. Read Blizzard's Hardcore rules article when it is published.
 - **How are per-character folders laid out under WTF? Is the 'realm' folder the ruleset? Is the character folder named by first name only or by full name? Do two alts with the same first name on the same ruleset collide?**
-  - Impact: If the folder uses only the first name, SavedVariablesPerCharacter would mix data between 'Asha Brightvale' and 'Asha Stone'. Embertale would then need account-wide SavedVariables keyed by ruleset + GUID or full name, as Questie's AceDB does.
+  - Impact: If the folder uses only the first name, SavedVariablesPerCharacter would mix data between 'Asha Brightvale' and 'Asha Stone'. Ashmark would then need account-wide SavedVariables keyed by ruleset + GUID or full name, as Questie's AceDB does.
   - How to settle: After first login on Windows, look at <WoW root>\_forever_\WTF\Account\<ACCOUNT>\ and create two alts that share a first name on one ruleset. Also do a SavedVariables round trip (/reload and a full client restart), because the beta SavedVariables bug was reported fixed in 70009 but ForeverUI still claims otherwise.
 - **Is there any API that lists the account's characters across rulesets and factions, for the House roster?**
-  - Impact: If none exists, a House can only contain alts that have logged in with Embertale enabled. On the PvP ruleset a House is single-faction. Hardcore members stay separate.
+  - Impact: If none exists, a House can only contain alts that have logged in with Ashmark enabled. On the PvP ruleset a House is single-faction. Hardcore members stay separate.
   - How to settle: Search the exported FrameXML or Ketho/BlizzardInterfaceResources (Forever lists) for character-list or warband-style APIs. Assume none until found.
 - **Can addons read Legacy points? Quick check: the Forever Faction table on wago.tools (build 1.60.1.70707) has faction 2802 'Legacy Track', which fits the community claim that Legacy is a renown-style faction.**
   - Impact: Module 5 (shared family 'heritage' from the account-wide Legacy pool) and module 2 (identity signals).
@@ -220,8 +213,8 @@ Sources: <https://worldofwarcraft.blizzard.com/en-us/news/24302070/>, <https://n
   - Impact: If statistics exist (deaths, quests completed, kills, falls and similar), they are the richest behaviour source for module 2 that needs no combat log. If not, module 2 relies only on live events and its own counters.
   - How to settle: /dump GetStatistic ~= nil, GetCategoryList and GetStatistic(60), C_AchievementInfo ~= nil.
 - **Is the combat-log lock absolute or conditional on Forever? C_CombatLog.IsCombatLogRestricted() exists, which implies a restriction state that can change.**
-  - Impact: Module 2. If the open-world combat log is readable, behaviour profiling becomes much richer. If it is locked everywhere, Embertale must never register CLEU.
-  - How to settle: /dump C_CombatLog.IsCombatLogRestricted() in the open world, out of combat and in combat. In the probe addon only, never in Embertale, try RegisterEvent('COMBAT_LOG_EVENT_UNFILTERED') and watch for ADDON_ACTION_FORBIDDEN.
+  - Impact: Module 2. If the open-world combat log is readable, behaviour profiling becomes much richer. If it is locked everywhere, Ashmark must never register CLEU.
+  - How to settle: /dump C_CombatLog.IsCombatLogRestricted() in the open world, out of combat and in combat. In the probe addon only, never in Ashmark, try RegisterEvent('COMBAT_LOG_EVENT_UNFILTERED') and watch for ADDON_ACTION_FORBIDDEN.
 - **Which events that do not depend on the combat log exist on Forever, and are their payloads secret? Candidates: PARTY_KILL, PLAYER_DEAD, PLAYER_XP_UPDATE, CHAT_MSG_COMBAT_XP_GAIN, CHAT_MSG_LOOT, CHAT_MSG_SKILL, CHAT_MSG_COMBAT_FACTION_CHANGE, UPDATE_FACTION, BAG_UPDATE_DELAYED. Questie says CHAT_MSG_SYSTEM and CHAT_MSG_SKILL text 'can be secret'.**
   - Impact: Module 2 inputs. Module 7 'held' detection: if loot chat text is secret in instances, use bag, bank and equipment scans (C_Container, Enum.BagIndex incl. the reagent bag) instead of parsing CHAT_MSG_LOOT.
   - How to settle: /etrace in the open world and in a dungeon; in the probe, print issecretvalue(arg1) for each event; /dump Enum.BagIndex.
@@ -238,7 +231,7 @@ Sources: <https://worldofwarcraft.blizzard.com/en-us/news/24302070/>, <https://n
   - Impact: Module 7 has to mask stats in 10 locales. Text patterns copied from Classic Era would miss Forever's stat names.
   - How to settle: /dump C_TooltipInfo.GetItemByID(id).lines (check line.type) and /dump C_Item.GetItemStats(link) on a few revealed items. Compare with ForeverGear's '/fg stats' output.
 - **Are Gelkis and Magram still mutually exclusive in Forever? Is there still a penalty to the rival clan, and is there requiredMaxRep gating? Wowhead Forever shows Gelkis Alliance (1368) as +250 Gelkis with no Magram loss, where Classic had -500. Quick check: the Forever Faction table also has a hidden faction 2769 'Gelkis Outcasts' whose role is unknown.**
-  - Impact: Module 1 pilot. If Blizzard removed the exclusivity, Embertale cannot enforce it, because addons cannot block quest acceptance. It would have to be narrative only, or a different rival pair would be needed.
+  - Impact: Module 1 pilot. If Blizzard removed the exclusivity, Ashmark cannot enforce it, because addons cannot block quest acceptance. It would have to be narrative only, or a different rival pair would be needed.
   - How to settle: Questie Forever DB (Questie/Questie: the Forever corrections and the requiredMinRep, requiredMaxRep and reputationReward fields for 1367, 1368, 93034, 92873, 92893). In game: record C_Reputation.GetFactionDataByID(92) and (93).currentStanding before and after a turn-in, watching UPDATE_FACTION. /dump C_Reputation.GetFactionDataByID(2769).
 - **What do the quest events carry on Forever (mainline code running Classic-style content)? Is the QUEST_ACCEPTED payload (questID) or (questLogIndex, questID)? Which quest frames exist for annotation (QuestFrame, QuestMapFrame, Classic quest log)? QuestLogPopupDetailFrame_* was removed.**
   - Impact: Module 1 hooks for marking an exclusive choice at QUEST_DETAIL time.
@@ -247,9 +240,9 @@ Sources: <https://worldofwarcraft.blizzard.com/en-us/news/24302070/>, <https://n
   - Impact: Module 3 pins and the Desolace/Shen'dralas pilot. It also determines compatibility with OpenMap and Leatrix Maps, which replace the map.
   - How to settle: /dump C_Map.GetBestMapForUnit('player') in each zone; /dump C_Map.GetMapInfo(2652); /dump WorldMapFrame.AddDataProvider; /dump C_Map.GetPlayerMapPosition(C_Map.GetBestMapForUnit('player'),'player'). Read MadsFrost/Emberpath (data-provider pins) and OpenMap's Compat.lua. Source checked: https://wago.tools/db2/UiMap/csv?build=1.60.1.70707
 - **Who is at my campfire? Can an addon list nearby players who are not grouped (friendly nameplates nameplateN, mouseover, target) without getting secret values in the open world? Does adding a Camp Feature produce any event or system message?**
-  - Impact: Modules 6 and 4. Without this, a chapter's participants are limited to party members plus other Embertale users found through addon messages.
+  - Impact: Modules 6 and 4. Without this, a chapter's participants are limited to party members plus other Ashmark users found through addon messages.
   - How to settle: At a campfire with friendly nameplates on: /dump C_NamePlate.GetNamePlates(), UnitName('nameplate1'), issecretvalue(UnitName('nameplate1')). Run /etrace while another player places a feature.
-- **Can addons read the campfire auras? Quick check: the wago.tools Forever SpellName table has 1229741 'Camp Benefits', 1289723 'Welcoming Campfire', 1283391 'Campfire Nearby', 1229451 'Boosted Rest', 818 'Basic Campfire' (the cast) and 7359 'Bright Campfire'. The EmberTales candidates 7355 ('Stuck'), 21009 ('Quickness Passive') and 25030 ('Shoot Rocket') are not campfire auras. Still open: are these auras readable out of combat, and are the per-effect tooltip lines of Camp Benefits readable?**
+- **Can addons read the campfire auras? Quick check: the wago.tools Forever SpellName table has 1229741 'Camp Benefits', 1289723 'Welcoming Campfire', 1283391 'Campfire Nearby', 1229451 'Boosted Rest', 818 'Basic Campfire' (the cast) and 7359 'Bright Campfire'. Candidate IDs from another Forever campfire addon, 7355 ('Stuck'), 21009 ('Quickness Passive') and 25030 ('Shoot Rocket') are not campfire auras. Still open: are these auras readable out of combat, and are the per-effect tooltip lines of Camp Benefits readable?**
   - Impact: Module 6 chapter trigger (Welcoming Campfire turning into Camp Benefits). The camp's 'size' would come from the effect lines.
   - How to settle: At a camp: /dump C_UnitAuras.GetPlayerAuraBySpellID(1289723) and C_UnitAuras.GetPlayerAuraBySpellID(1229741), then /dump C_TooltipInfo.GetUnitBuffByAuraInstanceID('player', <auraInstanceID>). Also check the bedroll: /dump C_Spell.GetSpellInfo(429959). Source checked: https://wago.tools/db2/SpellName/csv?build=1.60.1.70707
 - **Which channels can carry rumours? Does SendAddonMessage accept 'CHANNEL' (retail yes, Classic no) or 'SAY'/'YELL' (Classic only) on Forever? Can custom channels be joined, and what member limits apply on region-wide rulesets? How does SocialForever exchange data with 'nearby players'? Do trial accounts exist on Forever, and how are they detected?**
@@ -264,7 +257,7 @@ Sources: <https://worldofwarcraft.blizzard.com/en-us/news/24302070/>, <https://n
 - **Do Screenshot(), ToggleSit() and DoEmote('SIT') work from addon code without a hardware event on Forever?**
   - Impact: Module 6: a chapter image at the campfire and a 'sit by the fire' button. EMOTE chat already needs a hardware event outside instances.
   - How to settle: In the probe: C_Timer.After(1, Screenshot), C_Timer.After(1, ToggleSit); watch SCREENSHOT_SUCCEEDED, SCREENSHOT_FAILED and ADDON_ACTION_BLOCKED.
-- **How does a Forever release get published? Does the BigWigs packager map 16001 and _Forever/_Camelot to the Forever flavor? What is the CurseForge upload game-version ID for '1.60.1'? Can the 'Embertale' name be resolved (project 1750062 by Bollinea already exists; its addon uses /et and prefix 'EMBERTALES')?**
+- **How does a Forever release get published? Does the BigWigs packager map 16001 and _Forever/_Camelot to the Forever flavor? What is the CurseForge upload game-version ID for '1.60.1'?**
   - Impact: CI and release automation. The final name drives the folder, SavedVariables, addon-message prefix and slash-command names, and these are costly to change after release.
   - How to settle: Read release.sh in BigWigsMods/packager; query the CurseForge API /api/game/versions with a token; contact Bollinea or CurseForge support. Use a working codename until this is settled.
 
@@ -287,7 +280,7 @@ Sources: <https://worldofwarcraft.blizzard.com/en-us/news/24302070/>, <https://n
 - Addon-api finding: Classic globals 'GetSpellInfo, GetItemInfo, UnitMaxHealth ... reported missing'. UnitMaxHealth has never been a WoW API name (the real function is UnitHealthMax). A player reporting that it returns nil proves nothing, which weakens the forum thread as evidence for the other names.
 - Addon-api surname finding: 'Blizzard Watch (Sep 13, 2026, reporting Blizzard's Sep 17 Q&A update)'. An article dated Sep 13 cannot report a Sep 17 update, so one of the dates is wrong.
 - Ecosystem and addon-api findings present Emberpath and HandyNotes Forever Instances as working Forever addons. Emberpath's TOC declares Interface 120105, and HandyNotes core has no 16001 build (the ecosystem finding rates 'no Forever-ready release' high). Whether either loads at all depends on how Forever handles out-of-date addons, which is unknown.
-- Systems finding: 'Barkskin Burrow ... unverified' understates the evidence. A quick check shows faction 2747 'Barkskin Burrow' in the Forever Faction table (wago.tools, build 1.60.1.70707). The EmberTales candidate fire-aura IDs, listed as merely 'unverified', are wrong: 7355 is 'Stuck', 21009 is 'Quickness Passive' and 25030 is 'Shoot Rocket' in the same build.
+- Systems finding: 'Barkskin Burrow ... unverified' understates the evidence. A quick check shows faction 2747 'Barkskin Burrow' in the Forever Faction table (wago.tools, build 1.60.1.70707). Another Forever campfire addon's candidate fire-aura IDs, listed as merely 'unverified', are wrong: 7355 is 'Stuck', 21009 is 'Quickness Passive' and 25030 is 'Shoot Rocket' in the same build.
 
 ## Findings by domain
 
@@ -295,7 +288,7 @@ Sources: <https://worldofwarcraft.blizzard.com/en-us/news/24302070/>, <https://n
 
 #### World of Warcraft: Forever is a third, permanent version of WoW that sits alongside modern WoW (Midnight) and Classic. It was announced at BlizzCon 2026 on 2026-09-12. Its internal codename is 'Camelot', and the community calls it 'Classic+'.
 
-Confidence: high. Relevance: Overall framing. Embertale targets only this game type, not Midnight or Classic Era.
+Confidence: high. Relevance: Overall framing. Ashmark targets only this game type, not Midnight or Classic Era.
 
 Blizzard's wording: 'a new permanent home alongside modern and Classic WoW'. The wiki says it was 'developed by a portion of Team 2' and 'operates as a standalone branch of the MMO, running concurrently with both retail and Classic'. The Battle.net shop's internal SKU names use the codename, for example 'WoW Camelot 1.60.0 Skyborne Heroic Edition (US/EU/KR/TW)'.
 
@@ -351,7 +344,7 @@ Sources: <https://news.blizzard.com/en-us/article/24303866/claim-your-world-of-w
 
 #### Forever has its own version line (1.60.x, TOC 16001) but is built from the same Mainline codebase as Midnight. The concept doc's claim that it 'runs on the Midnight retail client' is therefore partly true: it is a separate client and install that shares Midnight's UI architecture and almost all of its API.
 
-Confidence: high. Relevance: Core architecture. Embertale uses modern Mainline APIs and templates (PortraitFrameTemplate, ScrollBox, Settings API), not Classic Era APIs. Future Midnight API changes will likely also land in Forever.
+Confidence: high. Relevance: Core architecture. Ashmark uses modern Mainline APIs and templates (PortraitFrameTemplate, ScrollBox, Settings API), not Classic Era APIs. Future Midnight API changes will likely also land in Forever.
 
 Blizzard, quoted on the wiki from WoWUIDev on 2026-09-15: 'WoW Forever shares Mainline WoW's UI architecture, including the vast majority of APIs available in 12.1.5 ... Forever and modern WoW (Midnight) are two game types within the Mainline code family: Camelot (to be renamed before launch) and Standard, respectively.' The TOC page adds that 1.60.1 'Includes all Modern changes up to 12.1.5'. Diff from 12.1.5 (69952) to 1.60.1 (70205): 176 global APIs added and 10 removed; 471 FrameXML functions added and 1041 removed; 24 events added and 2 removed. Midnight 12.1.7 'Includes API changes from Patch 1.60.1'. Blizzard also says: 'you can expect similar UI changes in the future to be introduced to both Standard and Forever.'
 
@@ -367,7 +360,7 @@ Sources: <https://warcraft.wiki.gg/wiki/Patch_1.60.1/API_changes/notes>, <https:
 
 #### TOC and game-type facts: Interface 16001, game type 'camelot' with alias 'forever', file suffixes _Forever.toc and _Camelot.toc, Mainline family, WOW_PROJECT_ID == WOW_PROJECT_CAMELOT (18). Classic-family TOCs are not used on Forever.
 
-Confidence: high. Relevance: Embertale.toc setup and enforcing Forever-only loading. Addon Compartment is available.
+Confidence: high. Relevance: Ashmark's TOC setup and enforcing Forever-only loading. Addon Compartment is available.
 
 The Forever Beta and Forever Test rows on the TOC page both show 16001 (the live 'Forever' row is blank). The 'forever' alias was added in 1.60.1 build 70291 (2026-10-07). Families: Mainline = standard, forever, camelot, plunderstorm, wowhack (suffix _Mainline.toc); Classic = vanilla, tbc, wrath, cata, mists (_Classic.toc). The wiki's example for loading only on Forever is '## AllowLoadGameType: forever' plus '## ExcludeLoadGameType: standard, classic'; the exclude line is needed because unrecognized game types load anyway on 12.1.5 and classic clients. Interface-range check: 'version > 16000 and version < 20000'. The '[Game]' variable expands to 'Camelot'; 12.1.7 stops expanding [Game] and [Family] in TOC directives. Addon Compartment directives (AddonCompartmentFunc etc.) are documented as working on Midnight and Forever. CurseForge has a 'Forever' flavor with game version '1.60.1'. Interface numbers for comparison: Midnight 120105, Classic Era 11509.
 
@@ -375,7 +368,7 @@ Sources: <https://warcraft.wiki.gg/wiki/TOC_format>, <https://warcraft.wiki.gg/w
 
 #### The 'Classic look vs modern look' is a first-login Experience Preset (Classic or Enhanced), plus a per-character choice of SD or HD models.
 
-Confidence: high. Relevance: Main window styling. Embertale should look right under both presets and could read the preset to match Classic vs Enhanced styling. Anchoring to the reskinned unit frames is fragile.
+Confidence: high. Relevance: Main window styling. Ashmark should look right under both presets and could read the preset to match Classic vs Enhanced styling. Anchoring to the reskinned unit frames is fragile.
 
 Classic preset: Standard Definition models, quest points of interest and objective blobs off, one-bag off, transmog off, camera-turning keybinds, 'Classic screen UI layout'. Enhanced preset: HD models, POI on, one-bag on, transmog on, strafe keybinds, 'Centralized screen UI layout'. The preset is chosen before the ruleset and can be changed under Game Menu > Options; the SD/HD choice can be changed in Options or at a Barbershop. Related API: C_GameRules.GetForeverExperiencePreset/SetForeverExperiencePreset, C_GameRules.IsSDHDToggleEnabled/SetSDHDToggleValue/AccountHasSDEnabled. CVars: hasSelectedExperiencePreset ('Classic or Modern'), classicStyleWorldText. Build 70425 reskinned the Forever player, target, pet, target-of-target, totem and focus frames and the minimap header. Edit Mode exists, with layouts saved per UI type.
 
@@ -401,7 +394,7 @@ Sources: <http://worldofwarcraft.blizzard.com/en-us/news/24315280/new-players-st
 
 Confidence: high. Relevance: Localization scope for all modules. Drop itIT; zhCN is optional (CN market only).
 
-Shop 'Available Languages' for title 5730135|19 'World of Warcraft: Forever' (same on the us en-us, eu en-gb and eu de-de pages): English (US), Español (AL), Português (BR), English (EU), Deutsch, Español (EU), Français, Русский, 한국어, 繁體中文. The same page lists Midnight (5730135|18) with those plus Italiano (11 languages). wowf product config supported_locales: enUS, deDE, esES, esMX, frFR, ruRU, koKR, ptBR, zhTW, zhCN; the cn region display_locales is [zhCN]. Retail 'wow' includes itIT; Classic Era, like Forever, does not. GetLocale codes: enUS, koKR, frFR, deDE, zhCN, esES, zhTW, esMX, ruRU, ptBR, itIT. 'enGB clients return enUS', so English (EU) has no locale code of its own. Locales Embertale should cover: enUS, deDE, esES, esMX, frFR, ruRU, koKR, ptBR, zhTW, plus zhCN if China matters.
+Shop 'Available Languages' for title 5730135|19 'World of Warcraft: Forever' (same on the us en-us, eu en-gb and eu de-de pages): English (US), Español (AL), Português (BR), English (EU), Deutsch, Español (EU), Français, Русский, 한국어, 繁體中文. The same page lists Midnight (5730135|18) with those plus Italiano (11 languages). wowf product config supported_locales: enUS, deDE, esES, esMX, frFR, ruRU, koKR, ptBR, zhTW, zhCN; the cn region display_locales is [zhCN]. Retail 'wow' includes itIT; Classic Era, like Forever, does not. GetLocale codes: enUS, koKR, frFR, deDE, zhCN, esES, zhTW, esMX, ruRU, ptBR, itIT. 'enGB clients return enUS', so English (EU) has no locale code of its own. Locales Ashmark should cover: enUS, deDE, esES, esMX, frFR, ruRU, koKR, ptBR, zhTW, plus zhCN if China matters.
 
 Sources: <https://us.shop.battle.net/en-us/product/world-of-warcraft-forever>, <https://eu.shop.battle.net/de-de/product/world-of-warcraft-forever>, <https://level3.ssl.blizzard.com/tpr/configs/data/2c/ed/2ced73c17301c297ca062bc7c3583420>, <https://level3.ssl.blizzard.com/tpr/configs/data/53/02/53020d32e1a25648c8e1eafd5771935f>, <https://warcraft.wiki.gg/wiki/API_GetLocale>
 
@@ -431,7 +424,7 @@ Sources: <http://worldofwarcraft.blizzard.com/en-us/news/24315280/new-players-st
 
 #### Forever adds new Gelkis and Magram quests in Desolace, starting with 'Valley of Bones', with a minimum level of 35.
 
-Confidence: high. Relevance: Module 1 pilot: Blizzard itself expanded the Gelkis/Magram content. Embertale must find out which quests are Blizzard's mutually exclusive ones before layering its own.
+Confidence: high. Relevance: Module 1 pilot: Blizzard itself expanded the Gelkis/Magram content. Ashmark must find out which quests are Blizzard's mutually exclusive ones before layering its own.
 
 Dev notes, Oct 8, 2026: 'The new quests for the Gelkis and the Magram beginning with "Valley of Bones" now require a minimum level of 35 (was 30).' Rewards that were tuned: Blade of the Magram Clan, Centaur Spear, Ceremonial Centaur Blanket, Scavenged Magram Armament (equip requirement hotfixed to level 35).
 
@@ -458,9 +451,9 @@ Contradictions:
 
 #### Forever has its own TOC suffixes: _Forever.toc and _Camelot.toc. It is also in the 'mainline' family, so _Mainline.toc applies to it. A game-specific suffix takes priority over a family suffix, which takes priority over a bare AddOnName.toc.
 
-Confidence: high. Relevance: TOC/packaging for all modules; guarantees Embertale loads only on Forever
+Confidence: high. Relevance: TOC/packaging for all modules; guarantees Ashmark loads only on Forever
 
-Game suffixes: _Standard (Midnight), _Forever and _Camelot (Forever), _Mists, _Cata, _Wrath, _TBC, _Vanilla, _Plunderstorm/_WoWLabs, _WoWHack. Family suffixes: _Mainline (standard, forever, camelot, plunderstorm, wowhack) and _Classic (vanilla, tbc, wrath, cata, mists). The wiki says 'Family suffixes have a lower priority'. Footnote: 'The Camelot value may be changed to Forever in the future.' The 'forever' alias for TOC suffixes, the [Game] variable and game-type folder lookup was added in Forever beta build 70291 (Oct 7/8, 2026). A shipped Forever addon (HandyNotes Forever Instances) uses only HandyNotes_ForeverInstances_Camelot.toc. Recommendation: ship Embertale_Forever.toc. Also ship _Camelot.toc as a fallback in case a client lacks the alias. Do not ship _Mainline.toc, because it would also load on Midnight.
+Game suffixes: _Standard (Midnight), _Forever and _Camelot (Forever), _Mists, _Cata, _Wrath, _TBC, _Vanilla, _Plunderstorm/_WoWLabs, _WoWHack. Family suffixes: _Mainline (standard, forever, camelot, plunderstorm, wowhack) and _Classic (vanilla, tbc, wrath, cata, mists). The wiki says 'Family suffixes have a lower priority'. Footnote: 'The Camelot value may be changed to Forever in the future.' The 'forever' alias for TOC suffixes, the [Game] variable and game-type folder lookup was added in Forever beta build 70291 (Oct 7/8, 2026). A shipped Forever addon (HandyNotes Forever Instances) uses only HandyNotes_ForeverInstances_Camelot.toc. Recommendation: ship Ashmark_Forever.toc. Also ship _Camelot.toc as a fallback in case a client lacks the alias. Do not ship _Mainline.toc, because it would also load on Midnight.
 
 Sources: <https://warcraft.wiki.gg/wiki/TOC_format>, <https://warcraft.wiki.gg/wiki/Patch_1.60.1/API_changes/notes>, <https://www.curseforge.com/wow/addons/forever-instances-dungeons-raids>
 
@@ -474,7 +467,7 @@ Sources: <https://warcraft.wiki.gg/wiki/TOC_format>, <https://warcraft.wiki.gg/w
 
 #### AllowLoadGameType and ExcludeLoadGameType take the game types standard, forever, camelot, mists, cata, wrath, tbc, vanilla, plunderstorm and wowhack, plus the families mainline and classic. Both work as file-level directives and as inline [..] conditions.
 
-Confidence: high. Relevance: TOC; preventing Embertale from loading on Midnight or Classic
+Confidence: high. Relevance: TOC; preventing Ashmark from loading on Midnight or Classic
 
 Example from the wiki 1.60.1 page: '## AllowLoadGameType: forever' plus '## ExcludeLoadGameType: standard, classic'. Inline form: 'MyFile.lua [AllowLoadGameType forever][ExcludeLoadGameType standard, classic]'. Per-flavor metadata: '## Title: My title for Forever [AllowLoadGameType forever]'. Warning from the TOC page: if at least one game type is given and the client recognizes none of them, the condition is still satisfied, so always pair the directive with ExcludeLoadGameType. Other TOC facts on that page: the Bootstrap inline directive and the RegionalTextLocale variable are supported in Forever. Midnight 12.1.7 'Prevented use of variables in addon directives', so a '## X-Game: [Game]' style variable may stop working once Forever takes changes past 12.1.5. AddonCompartmentFunc, Category, Group, IconTexture/IconAtlas and LoadSavedVariablesFirst are documented for mainline and not marked as excluded from Forever.
 
@@ -482,7 +475,7 @@ Sources: <https://warcraft.wiki.gg/wiki/TOC_format>, <https://warcraft.wiki.gg/w
 
 #### Forever's project constant is WOW_PROJECT_CAMELOT = 18. There is no WOW_PROJECT_FOREVER constant. Builds before 70170 (Oct 1, 2026) wrongly returned WOW_PROJECT_ID = 1, the Mainline value.
 
-Confidence: high. Relevance: Runtime flavor guard in the Embertale core
+Confidence: high. Relevance: Runtime flavor guard in the Ashmark core
 
 WOW_PROJECT_ID table: 1 MAINLINE, 2 CLASSIC, 3 WOWLABS, 5 BURNING_CRUSADE_CLASSIC, 11 WRATH_CLASSIC, 14 CATACLYSM_CLASSIC, 18 CAMELOT ('World of Warcraft: Forever'), 19 MISTS_CLASSIC. Added in Patch 1.60.1 and defined in Camelot ProjectConstants.lua. 1.60.1 notable changes: '70170 (Oct 1): Added WOW_PROJECT_CAMELOT (18)'. wowforeverguides (an SEO site) reports build 69913 returning 1 and build 70338 returning 18.
 
@@ -524,7 +517,7 @@ Sources: <https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-addon-feedbac
 
 Confidence: medium. Relevance: Module 2 (behaviour-derived identity) must not rely on the combat log; module 6 (camping chapters)
 
-CLEU page: 'This event is no longer accessible to addons in Midnight since Patch 12.0.0' and 'Fires ADDON_ACTION_FORBIDDEN when attempting to register this event.' 12.0.0 summary: 'COMBAT_LOG_EVENT and COMBAT_LOG_EVENT_UNFILTERED will error when trying to register them.' CombatLogGetCurrentEventInfo is 'deprecated in patch 12.0.0' and its availability data lists Standard 8.0.1-12.0.0, Mists, TBC and Vanilla, but not Forever. C_CombatLog.IsCombatLogRestricted() exists in Forever 1.60.1. Because Forever includes all Modern changes up to 12.1.5, the 12.0.0 lock applies. wowforeverguides reports the reader is unavailable on Forever and marks this unverified. Community GitHub reports (not opened) say registering also taints the addon for the rest of the session. Embertale must never register CLEU. Use PARTY_KILL, PLAYER_DEAD, UNIT_* and quest/loot events instead.
+CLEU page: 'This event is no longer accessible to addons in Midnight since Patch 12.0.0' and 'Fires ADDON_ACTION_FORBIDDEN when attempting to register this event.' 12.0.0 summary: 'COMBAT_LOG_EVENT and COMBAT_LOG_EVENT_UNFILTERED will error when trying to register them.' CombatLogGetCurrentEventInfo is 'deprecated in patch 12.0.0' and its availability data lists Standard 8.0.1-12.0.0, Mists, TBC and Vanilla, but not Forever. C_CombatLog.IsCombatLogRestricted() exists in Forever 1.60.1. Because Forever includes all Modern changes up to 12.1.5, the 12.0.0 lock applies. wowforeverguides reports the reader is unavailable on Forever and marks this unverified. Community GitHub reports (not opened) say registering also taints the addon for the rest of the session. Ashmark must never register CLEU. Use PARTY_KILL, PLAYER_DEAD, UNIT_* and quest/loot events instead.
 
 Sources: <https://warcraft.wiki.gg/wiki/COMBAT_LOG_EVENT_UNFILTERED>, <https://warcraft.wiki.gg/wiki/Patch_12.0.0/API_changes>, <https://warcraft.wiki.gg/wiki/API_CombatLogGetCurrentEventInfo>, <https://warcraft.wiki.gg/wiki/API_C_CombatLog.IsCombatLogRestricted>, <https://wowforeverguides.com/addons/patterns>
 
@@ -554,7 +547,7 @@ Sources: <https://warcraft.wiki.gg/wiki/CHAT_MSG_PARTY>, <https://warcraft.wiki.
 
 #### C_ChatInfo.SendAddonMessage exists in Forever. Limits: prefix up to 16 characters, message up to 255 characters, a per-prefix throttle of 10 messages regenerating at 1 per second, and result codes including AddOnMessageLockdown. Forever trial and veteran accounts cannot send addon messages at all.
 
-Confidence: high. Relevance: Rumours / silent shared fiction; module 4 handshake between Embertale users
+Confidence: high. Relevance: Rumours / silent shared fiction; module 4 handshake between Ashmark users
 
 Signature: result = C_ChatInfo.SendAddonMessage(prefix, message [, chatType [, target]]); chatType defaults to 'PARTY'. chatTypes on both retail and Classic: PARTY, RAID, INSTANCE_CHAT, GUILD, OFFICER, WHISPER. 'CHANNEL' is retail-only ('Disabled on Classic'); Forever is not stated. SAY and YELL are Classic-only. Enum.SendAddonMessageResult: 0 Success, 1 InvalidPrefix, 2 InvalidMessage, 3 AddonMessageThrottle, 4 InvalidChatType, 5 NotInGroup, 6 TargetRequired, 7 InvalidChannel, 8 ChannelThrottle, 9 GeneralError, 10 NotInGuild, 11 AddOnMessageLockdown (11.1.0), 12 TargetOffline (12.0.0). A success result only means 'enqueued'. Whispers outside instanced content are exempt from the per-prefix limit. Use SendAddonMessageLogged for user-generated content; it fires CHAT_MSG_ADDON_LOGGED. Wiki: 'Forever and modern clients starting in patch 12.1.7 prohibit trial and veteran accounts from sending addon messages' (Forever beta 4, build 70291). Receiving requires C_ChatInfo.RegisterAddonMessagePrefix(prefix), which returns Enum.RegisterAddonMessagePrefixResult (0 Success, 1 DuplicatePrefix, 2 InvalidPrefix, 3 MaxPrefixes). Registrations do not persist across /reload. CHAT_MSG_ADDON payload: prefix, text, channel, sender, target, zoneChannelID, localID, name, instanceID.
 
@@ -578,7 +571,7 @@ Sources: <https://warcraft.wiki.gg/wiki/API_C_TooltipInfo.GetItemByID>, <https:/
 
 #### Forever itself hides stats for many items until the server reveals them. Discovery appears to be server-wide, not per character. The client shows 'Retrieving item information' until data arrives through the normal item-cache path (C_Item.GetItemInfo nil, then GET_ITEM_INFO_RECEIVED / ITEM_DATA_LOAD_RESULT).
 
-Confidence: medium. Relevance: Module 7: Embertale's per-character layer sits on top of Forever's server-wide reveal and must handle nil/unrevealed items
+Confidence: medium. Relevance: Module 7: Ashmark's per-character layer sits on top of Forever's server-wide reveal and must handle nil/unrevealed items
 
 Josh Greenfield (MMORPG.com interview, reported Sep 16, 2026): 'You will not see an item's stats until it drops for you, until it drops for someone on your server.' foreverchanges.pro (aggregator, updated Oct 30, 2026): client files hold only item ID, icon, slot/type and set name. Name, quality, item level, required level, stats and effects come from the server and are cached in the WoW folder. On Sep 25 an addon requested all ~12,600 hidden items and the server answered about one third. Count: 4,928 of 12,715 revealed. API: C_Item.GetItemInfo 'returns nil if the item is not cached yet or does not exist'. GET_ITEM_INFO_RECEIVED(itemID, success): success true = queried OK, false = 'can't be queried from the server', nil = item doesn't exist. C_Item.RequestLoadItemDataByID fires ITEM_DATA_LOAD_RESULT. No Forever-specific 'discovery' API or event was found. Only aggregator and fan sites describe the mechanism; no Blizzard addon documentation.
 
@@ -624,7 +617,7 @@ Confidence: medium. Relevance: Module 4 assumes a 'Dungeon Finder' that may not 
 
 Sources: <https://warcraft.wiki.gg/wiki/Patch_1.60.1/API_changes>, <https://warcraft.wiki.gg/wiki/API_C_LFGList.GetSearchResultInfo>, <https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-26/2360696>, <https://www.curseforge.com/projects/1707849>
 
-#### No dedicated addon API was found for campfires/camping, Legacy points or 'familiar faces'. Forever does add surname, day/night, shard-transfer and ruleset APIs that Embertale can use.
+#### No dedicated addon API was found for campfires/camping, Legacy points or 'familiar faces'. Forever does add surname, day/night, shard-transfer and ruleset APIs that Ashmark can use.
 
 Confidence: medium. Relevance: Module 6 (campfire as chapter boundary), module 5 (surnames), module 3 (day/night world state)
 
@@ -632,7 +625,7 @@ New in 1.60.1: C_PlayerInfo.ShouldDisplaySurname, C_NameUtil.ReplaceSurnameSepar
 
 Sources: <https://warcraft.wiki.gg/wiki/Patch_1.60.1/API_changes>, <https://warcraft.wiki.gg/wiki/Enum.GameRule>, <https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-26/2360696>, <https://warcraft.wiki.gg/wiki/Secret_values>
 
-#### Forever surnames: full names are unique, first names are not, and several alts can share a surname. Since unrelated players can also share a surname, a surname alone cannot identify an Embertale 'House'.
+#### Forever surnames: full names are unique, first names are not, and several alts can share a surname. Since unrelated players can also share a surname, a surname alone cannot identify an Ashmark 'House'.
 
 Confidence: medium. Relevance: Module 5 (House): key the house on account-wide SavedVariables plus surname, not surname alone; module 4 name storage
 
@@ -650,7 +643,7 @@ Sources: <https://warcraft.wiki.gg/wiki/API_Screenshot>, <https://warcraft.wiki.
 
 #### WhyHidden on CurseForge is a working Forever addon that reads C_Secrets predicates. It reports that the C_Secrets surface is identical on Forever 1.60.1 and Midnight 12.1.0/12.1.5, with values hidden during 'arenas, battlegrounds, enclosed encounters'.
 
-Confidence: medium. Relevance: Reference implementation for Embertale's secret-guard helper; debugging tool during development
+Confidence: medium. Relevance: Reference implementation for Ashmark's secret-guard helper; debugging tool during development
 
 WhyHidden 0.3.0 (Oct 7, 2026): lists health, names, casting, auras, cooldowns and threat as values that can be secret. Slash commands are /whh and /whh mouse. It says it is 'inert on clients without secret values'. The page names no specific C_Secrets function.
 
@@ -757,7 +750,7 @@ Sources: <https://worldofwarcraft.blizzard.com/en-us/news/24302070>, <https://ne
 
 #### Familiar Faces (BlizzCon Deep Dive, 13 Sep 2026, Lead Software Engineer Ana Resendez) biases which players share your world copy: people you met before, guildmates, your preferred language and, on PvP, faction balance. Blizzard has published no mechanism details, and layering ('world refresh') stays.
 
-Confidence: medium. Relevance: Module 4: fits Embertale's theme, but there is no public API. The addon must log encounters itself, and remembered players may sit in another layer. The community addon SocialForever already does this.
+Confidence: medium. Relevance: Module 4: fits Ashmark's theme, but there is no public API. The addon must log encounters itself, and remembered players may sit in another layer. The community addon SocialForever already does this.
 
 Warcraft Tavern: 'Familiar Faces aims to combine the benefits of a large, populated realm with a sense of persistent community'; guildmates 'should always be able to see each other'. It is unclear how it interacts with layer hopping, and 'encounter' is not defined. MMO-Champion recap: 'The goal is for strangers to become familiar faces'; PvP faction balance 'similar to the approach introduced in Season of Discovery'. Layering: a 5-minute warning with a 'Refresh Now' button (masterofwarcraft; Icy Veins reportedly says 3 min, not opened). Clay Stone statement (23 Oct, via Outputlag): fixes keep transport groups together and stop large groups splitting at capital cities; some layering 'will always' remain; zone-border swaps not addressed. Wowhead headline: 'Forced World Refreshes Will Be Significantly Reduced' (body not readable).
 
@@ -773,7 +766,7 @@ Sources: <https://www.warcrafttavern.com/forever/news/no-group-finder-or-summoni
 
 #### Hidden item stats: Blizzard obfuscates 'all items in the game', and stats appear only once an item has dropped 'for someone on your server'. About 12.7k items are tracked as hidden, covering new Forever, Classic and SoD items, and roughly 39% were revealed by 30 Oct.
 
-Confidence: medium. Relevance: Module 7: the game already hides undiscovered items at server level. Embertale's per-character 'never held' layer sits on top and must handle items whose data the server has not sent. Discovery counts come from aggregators.
+Confidence: medium. Relevance: Module 7: the game already hides undiscovered items at server level. Ashmark's per-character 'never held' layer sits on top and must handle items whose data the server has not sent. Discovery counts come from aggregators.
 
 Josh Greenfield (MMORPG.com, via Warcraft Tavern 16 Sep): 'we're actually obfuscating all items in the game'; 'you will not see an item's stats until it drops for you, until it drops for someone on your server'; no dungeon journal at first. foreverchanges.pro (aggregator, updated 30 Oct, build 1.60.1.70707): '4,928 of 12,715 revealed' = new Forever 814/2,530, Classic 3,189/5,006, SoD leftovers 925/5,179. The client asks the server for item data on loot, vendor view, chat-link click or addon request. The tooltip shows 'Retrieving item information' until the reply, which is cached in the WoW folder. In a 25 Sep test, about 1/3 of ~12,600 requests got answers. classicwowforever.com: records encrypted twice and 'the keys are not in the client'. Forum (22 Sep): AH list tooltips show only name and item level. Icy Veins' '12,594 (40%) of 31,800' could not be opened (HTTP 403).
 
@@ -789,7 +782,7 @@ Sources: <https://www.mmo-champion.com/content/14512-BlizzCon-2026-World-of-Warc
 
 #### Forever already continues the Gelkis and Magram storyline into the Valley of Bones and Shen'dralas. Both factions keep their Classic IDs (92, 93), and long new chains require Honored standing.
 
-Confidence: high. Relevance: Module 1 pilot: Blizzard's own content already covers this storyline. Embertale should build on these quest IDs and standings (e.g. a 'sworn clan' state at Honored) rather than duplicate them.
+Confidence: high. Relevance: Module 1 pilot: Blizzard's own content already covers this storyline. Ashmark should build on these quest IDs and standings (e.g. a 'sworn clan' state at Honored) rather than duplicate them.
 
 Wowhead Forever: Gelkis faction=92 (southern Desolace), Magram faction=93 (eastern Desolace), 'Mortal enemies'; standard thresholds (Neutral 42000, Friendly 45000, Honored 51000, Revered 63000, Exalted 84000). Gelkis Alliance quest=1368 (Classic ID, level 33, requires Friendly, +250 Gelkis). Gelkis series: Strange Alliance > Gelkis Alliance / Raid on the Kolkar > Stealing Supplies > Ongeku > Valley of Bones (93034, lvl 38, needs Honored, +125) > Ravaging Ravagers / Outing Outcasts > Facing the Truth > A Cleansing Cry > Test Your Theory. Magram series of 13: Brutal Politics > Magram Alliance / Assault on the Kolkar > Broken Tears > A Conqueror's Crown > Valley of Bones > Mountain of Bones / Outcast Necromancers > Corrupting Tears > Proof of Concept (92873, lvl 41, Honored, +500, reward choice Blade of the Magram Clan / Staff of Revelations / Desperate Barrier) > No Mercy for the Weak (92893, slay 5 Gelkis Captives) / Bone Raising > Bristleback Retreat > Long-Term Solutions / Threat of Starvation > Return to Orgrul (93188, lvl 43) > Khan Jehn. Quest giver Orgrul; objectives say 'Maintain your Magram reputation'. Wowhead lists no negative opposite-clan reputation on these quests.
 
@@ -837,7 +830,7 @@ Sources: <https://worldofwarcraft.blizzard.com/en-us/news/24302070>, <https://ne
 
 #### On first login players choose an 'Experience Preset', Classic or Enhanced. It sets the UI layout and other defaults, all changeable later under Game Menu > Options.
 
-Confidence: high. Relevance: Main window: test under both layouts. The Classic preset fits Embertale's character; module 3 pins must coexist with quest POI on or off.
+Confidence: high. Relevance: Main window: test under both layouts. The Classic preset fits Ashmark's character; module 3 pins must coexist with quest POI on or off.
 
 Blizzard: Classic = SD models, quest POI and objective blobs off, one-bag off, transmog off, camera-turn keybinds, 'Classic screen UI layout'. Enhanced = HD models, POI and blobs on, one-bag on, transmog on, strafe keybinds, 'Centralized screen UI layout'. The SD/HD model choice is per character and 'affects only appearance'.
 
@@ -875,17 +868,9 @@ Contradictions:
 
 ### Ecosystem and release
 
-#### The name 'Embertale' is already taken on CurseForge, by a Forever-only campfire roleplay addon, and CurseForge rejects a project name that is already in use.
+#### Several Forever addons already cover Ashmark's campfire, shared-fiction and map-pin ideas. Emberpath is the closest conceptual competitor.
 
-Confidence: high. Relevance: Branding and release path: the CurseForge project name must change, or the owner must talk to Bollinea or CurseForge. Avoid the addon folder 'EmberTales', the prefix 'EMBERTALES' and the slash command /et. Module 6 (campfire) overlaps directly.
-
-CurseForge project 'Embertale' by Bollinea, slug /wow/addons/embertale, project ID 1750062, created about Oct 18 2026, file 'EmberTales v1.0.1.zip' (file 9285871, Oct 22 2026). Tagged flavor Forever, game version 1.60.1. Categories: Camping, Roleplay, Chat & Communication, Miscellaneous. License: All Rights Reserved. 18 downloads. Inside the zip: folder 'EmberTales', EmberTales.toc with '## Interface: 16001', SavedVariables 'EmberTalesDB', addon message prefix 'EMBERTALES', slash command /et. CurseForge support article: 'It should be unique to your project. If the name is already taken it will be rejected.' Wago search (addons.wago.io/?search=embertale) returns total 0. WoWInterface search returns 'no matches'.
-
-Sources: <https://www.curseforge.com/wow/search?search=embertale>, <https://www.curseforge.com/wow/addons/embertale>, <https://mediafilez.forgecdn.net/files/9285/871/EmberTales%20v1.0.1.zip>, <https://support.curseforge.com/en/support/solutions/articles/9000197241-creating-and-submitting-a-project>, <https://addons.wago.io/?search=embertale>, <https://www.wowinterface.com/downloads/search.php?search=embertale>
-
-#### Several Forever addons already cover Embertale's campfire, shared-fiction and map-pin ideas. Emberpath is the closest conceptual competitor.
-
-Confidence: high. Relevance: Module 6 (campfire as chapter boundary), module 3 (private map layer with pins), and the later rumours / silent shared fiction. Embertale needs to differentiate and should not copy names like Ember*.
+Confidence: high. Relevance: Module 6 (campfire as chapter boundary), module 3 (private map layer with pins), and the later rumours / silent shared fiction. Ashmark needs to differentiate from them.
 
 Emberpath (DronningMargrethe / 'Mads', project 1744439, MIT, source github.com/MadsFrost/Emberpath, v0.1.0, Oct 14 2026, flavor Forever 1.60.1). It offers secret daily omens drawn when you pitch camp, campfire 'tales' left on friends' world maps, ghost trails between campfires, 'The Gathering' and an 'Ember Ledger', and it syncs over addon messages in GUILD plus PARTY or RAID with WHISPER catch-up (prefix 'Emberpath'). The page says 'Trial accounts cannot send addon messages'. The map layer uses a MapCanvasDataProviderMixin added through WorldMapFrame:AddDataProvider, plus C_Map.GetMapPosFromWorldPos. Its TOC declares '## Interface: 120105' and 'AddonCompartmentFunc'. 'Ember: Camping Companion' (Jibbs, project 1756292): camp benefits, shares fires to the zone General channel as clickable map pins, Nearby Fires tab, icebreakers; tested on 1.60.1.70450. Also 'Embers - Campfire Addon' (dr4mx): a cinematic campfire pause. ForeverArtisan covers 'all 12 professions and Camping'. CurseForge has a 'Camping' category.
 
@@ -933,7 +918,7 @@ Sources: <https://www.curseforge.com/wow/addons/questie>, <https://www.curseforg
 
 #### warcraft.wiki.gg lists dedicated Forever game types, TOC suffixes and interface number 16001.
 
-Confidence: high. Relevance: TOC layout. Ship Embertale_Forever.toc (optionally also _Camelot.toc, as QuestieDB does) with '## Interface: 16001' and no plain or _Mainline TOC, so Retail does not load it.
+Confidence: high. Relevance: TOC layout. Ship Ashmark_Forever.toc (optionally also _Camelot.toc, as QuestieDB does) with '## Interface: 16001' and no plain or _Mainline TOC, so Retail does not load it.
 
 Game types: 'forever' and 'camelot'. TOC suffixes: AddOnName_Forever.toc and AddOnName_Camelot.toc. The 'mainline' family (suffix _Mainline.toc) covers standard, forever, camelot, plunderstorm and wowhack, and game-type-specific suffixes take priority over family ones. Interface: Forever Beta 16001, Forever Test 16001; no value is listed for the 'Forever' live channel. Example: 'ForeverOnly.lua [AllowLoadGameType camelot][ExcludeLoadGameType standard, classic]'. Warning: if no listed game type is recognized the condition is still satisfied, so pair it with ExcludeLoadGameType. Footnote: 'The Camelot value may be changed to Forever in the future.' Patch 1.60.1 (Beta) 'Includes all Modern changes up to 12.1.5' and 'Added Camelot game type, Game variable value and TOC suffix, with Forever game type and TOC suffix alias.' The Bootstrap inline directive, RegionalTextLocale and the Addon compartment are marked as applying to Midnight and Forever.
 
@@ -955,7 +940,7 @@ warcraft.wiki.gg COMBAT_LOG_EVENT: 'This event is no longer accessible to addons
 
 Sources: <https://warcraft.wiki.gg/wiki/COMBAT_LOG_EVENT>, <https://addons.wago.io/addons/bigwigs/versions?stability=stable>, <https://www.curseforge.com/wow/addons/foreverui>
 
-#### Secret-value predicates relevant to Embertale and when they apply (warcraft.wiki.gg, Midnight-based; Forever inherits them according to the dev post).
+#### Secret-value predicates relevant to Ashmark and when they apply (warcraft.wiki.gg, Midnight-based; Forever inherits them according to the dev post).
 
 Confidence: medium. Relevance: Module 4 (names inside dungeons may be secret; capture them before entering or after leaving), module 7 (tooltips in instances), and rumours (addon messages blocked during lockdown; trial accounts can't send at all).
 
@@ -1005,7 +990,7 @@ Sources: <https://www.curseforge.com/wow/addons/openmap>, <https://www.curseforg
 
 #### HandyNotes has no Forever-ready release yet.
 
-Confidence: high. Relevance: Module 3: don't depend on HandyNotes as a plugin host for the Forever pin layer; build Embertale's own map data provider.
+Confidence: high. Relevance: Module 3: don't depend on HandyNotes as a plugin host for the Forever pin layer; build Ashmark's own map data provider.
 
 Latest HandyNotes v1.6.31 (Aug 12 2026; CurseForge project 14154). TOC '## Interface: 120100,120007,11509,20506,50504' with no 16001. The Wago release has supported_forever_patches null (retail ['12.1.0','12.0.7'], classic ['1.15.9']). The CurseForge file list shows no Forever file, although the project sidebar lists Forever as a flavor.
 
@@ -1023,9 +1008,9 @@ Sources: <https://us.forums.blizzard.com/en/wow/t/ui-add-on-development-policy/2
 
 Confidence: medium. Relevance: Module 6: detect the campfire by spell ID (GetPlayerAuraBySpellID), not by scanning auras by index. Module 2: no threat or combat metrics.
 
-EU forum thread 'Threat is a secret/hidden value in addon API. Why?' (Oct 6-20 2026, no blue posts): UnitDetailedThreatSituation and UnitThreatPercentageOfLead('player','nameplate1') return secrets for party, raid and nameplate units; secrets can be displayed but not compared or used in arithmetic. EmberTales code comments: 'Camelot: in combat auras are "secret" and GetAuraDataByIndex is blocked for tainted code', while C_UnitAuras.GetPlayerAuraBySpellID remains usable. It also claims 'RegisterEvent* is protected inside every callback context', which is unverified. Candidate fire aura IDs in EmberTales: 818, 7355, 7359, 21009, 25030, also unverified. Questie checks C_Secrets.ShouldAurasBeSecret() before reading auras.
+EU forum thread 'Threat is a secret/hidden value in addon API. Why?' (Oct 6-20 2026, no blue posts): UnitDetailedThreatSituation and UnitThreatPercentageOfLead('player','nameplate1') return secrets for party, raid and nameplate units; secrets can be displayed but not compared or used in arithmetic. Code comments in another Forever campfire addon (CurseForge project 1750062): 'Camelot: in combat auras are "secret" and GetAuraDataByIndex is blocked for tainted code', while C_UnitAuras.GetPlayerAuraBySpellID remains usable. It also claims 'RegisterEvent* is protected inside every callback context', which is unverified. Its candidate fire aura IDs: 818, 7355, 7359, 21009, 25030, also unverified. Questie checks C_Secrets.ShouldAurasBeSecret() before reading auras.
 
-Sources: <https://eu.forums.blizzard.com/en/wow/t/threat-is-a-secrethidden-value-in-addon-api-why/633885>, <https://mediafilez.forgecdn.net/files/9285/871/EmberTales%20v1.0.1.zip>, <https://addons.wago.io/addons/questie/versions?stability=stable>
+Sources: <https://eu.forums.blizzard.com/en/wow/t/threat-is-a-secrethidden-value-in-addon-api-why/633885>, <https://addons.wago.io/addons/questie/versions?stability=stable>
 
 #### Many existing Forever addons ship Addon Compartment entries and Blizzard-style settings. Forever's Blizzard Group Finder is extended by addons, and dev notes mention Group Finder and dungeon-list changes.
 
