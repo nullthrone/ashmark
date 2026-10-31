@@ -23,7 +23,7 @@ L.CORE_SV_NEW = "Um novo registro foi iniciado. Se o Ashmark já foi usado nesta
   .. "substitua Ashmark.lua por Ashmark.lua.bak em WTF\\Account\\<conta>\\SavedVariables\\."
 L.CORE_SV_NEWER = "Estes dados salvos vêm de uma versão mais recente do Ashmark. O Ashmark apenas os lê até que "
   .. "você o atualize."
-L.CORE_SV_RECOVERED = "Os dados salvos não estavam em um formato que o Ashmark conheça. Um novo registro foi "
+L.CORE_SV_RECOVERED = "Os dados salvos não estavam em um formato que o Ashmark reconheça. Um novo registro foi "
   .. "iniciado; os dados antigos foram mantidos intactos em AshmarkDB.recovered."
 L.CORE_SV_MIGRATE_FAILED = "O Ashmark não conseguiu atualizar os dados salvos e, nesta sessão, apenas os lê."
 
@@ -32,8 +32,8 @@ L.CORE_MODULE_FAILED = "O módulo {module} parou após erros repetidos e fica de
   .. "interface."
 L.CORE_UNAVAILABLE = "Requer {capability}"
 L.CORE_MISSING_EVENTS = "Eventos que faltam neste cliente: {events}"
-L.CORE_SETTING_CHAT_LINES = "Linhas no chat"
-L.CORE_SETTING_CHAT_LINES_DESC = "O Ashmark pode escrever linhas curtas na janela de chat."
+L.CORE_SETTING_CHAT_LINES = "Linhas no bate-papo"
+L.CORE_SETTING_CHAT_LINES_DESC = "O Ashmark pode escrever linhas curtas na janela de bate-papo."
 L.CORE_SETTING_SOUNDS = "Sons"
 L.CORE_SETTING_SOUNDS_DESC = "O Ashmark reproduz os sons de página e de livro do jogo."
 L.CORE_SETTING_SHARE = "Compartilhar com outros usuários do Ashmark"
@@ -122,7 +122,7 @@ L.TEST_PROBE_NEXT = "Aceite uma missão e comece uma luta nesta sessão: a sonda
 -- Conflicts ------------------------------------------------------------------------------------------------------
 
 L.CONFLICT_MODULE_NAME = "Conflitos"
-L.CONFLICT_MODULE_DESC = "Algumas missões colocam um lado contra o outro. O Ashmark lembra o lado que você "
+L.CONFLICT_MODULE_DESC = "Algumas missões colocam um lado contra o outro. O Ashmark se lembra do lado que você "
   .. "escolhe, marca abaixo da janela de missão as missões que o contradizem e registra quando você quebra sua "
   .. "palavra."
 
@@ -183,7 +183,7 @@ L.PROFILE_PRAGMATIST_F = "Pragmática"
 -- Test mode (7.10). "Bicho" is the client's creature type for critters.
 L.PROFILE_TEST_MERCY_HOWTO = "Mate 3 bichos e 3 feras neutras e calmas, depois execute /ashmark test novamente."
 L.PROFILE_TEST_CRITTER_TARGET = "Selecione qualquer criatura como alvo, depois execute /ashmark test novamente."
-L.PROFILE_TEST_CRITTER_OFF = "Este cliente não consegue distinguir bichos, então os bichos abatidos não são "
+L.PROFILE_TEST_CRITTER_OFF = "Este cliente não consegue identificar bichos, então os bichos abatidos não são "
   .. "contados."
 
 -- Map ------------------------------------------------------------------------------------------------------------
@@ -267,7 +267,7 @@ L.ENC_LIST_AND = "{list} e {last}"
 
 L.HOUSE_MODULE_NAME = "Casa"
 L.HOUSE_MODULE_DESC = "Personagens desta conta que compartilham um sobrenome formam uma casa. A aba Casa mostra "
-  .. "seus membros, as rixas que seus parentes assumiram, a crônica familiar e as pessoas que eles conhecem."
+  .. "os membros, as rixas que seus parentes assumiram, a crônica familiar e as pessoas que eles conhecem."
 
 -- /ashmark house (5.9). "house", "reset" and "<nome>" as typed after /ashmark.
 L.HOUSE_HELP = "mostrar sua casa; \"house <nome>\" entra na casa com esse nome, \"house reset\" volta a seguir seu "
@@ -313,8 +313,8 @@ L.CAMP_CHAPTER_CLOSED = "O capítulo {roman} se encerra · {place}"
 
 L.KNOW_MODULE_NAME = "Conhecimento do personagem"
 L.KNOW_MODULE_DESC = "As dicas de itens mostram apenas o que seu personagem pode saber. Um item que nunca esteve "
-  .. "nas bolsas, no banco ou no equipamento deste personagem mostra o nome, o vínculo, o compartimento, o nível do "
-  .. "item, o tipo e os requisitos; o resto fica oculto. Itens que o próprio jogo ainda oculta ficam como o jogo "
+  .. "nas bolsas, no banco ou no equipamento deste personagem mostra o nome, o vínculo, onde é equipado, o nível "
+  .. "do item, o tipo e os requisitos; o resto fica oculto. Itens que o próprio jogo ainda oculta ficam como o jogo "
   .. "os mostra."
 
 -- Last line of such a tooltip (7.7)
@@ -328,9 +328,9 @@ L.KNOW_SETTING_QUEST_REWARDS_DESC = "Nunca ocultar as dicas das recompensas most
 -- Fiction --------------------------------------------------------------------------------------------------------
 
 L.FICTION_MODULE_NAME = "Ficção compartilhada"
-L.FICTION_MODULE_DESC = "Membros do grupo que também usam o Ashmark conhecem seu arquétipo e sua origem sem que "
-  .. "uma só palavra seja dita no chat, e você conhece os deles, para que sua crônica e suas dicas possam dizer com "
-  .. "quem você viajou. Nada é mostrado a outros jogadores."
+L.FICTION_MODULE_DESC = "Membros do grupo que também usam o Ashmark descobrem seu arquétipo e sua origem sem que "
+  .. "uma só palavra seja dita no bate-papo, e você descobre os deles, para que sua crônica e suas dicas possam "
+  .. "dizer com quem você viajou. Nada é mostrado a outros jogadores."
 
 -- Test mode (7.10)
 L.FICTION_TEST_HOWTO = "Forme um grupo com outro usuário do Ashmark, depois execute /ashmark test novamente."
