@@ -71,6 +71,10 @@ L.CORE_LOG_REP = "Agora você é {standing} com {faction}."
 L.CORE_LOG_REP_THEY = "{name} agora é {standing} com {faction}."
 L.CORE_LOG_CHAPTER = "O capítulo {roman} se encerra em {place}."
 L.CORE_LOG_CHAPTER_THEY = "O capítulo {roman} de {name} se encerra em {place}."
+L.CORE_LOG_DEATH_NOZONE = "Você morreu em {place}."
+L.CORE_LOG_DEATH_NOZONE_THEY = "{name} morreu em {place}."
+L.CORE_LOG_CHAPTER_NOZONE = "O capítulo {roman} se encerra em {place}."
+L.CORE_LOG_CHAPTER_NOZONE_THEY = "O capítulo {roman} de {name} se encerra em {place}."
 
 -- Slash commands (5.9). Subcommand words stay in English: they are what the player types.
 L.CORE_HELP_HEADER = "Comandos:"
@@ -123,6 +127,8 @@ L.TEST_SKIP = "ignorado"
 L.TEST_OPEN_QUEST_DIALOG = "Para a captura de tela, fale primeiro com um personagem que ofereça missões."
 L.TEST_RELOAD = "Digite /reload para salvar os resultados."
 L.TEST_NOT_STORED = "Os dados salvos vêm de uma versão mais recente do Ashmark, então nada é armazenado. O "
+  .. "relatório completo vem a seguir."
+L.TEST_NOT_STORED_MIGRATION = "O Ashmark não conseguiu atualizar os dados salvos, então nada é armazenado. O "
   .. "relatório completo vem a seguir."
 L.TEST_LATE = "Resultado posterior: {what}"
 L.TEST_PROBE_DONE = "A sonda registrou {count} dados."
@@ -212,6 +218,7 @@ L.MAP_PIN_BROKEN = "Você está do lado de {faction} e aqui quebrou sua palavra 
 L.MAP_PIN_VIOLATION = "Aqui você quebrou sua palavra"
 L.MAP_PIN_CHAPTER = "Capítulo {roman}"
 L.MAP_PIN_CHAPTER_CLOSED = "Encerrado aqui em {date}"
+L.MAP_PIN_CHAPTER_COUNT = "Capítulos encerrados aqui: {count}"
 
 -- Encounters -----------------------------------------------------------------------------------------------------
 
@@ -355,7 +362,10 @@ L.FICTION_TEST_HOWTO = "Forme um grupo com outro usuário do Ashmark, depois exe
 
 L.RUMOUR_MODULE_NAME = "Rumores"
 L.RUMOUR_MODULE_DESC = "O que você faz em um conflito corre como rumor de grupo em grupo, e você ouve o que os "
-  .. "outros fizeram. Um rumor fala de um tipo de pessoa, um lugar e uma facção, nunca de um personagem."
+  .. "outros fizeram. Um rumor fala de um tipo de pessoa, um lugar e uma facção, nunca de um personagem, mas o jogo "
+  .. "mostra quem o repassa: seu grupo consegue saber quais rumores contam os seus próprios feitos, e quem souber de "
+  .. "quem é o feito contado em um rumor pode deduzir pela sua versão se você esteve em grupo com esse jogador na "
+  .. "última semana, ou quantos grupos separam vocês."
 
 -- Chat lines for a rumour heard (7.8). No sex is known: "alguém" carries the grammar and {archetype} stands as a
 -- name after "a quem chamam de", with no article or adjective to agree with (no _F forms).

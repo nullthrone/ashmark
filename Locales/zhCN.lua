@@ -66,6 +66,10 @@ L.CORE_LOG_REP = "你在{faction}中的声望现为{standing}。"
 L.CORE_LOG_REP_THEY = "{name}在{faction}中的声望现为{standing}。"
 L.CORE_LOG_CHAPTER = "第{roman}章在{place}落幕。"
 L.CORE_LOG_CHAPTER_THEY = "{name}的第{roman}章在{place}落幕。"
+L.CORE_LOG_DEATH_NOZONE = "你在{place}死去。"
+L.CORE_LOG_DEATH_NOZONE_THEY = "{name}在{place}死去。"
+L.CORE_LOG_CHAPTER_NOZONE = "第{roman}章在{place}落幕。"
+L.CORE_LOG_CHAPTER_NOZONE_THEY = "{name}的第{roman}章在{place}落幕。"
 
 -- Slash commands (5.9). Help texts are short verb phrases, as in a command list.
 L.CORE_HELP_HEADER = "命令："
@@ -117,6 +121,7 @@ L.TEST_SKIP = "跳过"
 L.TEST_OPEN_QUEST_DIALOG = "截图前请先与一位任务发布者对话。"
 L.TEST_RELOAD = "输入/reload以保存结果。"
 L.TEST_NOT_STORED = "已保存的数据来自较新版本的Ashmark，因此不会保存任何内容。完整报告如下。"
+L.TEST_NOT_STORED_MIGRATION = "Ashmark无法更新其已保存的数据，因此不会保存任何内容。完整报告如下。"
 L.TEST_LATE = "后续结果：{what}"
 L.TEST_PROBE_DONE = "探测共记录了{count}条信息。"
 L.TEST_PROBE_NEXT = "请在本次登录期间接受一个任务并发起一场战斗：探测会将两者都记录下来。"
@@ -195,6 +200,7 @@ L.MAP_PIN_BROKEN = "你站在{faction}一边，并曾在此食言{count}次。"
 L.MAP_PIN_VIOLATION = "你在此食言"
 L.MAP_PIN_CHAPTER = "第{roman}章"
 L.MAP_PIN_CHAPTER_CLOSED = "于{date}在此落幕"
+L.MAP_PIN_CHAPTER_COUNT = "在此落幕的章节：{count}章"
 
 -- Encounters -----------------------------------------------------------------------------------------------------
 
@@ -328,8 +334,10 @@ L.FICTION_TEST_HOWTO = "与另一位Ashmark用户组队，然后再次输入/ash
 -- Rumours --------------------------------------------------------------------------------------------------------
 
 L.RUMOUR_MODULE_NAME = "传闻"
-L.RUMOUR_MODULE_DESC = "你在纷争中的所作所为会化作传闻，在一支支队伍间流传，你也会听闻他人的作为。传闻只"
-  .. "提及某类人物、某个地点和某个阵营，从不指名道姓。"
+L.RUMOUR_MODULE_DESC = "你在纷争中的所作所为会化作传闻，在一支支队伍间流传，你也会听闻他人的作为。"
+  .. "传闻只提及某类人物、某个地点和某个阵营，从不指名道姓；但游戏会显示是谁传出了传闻："
+  .. "你的小队能看出哪些传闻讲的是你自己的事迹，而知道某则传闻是谁所为的人，"
+  .. "也能从你传出的版本看出你在过去一周内是否与那名玩家组过队，或者你们之间隔着几支队伍。"
 
 -- Chat lines for a rumour heard (7.8). No sex is known and Chinese needs none: {archetype} stands as a bare
 -- epithet in "来自{place}的{archetype}", and the sentences use 自己, never 他/她 (no _F forms).

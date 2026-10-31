@@ -70,6 +70,10 @@ L.CORE_LOG_REP = "{faction}에 대한 평판이 이제 {standing}입니다."
 L.CORE_LOG_REP_THEY = "{faction}에 대한 {name}의 평판이 이제 {standing}입니다."
 L.CORE_LOG_CHAPTER = "{place}에서 제{roman}장이 막을 내립니다."
 L.CORE_LOG_CHAPTER_THEY = "{place}에서 {name}의 제{roman}장이 막을 내립니다."
+L.CORE_LOG_DEATH_NOZONE = "{place}에서 죽음을 맞았습니다."
+L.CORE_LOG_DEATH_NOZONE_THEY = "{name}은(는) {place}에서 죽음을 맞았습니다."
+L.CORE_LOG_CHAPTER_NOZONE = "{place}에서 제{roman}장이 막을 내립니다."
+L.CORE_LOG_CHAPTER_NOZONE_THEY = "{place}에서 {name}의 제{roman}장이 막을 내립니다."
 
 -- Slash commands (5.9). Help texts are short noun phrases, as in a command list.
 L.CORE_HELP_HEADER = "명령어:"
@@ -125,6 +129,8 @@ L.TEST_OPEN_QUEST_DIALOG = "스크린샷을 위해 먼저 퀘스트 제공자에
 L.TEST_RELOAD = "결과를 저장하려면 /reload를 입력하십시오."
 L.TEST_NOT_STORED = "저장된 데이터가 더 새로운 버전의 Ashmark에서 만들어졌으므로 아무것도 저장하지 "
   .. "않습니다. 전체 보고서가 이어집니다."
+L.TEST_NOT_STORED_MIGRATION = "Ashmark가 저장된 데이터를 업데이트하지 못했으므로 아무것도 저장하지 않습니다. 전체 "
+  .. "보고서가 이어집니다."
 L.TEST_LATE = "뒤늦은 결과: {what}"
 L.TEST_PROBE_DONE = "조사 결과 정보 {count}개를 기록했습니다."
 L.TEST_PROBE_NEXT = "이번 접속 중에 퀘스트를 하나 수락하고 전투를 한 번 시작하십시오. 조사가 두 "
@@ -209,6 +215,7 @@ L.MAP_PIN_BROKEN = "{faction} 편에 서 있으며, 이곳에서 맹세를 {coun
 L.MAP_PIN_VIOLATION = "맹세를 어긴 곳"
 L.MAP_PIN_CHAPTER = "제{roman}장"
 L.MAP_PIN_CHAPTER_CLOSED = "{date}에 이곳에서 끝맺음"
+L.MAP_PIN_CHAPTER_COUNT = "이곳에서 끝맺은 장: {count}개"
 
 -- Encounters -----------------------------------------------------------------------------------------------------
 
@@ -351,9 +358,11 @@ L.FICTION_TEST_HOWTO = "다른 Ashmark 사용자와 파티를 맺은 다음 /ash
 -- Rumours --------------------------------------------------------------------------------------------------------
 
 L.RUMOUR_MODULE_NAME = "소문"
-L.RUMOUR_MODULE_DESC = "분쟁에서 당신이 한 일은 소문이 되어 파티에서 파티로 퍼져 나가고, 당신 또한 "
-  .. "다른 이들이 한 일을 듣게 됩니다. 소문은 어떤 유형의 사람과 장소, 세력을 말할 뿐 캐릭터를 "
-  .. "지목하지 않습니다."
+L.RUMOUR_MODULE_DESC = "분쟁에서 당신이 한 일은 소문이 되어 파티에서 파티로 퍼져 나가고, 당신 또한 다른 이들이 한 "
+  .. "일을 듣게 됩니다. 소문은 어떤 유형의 사람과 장소, 세력을 말할 뿐 캐릭터를 지목하지 않지만, 게임은 누가 소문을 "
+  .. "전하는지 보여 줍니다. 그래서 파티원은 어떤 소문이 당신 자신의 행적인지 알 수 있고, 어떤 소문이 누구의 행적인지 "
+  .. "아는 사람은 당신이 전한 소문을 보고 지난 한 주 사이에 당신이 그 플레이어와 같은 파티에 있었는지, 또는 둘 "
+  .. "사이에 파티가 몇 개나 놓여 있는지 알아낼 수 있습니다."
 
 -- Chat lines for a rumour heard (7.8). No sex is known and Korean needs none: {archetype} stands as an epithet in
 -- "{place}의 {archetype}에 관한 소문", before an invariant particle, and the second sentence leaves the subject

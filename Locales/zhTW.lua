@@ -66,6 +66,10 @@ L.CORE_LOG_REP = "你在{faction}的聲望現在是{standing}。"
 L.CORE_LOG_REP_THEY = "{name}在{faction}的聲望現在是{standing}。"
 L.CORE_LOG_CHAPTER = "第 {roman} 章在{place}落幕。"
 L.CORE_LOG_CHAPTER_THEY = "{name}的第 {roman} 章在{place}落幕。"
+L.CORE_LOG_DEATH_NOZONE = "你死於{place}。"
+L.CORE_LOG_DEATH_NOZONE_THEY = "{name}死於{place}。"
+L.CORE_LOG_CHAPTER_NOZONE = "第 {roman} 章在{place}落幕。"
+L.CORE_LOG_CHAPTER_NOZONE_THEY = "{name}的第 {roman} 章在{place}落幕。"
 
 -- Slash commands (5.9)
 L.CORE_HELP_HEADER = "指令："
@@ -117,6 +121,7 @@ L.TEST_SKIP = "略過"
 L.TEST_OPEN_QUEST_DIALOG = "請先與任務 NPC 交談，以便截圖。"
 L.TEST_RELOAD = "輸入 /reload 以儲存結果。"
 L.TEST_NOT_STORED = "已儲存的資料來自較新版本的 Ashmark，因此不會儲存任何內容。以下是完整報告。"
+L.TEST_NOT_STORED_MIGRATION = "Ashmark 無法更新其已儲存的資料，因此不會儲存任何內容。以下是完整報告。"
 L.TEST_LATE = "後續結果：{what}"
 L.TEST_PROBE_DONE = "探測記錄了 {count} 項資訊。"
 L.TEST_PROBE_NEXT = "請在本次登入期間接受一個任務並開始一場戰鬥：探測會將兩者都記錄下來。"
@@ -194,6 +199,7 @@ L.MAP_PIN_BROKEN = "你站在{faction}這一邊，並曾在此違背諾言 {coun
 L.MAP_PIN_VIOLATION = "你在此違背了諾言"
 L.MAP_PIN_CHAPTER = "第 {roman} 章"
 L.MAP_PIN_CHAPTER_CLOSED = "於 {date} 在此落幕"
+L.MAP_PIN_CHAPTER_COUNT = "在此落幕的章節：{count} 章"
 
 -- Encounters -----------------------------------------------------------------------------------------------------
 
@@ -328,8 +334,9 @@ L.FICTION_TEST_HOWTO = "與另一位 Ashmark 使用者組隊，然後再次執�
 -- Rumours --------------------------------------------------------------------------------------------------------
 
 L.RUMOUR_MODULE_NAME = "傳聞"
-L.RUMOUR_MODULE_DESC = "你在衝突中的作為會化為傳聞，在隊伍之間流傳，你也會聽到他人的所作所為。"
-  .. "傳聞只會提及某類人物、一個地點與一個陣營，從不指名道姓。"
+L.RUMOUR_MODULE_DESC = "你在衝突中的作為會化為傳聞，在隊伍之間流傳，你也會聽到他人的所作所為。傳聞只會提及某類人物、"
+  .. "一個地點與一個陣營，從不指名道姓；但遊戲會顯示是誰傳出傳聞：你的隊伍能看出哪些傳聞說的是你自己的事蹟，"
+  .. "而知道某則傳聞是誰所為的人，也能從你傳出的版本看出你在過去一週內是否曾與那名玩家組隊，或你們之間隔著幾支隊伍。"
 
 -- Chat lines for a rumour heard (7.8). No sex is known: {archetype} follows the neutral 那位 (no _F forms).
 L.RUMOUR_HEARD_ALLIANCE = "據說，來自{place}的那位{archetype}已站到了{faction}一邊。"

@@ -78,6 +78,13 @@ L.CORE_LOG_REP = "Ваша репутация теперь: {faction} — {stand
 L.CORE_LOG_REP_THEY = "Репутация персонажа {name} теперь: {faction} — {standing}."
 L.CORE_LOG_CHAPTER = "Глава {roman} завершается в зоне {place}."
 L.CORE_LOG_CHAPTER_THEY = "{name} завершает главу {roman} в зоне {place}."
+-- Outside every zone {place} is a continent, the open sea or a dungeon, never a "зона": it stands in the
+-- nominative after "Место:" or "Место гибели:".
+L.CORE_LOG_DEATH_NOZONE = "Вы погибли. Место гибели: {place}."
+L.CORE_LOG_DEATH_NOZONE_THEY = "{name} погиб. Место гибели: {place}."
+L.CORE_LOG_DEATH_NOZONE_THEY_F = "{name} погибла. Место гибели: {place}."
+L.CORE_LOG_CHAPTER_NOZONE = "Глава {roman} завершается. Место: {place}."
+L.CORE_LOG_CHAPTER_NOZONE_THEY = "{name} завершает главу {roman}. Место: {place}."
 
 -- Slash commands (5.9)
 L.CORE_HELP_HEADER = "Команды:"
@@ -131,6 +138,8 @@ L.TEST_OPEN_QUEST_DIALOG = "Для снимка экрана сначала по
 L.TEST_RELOAD = "Введите /reload, чтобы сохранить результаты."
 L.TEST_NOT_STORED = "Сохраненные данные созданы более новой версией Ashmark, поэтому ничего не сохраняется. "
   .. "Далее следует полный отчет."
+L.TEST_NOT_STORED_MIGRATION = "Ashmark не удалось обновить сохраненные данные, поэтому ничего не сохраняется. Далее "
+  .. "следует полный отчет."
 L.TEST_LATE = "Поздний результат: {what}"
 L.TEST_PROBE_DONE = "Записано фактов о клиенте: {count}."
 L.TEST_PROBE_NEXT = "Примите задание и вступите в бой в этом сеансе: будет записано и то, и другое."
@@ -228,6 +237,7 @@ L.MAP_PIN_BROKEN = "Ваша сторона: {faction}. Нарушений сл�
 L.MAP_PIN_VIOLATION = "Здесь вы нарушили слово"
 L.MAP_PIN_CHAPTER = "Глава {roman}"
 L.MAP_PIN_CHAPTER_CLOSED = "Завершена здесь {date}"
+L.MAP_PIN_CHAPTER_COUNT = "Глав завершено здесь: {count}"
 
 -- Encounters ---------------------------------------------------------------------------------------------
 
@@ -374,7 +384,10 @@ L.FICTION_TEST_HOWTO = "Вступите в группу с другим пол�
 
 L.RUMOUR_MODULE_NAME = "Слухи"
 L.RUMOUR_MODULE_DESC = "Ваши поступки в конфликте расходятся слухами от группы к группе, а вы слышите о том, что "
-  .. "сделали другие. Слух называет архетип, место и фракцию, но никогда — самого персонажа."
+  .. "сделали другие. Слух называет архетип, место и фракцию, но никогда — самого персонажа. Однако игра показывает, "
+  .. "кто передает слух: ваша группа может понять, какие слухи рассказывают о ваших собственных делах, а тот, кто "
+  .. "знает, чье это деяние, может по вашей версии слуха понять, состояли ли вы в группе с этим игроком за последнюю "
+  .. "неделю или сколько групп вас разделяет."
 
 -- Chat lines for a rumour heard (7.8). Rumours carry no sex: {archetype} is a quoted nickname after
 -- "некто по прозвищу", so the verb agrees with "некто" and the masculine label needs no agreement. {place}

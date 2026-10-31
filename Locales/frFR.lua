@@ -69,6 +69,10 @@ L.CORE_LOG_REP = "Pour {faction}, vous êtes désormais {standing}."
 L.CORE_LOG_REP_THEY = "Pour {faction}, {name} est désormais {standing}."
 L.CORE_LOG_CHAPTER = "Le chapitre {roman} se clôt dans {place}."
 L.CORE_LOG_CHAPTER_THEY = "{name} clôt son chapitre {roman} dans {place}."
+L.CORE_LOG_DEATH_NOZONE = "Vous avez trouvé la mort dans {place}."
+L.CORE_LOG_DEATH_NOZONE_THEY = "{name} a trouvé la mort dans {place}."
+L.CORE_LOG_CHAPTER_NOZONE = "Le chapitre {roman} se clôt dans {place}."
+L.CORE_LOG_CHAPTER_NOZONE_THEY = "{name} clôt son chapitre {roman} dans {place}."
 
 -- Slash commands (5.9)
 L.CORE_HELP_HEADER = "Commandes :"
@@ -123,6 +127,8 @@ L.TEST_OPEN_QUEST_DIALOG = "Parlez d'abord à un donneur de quête pour la captu
 L.TEST_RELOAD = "Tapez /reload pour enregistrer les résultats."
 L.TEST_NOT_STORED = "Les données sauvegardées proviennent d'une version plus récente d'Ashmark : rien n'est "
   .. "enregistré. Le rapport complet suit."
+L.TEST_NOT_STORED_MIGRATION = "Ashmark n'a pas pu mettre à jour ses données sauvegardées : rien n'est enregistré. Le "
+  .. "rapport complet suit."
 L.TEST_LATE = "Résultat tardif : {what}"
 L.TEST_PROBE_DONE = "Faits consignés par la sonde : {count}."
 L.TEST_PROBE_NEXT = "Acceptez une quête et engagez un combat pendant cette session : la sonde consigne les deux."
@@ -210,6 +216,7 @@ L.MAP_PIN_BROKEN = "Vous soutenez {faction} ; ici, vous avez manqué {count} foi
 L.MAP_PIN_VIOLATION = "Ici, vous avez manqué à votre parole"
 L.MAP_PIN_CHAPTER = "Chapitre {roman}"
 L.MAP_PIN_CHAPTER_CLOSED = "Clos ici le {date}"
+L.MAP_PIN_CHAPTER_COUNT = "Chapitres clos ici : {count}"
 
 -- Encounters ---------------------------------------------------------------------------------------------
 
@@ -358,9 +365,12 @@ L.FICTION_TEST_HOWTO = "Formez un groupe avec un autre utilisateur d'Ashmark, pu
 -- Rumours ------------------------------------------------------------------------------------------------
 
 L.RUMOUR_MODULE_NAME = "Rumeurs"
-L.RUMOUR_MODULE_DESC = "Ce que vous faites dans un conflit circule de groupe en groupe sous forme de rumeur, et "
-  .. "vous entendez ce que d'autres ont fait. Une rumeur nomme un type de personne, un lieu et une faction, jamais "
-  .. "un personnage."
+L.RUMOUR_MODULE_DESC = "Ce que vous faites dans un conflit circule de groupe en groupe sous forme de rumeur, et vous "
+  .. "entendez ce que d'autres ont fait. Une rumeur nomme un type de personne, un lieu et une faction, jamais un "
+  .. "personnage, mais le jeu montre qui la transmet : votre groupe peut reconnaître les rumeurs qui racontent vos "
+  .. "propres actes, et quiconque sait qui est l'auteur de l'acte qu'une rumeur raconte peut déduire de votre "
+  .. "version si vous avez fait partie du même groupe que ce joueur au cours de la semaine passée, ou combien de "
+  .. "groupes vous séparent."
 
 -- Chat lines for a rumour heard (7.8). Rumours carry no sex: {archetype} stands as a quoted nickname after
 -- "quelqu'un que l'on surnomme", so the masculine label needs no agreement. No _F forms.

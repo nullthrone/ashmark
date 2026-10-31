@@ -67,6 +67,12 @@ L.CORE_LOG_REP = "Ihr seid bei der Fraktion {faction} nun {standing}."
 L.CORE_LOG_REP_THEY = "{name} ist bei der Fraktion {faction} nun {standing}."
 L.CORE_LOG_CHAPTER = "Kapitel {roman} endet im Gebiet {place}."
 L.CORE_LOG_CHAPTER_THEY = "Für {name} endet Kapitel {roman} im Gebiet {place}."
+-- Outside every zone {place} is a continent, the open sea or a dungeon, never a "Gebiet": it stands after
+-- "Ort:", where a name needs no article and no case.
+L.CORE_LOG_DEATH_NOZONE = "Ihr seid gestorben. Ort: {place}."
+L.CORE_LOG_DEATH_NOZONE_THEY = "{name} ist gestorben. Ort: {place}."
+L.CORE_LOG_CHAPTER_NOZONE = "Kapitel {roman} endet. Ort: {place}."
+L.CORE_LOG_CHAPTER_NOZONE_THEY = "Für {name} endet Kapitel {roman}. Ort: {place}."
 
 -- Slash commands (5.9)
 L.CORE_HELP_HEADER = "Befehle:"
@@ -121,6 +127,8 @@ L.TEST_SKIP = "übersprungen"
 L.TEST_OPEN_QUEST_DIALOG = "Sprecht für den Screenshot zuerst mit einem Questgeber."
 L.TEST_RELOAD = "Gebt /reload ein, um die Ergebnisse zu speichern."
 L.TEST_NOT_STORED = "Die gespeicherten Daten stammen aus einer neueren Version von Ashmark, daher wird nichts "
+  .. "gespeichert. Der vollständige Bericht folgt."
+L.TEST_NOT_STORED_MIGRATION = "Ashmark konnte seine gespeicherten Daten nicht aktualisieren, daher wird nichts "
   .. "gespeichert. Der vollständige Bericht folgt."
 L.TEST_LATE = "Späteres Ergebnis: {what}"
 L.TEST_PROBE_DONE = "Die Sonde hat {count} Fakten aufgezeichnet."
@@ -216,6 +224,7 @@ L.MAP_PIN_BROKEN = "Ihr steht auf der Seite der Fraktion {faction} und habt hier
 L.MAP_PIN_VIOLATION = "Hier habt Ihr Euer Wort gebrochen"
 L.MAP_PIN_CHAPTER = "Kapitel {roman}"
 L.MAP_PIN_CHAPTER_CLOSED = "Hier abgeschlossen am {date}"
+L.MAP_PIN_CHAPTER_COUNT = "Hier abgeschlossene Kapitel: {count}"
 
 -- Encounters -----------------------------------------------------------------------------------------------------
 
@@ -360,7 +369,9 @@ L.FICTION_TEST_HOWTO = "Bildet mit einem anderen Ashmark-Nutzer eine Gruppe und 
 L.RUMOUR_MODULE_NAME = "Gerüchte"
 L.RUMOUR_MODULE_DESC = "Was Ihr in einem Konflikt tut, wandert als Gerücht von Gruppe zu Gruppe weiter, und Ihr "
   .. "hört, was andere getan haben. Ein Gerücht nennt eine Art von Person, einen Ort und eine Fraktion, nie einen "
-  .. "Charakter."
+  .. "Charakter, doch das Spiel zeigt, wer es weitergibt: Eure Gruppe erkennt, welche Gerüchte von Euren eigenen "
+  .. "Taten erzählen, und wer weiß, wessen Tat ein Gerücht schildert, kann an Eurer Fassung ablesen, ob Ihr in der "
+  .. "vergangenen Woche mit diesem Spieler in einer Gruppe wart oder wie viele Gruppen zwischen Euch liegen."
 
 -- Chat lines for a rumour heard (7.8). No sex is known: {archetype} stands as a name after "den man … nennt",
 -- where it needs no article, and "jemand" carries the grammar (no _F forms).

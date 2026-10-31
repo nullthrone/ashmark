@@ -67,6 +67,10 @@ L.CORE_LOG_REP = "Ahora eres {standing} con {faction}."
 L.CORE_LOG_REP_THEY = "{name} es ahora {standing} con {faction}."
 L.CORE_LOG_CHAPTER = "El capítulo {roman} se cierra en {place}."
 L.CORE_LOG_CHAPTER_THEY = "El capítulo {roman} de {name} se cierra en {place}."
+L.CORE_LOG_DEATH_NOZONE = "Moriste en {place}."
+L.CORE_LOG_DEATH_NOZONE_THEY = "{name} murió en {place}."
+L.CORE_LOG_CHAPTER_NOZONE = "El capítulo {roman} se cierra en {place}."
+L.CORE_LOG_CHAPTER_NOZONE_THEY = "El capítulo {roman} de {name} se cierra en {place}."
 
 -- Slash commands (5.9)
 L.CORE_HELP_HEADER = "Comandos:"
@@ -123,6 +127,8 @@ L.TEST_OPEN_QUEST_DIALOG = "Para la captura de pantalla, habla primero con un PN
 L.TEST_RELOAD = "Escribe /reload para guardar los resultados."
 L.TEST_NOT_STORED = "Los datos guardados proceden de una versión más reciente de Ashmark, así que no se guarda "
   .. "nada. A continuación figura el informe completo."
+L.TEST_NOT_STORED_MIGRATION = "Ashmark no ha podido actualizar sus datos guardados, así que no se guarda nada. A "
+  .. "continuación figura el informe completo."
 L.TEST_LATE = "Resultado posterior: {what}"
 L.TEST_PROBE_DONE = "La sonda ha registrado {count} datos."
 L.TEST_PROBE_NEXT = "Acepta una misión y empieza un combate en esta sesión: la sonda registra ambas cosas."
@@ -207,6 +213,7 @@ L.MAP_PIN_BROKEN = "Estás del lado de {faction} y aquí has faltado a tu palabr
 L.MAP_PIN_VIOLATION = "Aquí faltaste a tu palabra"
 L.MAP_PIN_CHAPTER = "Capítulo {roman}"
 L.MAP_PIN_CHAPTER_CLOSED = "Cerrado aquí el {date}"
+L.MAP_PIN_CHAPTER_COUNT = "Capítulos cerrados aquí: {count}"
 
 -- Encounters -----------------------------------------------------------------------------------------------------
 
@@ -351,7 +358,10 @@ L.FICTION_TEST_HOWTO = "Forma grupo con otro usuario de Ashmark y vuelve a ejecu
 
 L.RUMOUR_MODULE_NAME = "Rumores"
 L.RUMOUR_MODULE_DESC = "Lo que haces en un conflicto viaja como rumor de grupo en grupo, y tú oyes lo que hicieron "
-  .. "otros. Un rumor habla de un tipo de persona, un lugar y una facción, nunca de un personaje."
+  .. "otros. Un rumor habla de un tipo de persona, un lugar y una facción, nunca de un personaje, pero el juego "
+  .. "muestra quién lo transmite: tu grupo puede saber qué rumores cuentan tus propios actos, y quien sepa de quién "
+  .. "es el acto que cuenta un rumor puede deducir de tu versión si has estado en grupo con ese jugador durante la "
+  .. "última semana, o cuántos grupos os separan."
 
 -- Chat lines for a rumour heard (7.8). No sex is known: "alguien" carries the grammar and {archetype} stands as a
 -- name after "a quien llaman", with no article or adjective to agree with (no _F forms).
