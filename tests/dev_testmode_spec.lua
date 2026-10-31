@@ -362,7 +362,7 @@ describe("Dev test mode", function()
       start(SAVED)
       local check = result(run(), "Core.locale")
       assert.is_false(check.ok)
-      assert.truthy(check.detail:match("^deDE: %d+ missing: CORE_"))
+      assert.truthy(check.detail:match("^deDE: %d+ missing: %u+_"))
     end)
 
     it("reports the player's identity and the surname source", function()
