@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ashmark</title>
+<meta name="description" content="Ashmark: solo role-play for World of Warcraft Forever. Decisions leave a mark.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400&amp;family=Jost:wght@500&amp;family=Public+Sans:wght@400;600&amp;display=swap">
+<style>
+/* Nullthrone Design System tokens. Light is the default; dark inverts at primitive level. */
+:root {
+  color-scheme: light;
+  --ink-950:#141317; --ink-900:#1E1C21; --ink-700:#3A3740; --ink-500:#6E6B72; --ink-400:#928F96;
+  --ink-300:#B6B3B8; --ink-200:#D9D6D3; --ink-100:#E9E6DF;
+  --paper:#F4F2EC; --paper-raised:#FBFAF6; --paper-white:#FFFFFF;
+  --brass-700:#7A5A1F; --brass-600:#8F6B26; --brass-500:#A87E2F; --brass-400:#C09A4B; --brass-200:#E4D5AC; --brass-100:#EFE6CD;
+  --green-600:#2F6B4F; --green-100:#DFEAE3; --amber-600:#A05E14; --amber-100:#F3E5D2; --red-600:#8C2F2E; --red-100:#F0DDDC;
+  --shadow-1:0 1px 2px rgba(20,19,23,.07); --shadow-2:0 2px 8px rgba(20,19,23,.10); --shadow-3:0 12px 32px rgba(20,19,23,.16);
+  --focus-ring:0 0 0 2px #F4F2EC, 0 0 0 4px #A87E2F;
+
+  --text-body:var(--ink-950); --text-muted:var(--ink-500); --text-faint:var(--ink-400); --text-inverse:var(--paper); --text-accent:var(--brass-600);
+  --surface-page:var(--paper); --surface-card:var(--paper-raised); --surface-inset:var(--ink-100); --surface-inverse:var(--ink-950);
+  --border-line:var(--ink-200); --border-strong:var(--ink-950); --border-mid:var(--ink-300);
+  --accent:var(--brass-500); --accent-hover:var(--brass-600); --accent-active:var(--brass-700);
+  --ok:var(--green-600); --ok-bg:var(--green-100); --warn:var(--amber-600); --warn-bg:var(--amber-100); --danger:var(--red-600); --danger-bg:var(--red-100);
+  --line:1px solid var(--border-line); --line-strong:1px solid var(--border-strong);
+
+  /* Page roles built from the primitives above. */
+  --text-eyebrow:var(--brass-700);
+  --text-inverse-muted:var(--ink-300);
+  --border-inverse:var(--ink-700);
+  --text-on-accent:var(--ink-950);
+  --text-on-accent-hover:var(--paper-white);
+
+  --font-display:"Jost", system-ui, sans-serif; --font-body:"Public Sans", system-ui, sans-serif; --font-mono:"JetBrains Mono", ui-monospace, monospace;
+  --track-caps:.14em; --track-caps-wide:.22em; --track-display:.01em; --leading-tight:1.15; --leading-body:1.55;
+  --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px; --space-5:24px; --space-6:32px; --space-7:48px; --space-8:64px; --space-9:96px;
+  --control-h-sm:28px; --control-h-md:36px; --control-h-lg:44px; --container-max:1120px; --container-pad:32px;
+  --radius-0:0px; --radius-1:2px;
+  --dur-fast:120ms; --dur-med:200ms; --dur-slow:320ms; --ease:cubic-bezier(.2,0,0,1);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --ink-950:#EFEDE7; --ink-900:#DEDBD4; --ink-700:#B4B0A9; --ink-500:#8A8781; --ink-400:#6E6B67;
+    --ink-300:#4C4952; --ink-200:#33313A; --ink-100:#100F13;
+    --paper:#17161A; --paper-raised:#1F1D22; --paper-white:#2B2930;
+    --brass-700:#B98B36; --brass-600:#DCB768; --brass-500:#C89E4A; --brass-400:#8F6B26; --brass-200:#4A3A1B; --brass-100:#2A2110;
+    --green-600:#6FA98C; --green-100:#1A2A23; --amber-600:#D9853C; --amber-100:#2C2117; --red-600:#CB6A62; --red-100:#2C1B1B;
+    --shadow-1:0 1px 2px rgba(0,0,0,.45); --shadow-2:0 2px 10px rgba(0,0,0,.55); --shadow-3:0 14px 38px rgba(0,0,0,.66);
+    --focus-ring:0 0 0 2px #17161A, 0 0 0 4px #C89E4A;
+    --text-on-accent:var(--paper);
+    --text-on-accent-hover:var(--paper);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --ink-950:#EFEDE7; --ink-900:#DEDBD4; --ink-700:#B4B0A9; --ink-500:#8A8781; --ink-400:#6E6B67;
+  --ink-300:#4C4952; --ink-200:#33313A; --ink-100:#100F13;
+  --paper:#17161A; --paper-raised:#1F1D22; --paper-white:#2B2930;
+  --brass-700:#B98B36; --brass-600:#DCB768; --brass-500:#C89E4A; --brass-400:#8F6B26; --brass-200:#4A3A1B; --brass-100:#2A2110;
+  --green-600:#6FA98C; --green-100:#1A2A23; --amber-600:#D9853C; --amber-100:#2C2117; --red-600:#CB6A62; --red-100:#2C1B1B;
+  --shadow-1:0 1px 2px rgba(0,0,0,.45); --shadow-2:0 2px 10px rgba(0,0,0,.55); --shadow-3:0 14px 38px rgba(0,0,0,.66);
+  --focus-ring:0 0 0 2px #17161A, 0 0 0 4px #C89E4A;
+  --text-on-accent:var(--paper);
+  --text-on-accent-hover:var(--paper);
+}
+
+/* Base */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+body {
+  margin: 0;
+  background: var(--surface-page);
+  color: var(--text-body);
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 400;
+  line-height: var(--leading-body);
+}
+h1, h2, h3 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  letter-spacing: var(--track-display);
+  text-wrap: balance;
+  margin: 0;
+}
+h2 { font-size: 28px; line-height: var(--leading-tight); }
+h3 { font-size: 20px; line-height: 1.2; }
+p, ul, ol, dl { margin: 0; }
+strong { font-weight: 600; }
+a {
+  color: inherit;
+  text-decoration-line: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--border-mid);
+  transition: text-decoration-color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
+}
+a:hover { text-decoration-color: var(--accent); }
+:focus-visible { outline: none; box-shadow: var(--focus-ring); border-radius: var(--radius-0); }
+@media (forced-colors: active) { :focus-visible { outline: 2px solid CanvasText; outline-offset: 2px; } }
+code {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  background: var(--surface-inset);
+  padding: 0 4px;
+  overflow-wrap: anywhere;
+}
+pre {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.7;
+  background: var(--surface-inset);
+  border: var(--line);
+  padding: var(--space-4);
+  overflow-x: auto;
+  max-width: 100%;
+}
+pre code { background: none; padding: 0; overflow-wrap: normal; }
+
+/* Layout */
+.wrap {
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding-left: clamp(16px, 4vw, var(--container-pad));
+  padding-right: clamp(16px, 4vw, var(--container-pad));
+}
+.caps, .eyebrow, .caps-column {
+  font-family: var(--font-display);
+  font-weight: 500;
+  text-transform: uppercase;
+}
+.caps { font-size: 13px; letter-spacing: var(--track-caps); line-height: 1.3; }
+.eyebrow { font-size: 12px; letter-spacing: var(--track-caps-wide); line-height: 1.3; color: var(--text-eyebrow); }
+.caps-column { font-size: 11px; letter-spacing: var(--track-caps); line-height: 1.3; color: var(--text-muted); }
+
+/* Inverse bands: hero and footer */
+.band { background: var(--surface-inverse); color: var(--text-inverse); }
+.band a { text-decoration-color: var(--text-inverse-muted); }
+.band a:hover { text-decoration-color: var(--accent); }
+.hero { padding: var(--space-9) 0 var(--space-8); text-align: center; }
+.hero .eyebrow { color: var(--text-inverse-muted); }
+.wordmark {
+  font-family: var(--font-display);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: var(--track-caps-wide);
+  padding-left: var(--track-caps-wide);
+}
+.hero .wordmark { font-size: clamp(40px, 11vw, 72px); line-height: 1.05; margin-top: var(--space-5); }
+.hero-rule {
+  width: 96px;
+  height: 5px;
+  margin: var(--space-5) auto;
+  border-top: 1px solid var(--text-inverse);
+  border-bottom: 1px solid var(--text-inverse);
+}
+.tagline {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(18px, 3.2vw, 24px);
+  line-height: 1.25;
+  letter-spacing: var(--track-display);
+  max-width: 34ch;
+  margin: 0 auto;
+  text-wrap: balance;
+}
+.hero-status {
+  max-width: 60ch;
+  margin: var(--space-4) auto 0;
+  color: var(--text-inverse-muted);
+  text-wrap: balance;
+}
+.cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--control-h-lg);
+  margin-top: var(--space-6);
+  padding: 0 var(--space-5);
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  color: var(--text-on-accent);
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 13px;
+  letter-spacing: var(--track-caps);
+  text-transform: uppercase;
+  text-decoration: none;
+}
+.band a.cta { text-decoration: none; }
+.cta:hover { background: var(--accent-hover); border-color: var(--accent-hover); color: var(--text-on-accent-hover); }
+.cta:active { background: var(--accent-active); border-color: var(--accent-active); color: var(--text-on-accent-hover); }
+
+/* Contents */
+.toc { padding: var(--space-7) 0 var(--space-8); }
+.toc h2 { font-size: 11px; margin-bottom: var(--space-3); }
+.toc-list {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--border-line);
+  border: var(--line);
+}
+.toc-list a {
+  display: flex;
+  gap: var(--space-3);
+  align-items: baseline;
+  height: 100%;
+  padding: var(--space-4);
+  background: var(--surface-page);
+  text-decoration: none;
+}
+.toc-list a:hover { background: var(--surface-inset); }
+.toc-no { font-family: var(--font-mono); font-size: 13px; color: var(--text-muted); }
+
+/* Sections */
+.section { padding-bottom: var(--space-8); scroll-margin-top: var(--space-4); }
+.section > .wrap::before {
+  content: "";
+  display: block;
+  height: 5px;
+  border-top: var(--line-strong);
+  border-bottom: var(--line-strong);
+  margin-bottom: var(--space-6);
+}
+.section-grid { display: grid; grid-template-columns: minmax(0, 1fr); row-gap: var(--space-5); }
+.section-head h2 { margin-top: var(--space-2); }
+.section-body { min-width: 0; }
+.prose > * + * { margin-top: var(--space-4); }
+.prose > :first-child { margin-top: 0; }
+.prose > h3 { margin-top: var(--space-6); }
+.prose > h3 + * { margin-top: var(--space-3); }
+.prose p, .prose > ul, .prose > ol, .prose li { max-width: 65ch; }
+.prose > ul.features, .prose > ul.locales, .prose > ul.never, .prose > ol.steps { max-width: none; }
+.nowrap { white-space: nowrap; }
+.prose ul, .prose ol { padding-left: 1.25em; }
+.prose li + li { margin-top: var(--space-2); }
+.lead { font-size: 18px; line-height: 1.5; max-width: 60ch; }
+.muted { color: var(--text-muted); }
+@media (min-width: 960px) {
+  .section-grid { grid-template-columns: 232px minmax(0, 1fr); column-gap: 0; }
+  .section-head { padding-right: var(--space-6); }
+  .section-body { border-left: var(--line); padding-left: var(--space-6); }
+}
+
+/* Never list */
+.never {
+  list-style: none;
+  padding: 0;
+  border-top: var(--line);
+}
+.prose .never { padding-left: 0; }
+.never li { border-bottom: var(--line); padding: var(--space-3) 0; margin: 0; max-width: none; }
+.prose .never li + li { margin-top: 0; }
+.never .caps { display: block; margin-bottom: var(--space-1); }
+
+/* Feature grid */
+.features {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--border-line);
+  border: var(--line);
+  list-style: none;
+  padding: 0;
+}
+.prose .features { padding-left: 0; }
+.feature { background: var(--surface-card); padding: var(--space-5); margin: 0; max-width: none; }
+.prose .features li + li { margin-top: 0; }
+.feature h3 { margin-bottom: var(--space-3); }
+.feature .where { margin-bottom: var(--space-3); }
+.feature .where .caps-column { display: block; margin-bottom: var(--space-1); }
+.feature > * + * { margin-top: var(--space-3); }
+.feature ul { padding-left: 1.1em; }
+.feature li + li { margin-top: var(--space-1); }
+.feature blockquote { margin: var(--space-3) 0 0; padding-left: var(--space-3); border-left: var(--line-strong); font-style: normal; }
+@media (max-width: 760px) { .features { grid-template-columns: minmax(0, 1fr); } }
+
+.v2 { border: var(--line); padding: var(--space-5); background: var(--surface-page); }
+.v2 .caps { display: block; margin-bottom: var(--space-2); }
+
+/* Tables */
+.table-wrap { overflow-x: auto; max-width: 100%; }
+table { width: 100%; border-collapse: collapse; border-top: var(--line-strong); }
+th, td { text-align: left; vertical-align: top; padding: var(--space-3) var(--space-4) var(--space-3) 0; border-bottom: var(--line); }
+th:last-child, td:last-child { padding-right: 0; }
+thead th {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: var(--track-caps);
+  text-transform: uppercase;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+td:first-child { white-space: nowrap; }
+td.wrap-ok { white-space: normal; }
+@media (max-width: 560px) {
+  td:first-child { white-space: normal; }
+  .stack-sm thead { display: none; }
+  .stack-sm tr { display: block; border-bottom: var(--line); padding: var(--space-3) 0; }
+  .stack-sm td { display: block; border: 0; padding: 0; }
+  .stack-sm td + td { margin-top: var(--space-1); }
+}
+
+/* Locale grid */
+.locales {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--border-line);
+  border: var(--line);
+  list-style: none;
+  padding: 0;
+}
+.prose .locales { padding-left: 0; }
+.locales li { background: var(--surface-card); padding: var(--space-4); margin: 0; max-width: none; }
+.prose .locales li + li { margin-top: 0; }
+.locales code { background: none; padding: 0; display: block; margin-bottom: var(--space-1); }
+@media (max-width: 900px) { .locales { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* Steps */
+.steps { counter-reset: step; list-style: none; padding: 0; border-top: var(--line); }
+.prose .steps { padding-left: 0; }
+.steps > li {
+  counter-increment: step;
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  padding: var(--space-3) 0;
+  border-bottom: var(--line);
+  margin: 0;
+  max-width: none;
+}
+.prose .steps > li + li { margin-top: 0; }
+.steps > li::before {
+  content: counter(step, decimal-leading-zero);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-muted);
+  padding-top: 2px;
+}
+.steps > li > div { max-width: 65ch; }
+
+.callout { border: var(--line); background: var(--surface-card); padding: var(--space-4) var(--space-5); }
+.callout .caps { display: block; color: var(--warn); margin-bottom: var(--space-2); }
+
+/* Footer */
+.footer { padding: var(--space-8) 0 var(--space-7); text-align: center; }
+.footer .wordmark { font-size: 24px; line-height: 1.2; }
+.footer .hero-rule { margin: var(--space-4) auto var(--space-5); }
+.footer p { color: var(--text-inverse-muted); }
+.footer p + p { margin-top: var(--space-2); }
+.footer .caps { color: var(--text-inverse); }
+
+@media (max-width: 900px) { .toc-list { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 340px) { .toc-list { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 560px) {
+  .hero { padding: var(--space-8) 0 var(--space-7); }
+  .feature { padding: var(--space-4); }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+}
+</style>
+</head>
+<body>
+
+<header class="band hero">
+  <div class="wrap">
+    <p class="eyebrow"><span class="nowrap">World of Warcraft Forever</span> · <span class="nowrap">MIT License</span></p>
+    <h1 class="wordmark">Ashmark</h1>
+    <div class="hero-rule" aria-hidden="true"></div>
+    <p class="tagline">Decisions leave a mark. Solo <span class="nowrap">role-play</span> for World of Warcraft Forever.</p>
+    <p class="hero-status">Pre-release. Written against the Forever beta and test clients; it runs in the live client for the first time at launch on 4 November 2026.</p>
+    <a class="cta" href="https://github.com/nullthrone/ashmark">Read the source</a>
+  </div>
+</header>
+
+<nav class="toc" aria-labelledby="toc-h">
+  <div class="wrap">
+    <h2 id="toc-h" class="caps-column">Contents</h2>
+    <ol class="toc-list">
+      <li><a href="#what-it-is"><span class="toc-no">01</span><span class="caps">What it is</span></a></li>
+      <li><a href="#features"><span class="toc-no">02</span><span class="caps">Features</span></a></li>
+      <li><a href="#getting-started"><span class="toc-no">03</span><span class="caps">Getting started</span></a></li>
+      <li><a href="#privacy"><span class="toc-no">04</span><span class="caps">Privacy and network</span></a></li>
+      <li><a href="#languages"><span class="toc-no">05</span><span class="caps">Languages</span></a></li>
+      <li><a href="#testing"><span class="toc-no">06</span><span class="caps">Testing at launch</span></a></li>
+      <li><a href="#contributing"><span class="toc-no">07</span><span class="caps">Contributing conflicts</span></a></li>
+      <li><a href="#developers"><span class="toc-no">08</span><span class="caps">For developers</span></a></li>
+    </ol>
+  </div>
+</nav>
+
+<main>
+
+<section id="what-it-is" class="section" aria-labelledby="what-it-is-h">
+  <div class="wrap">
+    <div class="section-grid">
+      <div class="section-head">
+        <p class="eyebrow">01 · Overview</p>
+        <h2 id="what-it-is-h">What it is</h2>
+      </div>
+      <div class="section-body prose">
+        <p class="lead">Ashmark keeps a chronicle of one character's decisions and lets them have consequences. Some quests set one side against another: Ashmark remembers the side you take, marks quests that contradict it and records it when you break your word.</p>
+        <p>What you do shapes an archetype. Alts on your account who share a surname form a house with one family history. Party members who also run Ashmark learn your archetype and origin without a word in chat, and rumours of your choices travel on from party to party. Everything is written into one event log per character and told back as sentences in the client's language.</p>
+        <p>Ashmark is built for World of Warcraft Forever only. The TOC files allow only the <code>forever</code> and <code>camelot</code> game types and exclude <code>standard</code> and <code>classic</code>. If the addon loads anywhere else, a runtime check (<code>WOW_PROJECT_ID == WOW_PROJECT_CAMELOT</code>, or an interface number from 16000 to 19999) prints one line and no module runs. Retail and Classic Era are not supported.</p>
+        <h3>What it never does</h3>
+        <ul class="never">
+          <li><span class="caps">No combat log</span>Ashmark never registers <code>COMBAT_LOG_EVENT</code> or <code>COMBAT_LOG_EVENT_UNFILTERED</code>. Forever closes the combat log to addons, and Ashmark does not try it.</li>
+          <li><span class="caps">No automation</span>It never accepts, blocks or abandons a quest, creates no secure frames and calls no protected function. The only call that needs a key press is <code>Screenshot()</code> inside <code>/ashmark test</code>.</li>
+          <li><span class="caps">No StaticPopup</span>Confirmations and the note editor use Ashmark's own dialog, so Blizzard's shared popups stay untainted.</li>
+          <li><span class="caps">No libraries</span>Blizzard APIs only: no LibStub, Ace3, HereBeDragons or ChatThrottleLib. Map pins and the addon-message throttle are Ashmark's own code.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="features" class="section" aria-labelledby="features-h">
+  <div class="wrap">
+    <div class="section-grid">
+      <div class="section-head">
+        <p class="eyebrow">02 · Modules</p>
+        <h2 id="features-h">Features</h2>
+      </div>
+      <div class="section-body prose">
+        <p>A core and nine modules. Each module can be turned off in the settings, and a module whose client API is missing turns itself off and names what it needs. Each entry below says where you meet it in the game.</p>
+        <ul class="features">
+          <li class="feature">
+            <h3>Chronicle</h3>
+            <p class="where"><span class="caps-column">In game</span>Chronicle tab</p>
+            <p>Quests turned in and abandoned, first visits to a zone, levels, deaths, changes of reputation standing, alliances, broken words, group sessions and first meetings, grouped into chapters. The tab follows the quest log: chapters on the left, the chosen chapter's sentences on a parchment page on the right.</p>
+            <p>Sentences are built at display time, so they follow the client language. A chapter closes at a campfire, or on its own at login once it holds more than 1,000 entries or is older than 7 days.</p>
+          </li>
+          <li class="feature">
+            <h3>Conflicts</h3>
+            <p class="where"><span class="caps-column">In game</span>A line under the quest dialog · Decisions tab</p>
+            <p>Accepting or turning in a quest on one side of a conflict allies you with that side. Standing alone also decides it, once exactly one side's faction reaches the conflict's level (Honored in every pilot conflict). A quest that contradicts your side shows a red line under the dialog:</p>
+            <blockquote>Contradicts your alliance with {faction}.</blockquote>
+            <p>Ashmark cannot block the quest. Turning it in breaks your word: the chronicle and the Decisions tab record it and your alliance moves to the new side. There is no further penalty; the rewards you gave up are the consequence. The Decisions tab lists the conflicts by zone with both sides, the side taken and since when, how often it was broken, and your total of broken words. Ten pilot conflicts ship with v1.</p>
+          </li>
+          <li class="feature">
+            <h3>Profile</h3>
+            <p class="where"><span class="caps-column">In game</span>House tab · archetype in tooltips, the chronicle and rumours</p>
+            <p>Three axes from −100 to 100, read from what you do. Every value halves over 30 days.</p>
+            <ul>
+              <li><strong>Fidelity</strong>, principled to opportunistic: +2 per turn-in for your side, +5 for every 7 days an alliance holds, −25 per broken word (−15 once you are an opportunist), −2 per abandoned quest, −1 per 10 gold of loot beyond quest gold in a day (at most −5).</li>
+              <li><strong>Habitat</strong>, civil to wild: +1 per 10 minutes outdoors and not resting, −1 per 10 minutes in a rested area, +6 per rest at a camp, −1 per turn-in in a capital.</li>
+              <li><strong>Mercy</strong>, merciful to ruthless: +1 per played day without a kill, −3 per calm neutral creature killed, −2 per critter.</li>
+            </ul>
+            <p>The axis furthest from zero, at 34 or more either way, names the archetype: Oathkeeper or Opportunist, Wanderer or Town-dweller, Gentle soul or Ruthless soul; otherwise Pragmatist. The origin is the zone where the character spent most of its first 20 hours played.</p>
+            <p>Mercy is an approximation. Without the combat log, a kill counts when you target a neutral, non-player creature that is out of combat, combat starts with it as your target, and it dies without being tapped by someone else. The test mode measures the accuracy at launch; if it is too coarse, the axis is replaced.</p>
+          </li>
+          <li class="feature">
+            <h3>World map</h3>
+            <p class="where"><span class="caps-column">In game</span>World-map pins</p>
+            <p>Pins for conflicts (open, allied, broken), for the places where you broke your word and for the places where your chapters closed. Zone maps show all three; continent maps show conflicts only. Only you see them. Pins are placed after combat, never during it.</p>
+            <p class="muted">No pilot conflict has a map position yet, because the quest givers' coordinates are unverified. Until they are added, the map shows broken words and chapters. Addons that replace the world map may not show the pins.</p>
+          </li>
+          <li class="feature">
+            <h3>Encounters</h3>
+            <p class="where"><span class="caps-column">In game</span>Unit tooltip line · Encounters tab · chat lines</p>
+            <p>Every group, however it formed, becomes a session. When it ends, each member becomes a contact with times met, last place and how it went: a boss kill, a wipe, a shared camp, a kick or plain travel.</p>
+            <blockquote>Met: 3× · last Desolace</blockquote>
+            <p>When people you know join your group, one chat line names up to three of them. The tab lists contacts newest first in class colour, with your notes (up to 120 characters) and a "Familiar face" marker from three meetings on. Contacts belong to the account, counts to each character. Ashmark reads members' names outside instances only.</p>
+          </li>
+          <li class="feature">
+            <h3>House</h3>
+            <p class="where"><span class="caps-column">In game</span>House tab · a hint under the quest dialog</p>
+            <p>Characters on this account who share a surname form a house. The tab shows its members by level, this character's three axes and archetype, inherited feuds (sides your relatives took that this character has not), the family chronicle, family memory (people a relative has met three times or more) and the account's Legacy level when the client exposes it.</p>
+            <blockquote>Your house, {house}, stands against {faction}.</blockquote>
+            <p>Taking such a quest is recorded as turning from your house. It is not a broken word. Without a readable surname, <code>/ashmark house &lt;name&gt;</code> picks a house.</p>
+          </li>
+          <li class="feature">
+            <h3>Campfire</h3>
+            <p class="where"><span class="caps-column">In game</span>Centre-screen notice</p>
+            <p>Sitting at a camp until Camp Benefits takes hold counts as a rest. A rest closes the open chapter once it holds at least 20 entries or began at least 30 minutes ago; the party members present are kept with the chapter.</p>
+            <blockquote>Chapter IV closes · Desolace</blockquote>
+            <p class="muted">The camp aura IDs come from Wowhead's Forever data and are unverified. The sleeping bag's aura ID is unknown, so bedroll rests count only once the probe has found it.</p>
+          </li>
+          <li class="feature">
+            <h3>Character knowledge</h3>
+            <p class="where"><span class="caps-column">In game</span>Item tooltips · links · comparison tooltips</p>
+            <p>An item that has never been in this character's bags, bank or equipment shows only its name, binding, slot, item level, type and requirements, and the line "Your character has never held this." Items the server still hides stay as the game shows them, and held items show in full.</p>
+            <p>Quest rewards in the quest dialog stay in full while the "Quest rewards in full" setting is on. The first scan after install records what the character already holds without a word; the bank follows on the first visit.</p>
+          </li>
+          <li class="feature">
+            <h3>Rumours</h3>
+            <p class="where"><span class="caps-column">In game</span>Chat lines</p>
+            <p>Your alliances, broken words and turns from your house become rumours that travel from party to party among Ashmark users.</p>
+            <blockquote>People say the Oathkeeper from Desolace has sided with {faction}.</blockquote>
+            <p>Each hop costs 30 percent of a rumour's strength; after two hops the place becomes the continent, after three the faction is dropped. Strength halves every 3 days, and a rumour below 20 fades. A rumour names an archetype, a place and a faction, never a character. Entering a zone can repeat one rumour about it: each at most once a day, at most five lines an hour.</p>
+          </li>
+          <li class="feature">
+            <h3>Shared fiction</h3>
+            <p class="where"><span class="caps-column">In game</span>No surface of its own · feeds the tooltip line and the chronicle</p>
+            <p>When someone joins your party, Ashmark sends your archetype, origin, ruleset, axis values and addon version to party members who also run Ashmark, and they send theirs. Nothing appears in chat and nothing is shown to the other player. You see it in the Encounters tooltip line and in the chronicle:</p>
+            <blockquote>You travelled with Thalen (Oathkeeper from Westfall) and Mira.</blockquote>
+          </li>
+        </ul>
+        <div class="v2">
+          <span class="caps">Coming in v2</span>
+          <p><strong>Traces</strong>: graves, extinguished camps and notes built from templates, left where something happened. A <strong>companion app</strong> exchanges them between sessions while the game is closed. v1 reserves the store (<code>AshmarkDB.traces</code>) and documents its format; no v1 code reads or writes it.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="getting-started" class="section" aria-labelledby="getting-started-h">
+  <div class="wrap">
+    <div class="section-grid">
+      <div class="section-head">
+        <p class="eyebrow">03 · Install and use</p>
+        <h2 id="getting-started-h">Getting started</h2>
+      </div>
+      <div class="section-body prose">
+        <h3>Install</h3>
+        <ul>
+          <li><strong>CurseForge</strong>: once the project is published there, install Ashmark through the CurseForge app for the Forever flavour. It is not published yet.</li>
+          <li><strong>By hand</strong>: download the zip of a tagged release from the <a href="https://github.com/nullthrone/ashmark/releases">GitHub releases page</a> and extract it into <code>World of Warcraft\_forever_\Interface\AddOns\</code>, so that <code>Interface\AddOns\Ashmark\Ashmark_Forever.toc</code> exists. Restart the game.</li>
+        </ul>
+        <h3>Open the window</h3>
+        <p>Type <code>/ashmark</code> or <code>/amk</code>, or click Ashmark in the Addon Compartment next to the minimap. A left click opens or closes the window; a right click opens the settings. Escape closes the window, and its title bar moves it.</p>
+        <h3>Commands</h3>
+        <div class="table-wrap">
+          <table class="stack-sm">
+            <thead><tr><th scope="col">Command</th><th scope="col">Effect</th></tr></thead>
+            <tbody>
+              <tr><td><code>/ashmark</code>, <code>/amk</code></td><td>Open or close the main window.</td></tr>
+              <tr><td><code>/ashmark help</code></td><td>List the commands.</td></tr>
+              <tr><td><code>/ashmark house</code></td><td>Name your house.</td></tr>
+              <tr><td><code>/ashmark house &lt;name&gt;</code></td><td>Join the house of that name. A surname or house already on the account matches regardless of case; any other name is taken as typed.</td></tr>
+              <tr><td><code>/ashmark house reset</code></td><td>Follow your surname again.</td></tr>
+              <tr><td><code>/ashmark test</code></td><td>Run the self-test against this client, show the chronicle next to the quest dialog and take a screenshot. Out of combat only.</td></tr>
+              <tr><td><code>/ashmark probe</code></td><td>Record raw facts about this client for the developers.</td></tr>
+              <tr><td><code>/ashmark debug</code></td><td>Debug mode for this session: a malformed log entry raises a Lua error instead of being dropped.</td></tr>
+              <tr><td><code>/ashmark reset</code></td><td>After a confirmation, wipe this character's record.</td></tr>
+              <tr><td><code>/ashmark reset others</code></td><td>After a confirmation, wipe every contact, peer and heard rumour on the account. Your own rumours stay.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <h3>Settings</h3>
+        <p>In the game's options under AddOns, Ashmark. Every setting is a checkbox and every one starts on.</p>
+        <div class="table-wrap">
+          <table class="stack-sm">
+            <thead><tr><th scope="col">Setting</th><th scope="col">Effect</th></tr></thead>
+            <tbody>
+              <tr><td>Lines in chat</td><td>Rumours and the recognition lines of Encounters print in chat. Replies to commands always print.</td></tr>
+              <tr><td>Sounds</td><td>The game's quest log and page-turn sounds when the window opens, closes or a chapter closes.</td></tr>
+              <tr><td>Share with other Ashmark users</td><td>Send your archetype, origin, profile and rumours to party members. Off: Ashmark only receives.</td></tr>
+              <tr><td class="wrap-ok">Conflicts, Profile, World map, Encounters, House, Campfire, Character knowledge, Shared fiction, Rumours</td><td>One switch per module. A tab whose module is off is hidden. A module the client cannot support is off, and its tooltip names the missing API or event.</td></tr>
+              <tr><td>Quest rewards in full</td><td>Character knowledge never hides the tooltips of rewards shown in the quest dialog.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <h3>The four tabs</h3>
+        <ul>
+          <li><strong>Chronicle</strong>: the chapter list and the page of the chosen chapter.</li>
+          <li><strong>Decisions</strong>: conflicts under collapsible zone headers, in the layout of the reputation window; your count of broken words at the top.</li>
+          <li><strong>Encounters</strong>: the people you have met, in the layout of the friends list, with a note button on each row.</li>
+          <li><strong>House</strong>: house name and Legacy, your axes and archetype, members, inherited feuds, family chronicle and family memory.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="privacy" class="section" aria-labelledby="privacy-h">
+  <div class="wrap">
+    <div class="section-grid">
+      <div class="section-head">
+        <p class="eyebrow">04 · Data</p>
+        <h2 id="privacy-h">Privacy and network</h2>
+      </div>
+      <div class="section-body prose">
+        <h3>What leaves your client</h3>
+        <p>Addon messages with the prefix <code>Ashmark</code>, on the <code>PARTY</code> channel only. In a raid, <code>PARTY</code> reaches only your own subgroup, so a message has at most four recipients. Whether <code>PARTY</code> works in a raid at all is one of the facts the probe checks at launch. Ashmark never sends on <code>RAID</code>, <code>GUILD</code>, <code>WHISPER</code> or a chat channel, and drops messages that arrive on them.</p>
+        <div class="table-wrap">
+          <table class="stack-sm">
+            <thead><tr><th scope="col">Type</th><th scope="col">Fields</th><th scope="col">Sent</th></tr></thead>
+            <tbody>
+              <tr><td><code>HI</code></td><td>your GUID, archetype, origin zone ID, ruleset, addon version</td><td>when someone you have not greeted joins your party; at most once per 30 s</td></tr>
+              <tr><td><code>PR</code></td><td>your GUID, fidelity, habitat, mercy</td><td>right after every <code>HI</code></td></tr>
+              <tr><td><code>RU</code></td><td>random 8-character id, template (<code>ALLIANCE</code>, <code>BROKE</code>, <code>TURNED</code>), hops, strength, age in hours, archetype, faction ID, map ID</td><td>to Ashmark users in the party who have not heard them; at most 3 per round, one round per 2 minutes</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>Names, contacts, notes, peers, chat text and free text are never sent. A rumour carries no GUID and no name. Every field must match a fixed pattern and a message is at most 255 bytes; the sender refuses anything else and the receiver drops it. Ashmark accepts messages only from party members whose GUID matches their greeting, at most 20 per sender per minute, and its own queue stays under Blizzard's throttle.</p>
+        <p>Ashmark only receives when "Share with other Ashmark users" is off, and on Forever trial and veteran accounts, which cannot send addon messages.</p>
+        <h3>What is stored</h3>
+        <p>One account-wide SavedVariable, <code>AshmarkDB</code>, in <code>_forever_\WTF\Account\&lt;ACCOUNT&gt;\SavedVariables\Ashmark.lua</code>. Characters are keyed by GUID; names are for display only. It holds:</p>
+        <ul>
+          <li><strong>chars</strong>: per character, its name, surname, class, race, sex, faction, ruleset and level; the event log (compacted to at most 3,000 entries, and ordinary entries older than 180 days are dropped); chapters, first zone visits, alliances, profile, IDs of items held, group sessions (at most 200) and counters.</li>
+          <li><strong>contacts</strong>: up to 2,000 people you grouped with, with your notes.</li>
+          <li><strong>peers</strong>: up to 500 Ashmark users you met, with their archetype, origin and profile.</li>
+          <li><strong>rumours</strong>: up to 200 heard, and who was told which.</li>
+          <li><strong>settings</strong>, <strong>traces</strong> (empty, reserved for v2) and <strong>dev</strong> (the last 10 test reports, 20 probe records and 20 blocked-action reports).</li>
+        </ul>
+        <h3>Reset</h3>
+        <p><code>/ashmark reset</code> deletes this character's record (log, chapters, alliances, profile, held items and sessions) and starts a new one. Contacts, peers and rumours belong to the account and stay; <code>/ashmark reset others</code> deletes contacts with their notes, peers and every rumour this account did not start. Both ask first in Ashmark's own dialog. To remove everything, delete <code>Ashmark.lua</code> and <code>Ashmark.lua.bak</code> from the SavedVariables folder while the game is closed.</p>
+        <p>Saved data from a newer Ashmark is only read, never written. Data in a shape Ashmark does not know is kept untouched in <code>AshmarkDB.recovered</code>. If a new record starts on an account that used Ashmark before, Ashmark says so: quit the game and restore <code>Ashmark.lua.bak</code> before the next login.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="languages" class="section" aria-labelledby="languages-h">
+  <div class="wrap">
+    <div class="section-grid">
+      <div class="section-head">
+        <p class="eyebrow">05 · Locales</p>
+        <h2 id="languages-h">Languages</h2>
+      </div>
+      <div class="section-body prose">
+        <p>Ten client locales, the set the Forever client offers. There is no Italian, because Forever has none.</p>
+        <ul class="locales">
+          <li><code>enUS</code>English, also enGB</li>
+          <li><code>deDE</code>German</li>
+          <li><code>frFR</code>French</li>
+          <li><code>esES</code>Spanish (Spain)</li>
+          <li><code>esMX</code>Spanish (Mexico)</li>
+          <li><code>ptBR</code>Portuguese (Brazil)</li>
+          <li><code>ruRU</code>Russian</li>
+          <li><code>koKR</code>Korean</li>
+          <li><code>zhTW</code>Traditional Chinese</li>
+          <li><code>zhCN</code>Simplified Chinese, China region</li>
+        </ul>
+        <p>Only Ashmark's own sentences are translated. Faction, zone, quest, item, class and race names come from the client at runtime, in the client's language. German, French, Spanish, Portuguese and Russian sentences take the feminine form for a female character where the language needs it. A missing key falls back to English, and the test mode lists the keys the active locale lacks.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="testing" class="section" aria-labelledby="testing-h">
+  <div class="wrap">
+    <div class="section-grid">
+      <div class="section-head">
+        <p class="eyebrow">06 · Launch</p>
+        <h2 id="testing-h">Testing at launch</h2>
+      </div>
+      <div class="section-body prose">
+        <p>Forever launches on 4 November 2026 at 23:00 UTC. Until then Ashmark has run only against the mock client of its test suite. The test mode and the probe settle the open facts below in the live client.</p>
+        <h3>Run</h3>
+        <ol class="steps">
+          <li><div>Install the build and log in a Forever character. Turn on Lua error display with <code>/console scriptErrors 1</code>.</div></li>
+          <li><div>Talk to a quest giver and open a quest's details page. Stay out of combat.</div></li>
+          <li><div>Type <code>/ashmark test</code>. It runs every check, prints the failures and a summary, opens the Chronicle next to the quest dialog, shows a sample line under the dialog and takes a screenshot into <code>_forever_\Screenshots</code>. For 10 seconds it records whether the screenshot succeeded and any blocked action.</div></li>
+          <li><div>Type <code>/reload</code>. This writes the results to SavedVariables; addon code cannot reload the interface itself. On a first install the test prints the new-record warning in place of the reload hint; if Ashmark never ran on the account, reloading is safe.</div></li>
+          <li><div>Type <code>/ashmark test</code> again. The second run must find the first run's record, which proves the SavedVariables round trip.</div></li>
+          <li><div>Type <code>/ashmark probe</code> in the open world, in a party, inside a dungeon, in a raid and at a camp, with a <code>/reload</code> after each. In the same session, accept a quest and start a fight: the probe records both. In a group it sends one <code>HI</code> and records its echo.</div></li>
+          <li><div>For the Mercy check, kill 3 critters and 3 calm neutral beasts, then run <code>/ashmark test</code>. For Shared fiction and Rumours, group with another Ashmark user and side with a faction in a conflict, then run it again.</div></li>
+        </ol>
+        <h3>Results and what to send</h3>
+        <p>Results are stored in <code>AshmarkDB.dev</code>: <code>tests</code> (last 10), <code>probes</code> (last 20) and <code>blocked</code> (last 20). Open an issue in the <a href="https://github.com/nullthrone/ashmark/issues">repository</a> and attach <code>WTF\Account\&lt;ACCOUNT&gt;\SavedVariables\Ashmark.lua</code>, the screenshots, the client language, the Experience Preset (Classic or Enhanced) and the text of any Lua error. The file also holds your characters, the people you grouped with and your notes on them; if you prefer, send only the <code>dev</code> table.</p>
+        <h3>What only the live client can settle</h3>
+        <div class="table-wrap">
+          <table class="stack-sm">
+            <thead><tr><th scope="col">Open fact</th><th scope="col">Settled by</th></tr></thead>
+            <tbody>
+              <tr><td class="wrap-ok">Live interface number (16001 on beta and test), <code>WOW_PROJECT_ID</code>, <code>WOW_PROJECT_CAMELOT</code>, and how out-of-date addons load</td><td>probe; the AddOns list</td></tr>
+              <tr><td class="wrap-ok">How the surname comes back from <code>UnitName</code>, <code>UnitFullName</code> and <code>UnitNameUnmodified</code>; whether the GUID stays the same across sessions</td><td>probe; test check of the player's identity</td></tr>
+              <tr><td class="wrap-ok">Whether party names are secret inside dungeons</td><td>probe inside an instance</td></tr>
+              <tr><td class="wrap-ok">Whether <code>PARTY</code> addon messages work, also in raids, and their result codes; whether the account can send</td><td>probe in a group</td></tr>
+              <tr><td class="wrap-ok">Whether the camp auras are readable; the sleeping bag's aura ID</td><td>probe at a camp; Campfire check</td></tr>
+              <tr><td class="wrap-ok">Whether <code>TooltipDataProcessor</code> exists and item tooltip lines can be read and blanked, in the world and in instances; how an unrevealed item reads</td><td>Character knowledge check; by hand with <code>C_Item.GetItemInfo</code></td></tr>
+              <tr><td class="wrap-ok">Whether Gelkis and Magram still exclude each other</td><td>probe records factions 92 and 93 before and after quest 1368</td></tr>
+              <tr><td class="wrap-ok">Whether the Legacy faction 2802 is readable</td><td>probe; House check</td></tr>
+              <tr><td class="wrap-ok">Map data providers, the pin template and atlases; <code>C_Map.GetMapInfo(2652)</code></td><td>World map check</td></tr>
+              <tr><td class="wrap-ok">Blizzard templates, parchment atlas, fonts and sounds Ashmark inherits</td><td>Core checks</td></tr>
+              <tr><td class="wrap-ok">Accuracy of the kill approximation; the order of combat events on a pull; the <code>QUEST_ACCEPTED</code> arguments</td><td>probe on the next pull and quest; Profile counters</td></tr>
+              <tr><td class="wrap-ok"><code>Screenshot()</code> from the slash handler</td><td>test record</td></tr>
+              <tr><td class="wrap-ok">Pilot data: zone IDs 1434 (Stranglethorn Vale) and 2521 (Zephras Isle); whether each Zephras Isle faction is open to one player faction only; quest-giver coordinates for map pins; whether each quest is open to both factions</td><td>Conflicts check names every quest and faction; the rest by hand</td></tr>
+              <tr><td class="wrap-ok">Blizzard's interface source for Forever</td><td>start with <code>-console</code>, then <code>exportInterfaceFiles code</code> and <code>exportInterfaceFiles art</code> at the login screen</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="contributing" class="section" aria-labelledby="contributing-h">
+  <div class="wrap">
+    <div class="section-grid">
+      <div class="section-head">
+        <p class="eyebrow">07 · Dataset</p>
+        <h2 id="contributing-h">Contributing conflicts</h2>
+      </div>
+      <div class="section-body prose">
+        <p>A good conflict is one where the quest texts themselves set one side against the other. The sources are CSV files in <code>data/conflicts/</code>, one per area, UTF-8, one row per quest. The conflict columns repeat on every row of a conflict and must agree.</p>
+        <div class="table-wrap">
+          <table class="stack-sm">
+            <thead><tr><th scope="col">Column</th><th scope="col">Meaning</th></tr></thead>
+            <tbody>
+              <tr><td><code>conflict_id</code></td><td>snake_case, unique across all files</td></tr>
+              <tr><td><code>zone</code></td><td>uiMapID of the zone the conflict belongs to</td></tr>
+              <tr><td><code>theme</code></td><td><code>feud</code>, <code>law</code>, <code>trade</code>, <code>nature</code>, <code>faith</code> or <code>other</code></td></tr>
+              <tr><td><code>honored</code></td><td>reaction (5 Friendly, 6 Honored, 7 Revered, 8 Exalted) at which standing alone forms the alliance; empty when no side has a faction</td></tr>
+              <tr><td><code>anchor_m</code>, <code>anchor_x</code>, <code>anchor_y</code></td><td>optional map pin: uiMapID and coordinates 0 to 1; all three or none</td></tr>
+              <tr><td><code>side</code></td><td><code>A</code> or <code>B</code></td></tr>
+              <tr><td><code>faction</code></td><td>reputation faction ID of the side; empty for a side without one</td></tr>
+              <tr><td><code>quest</code></td><td>quest ID; a quest belongs to at most one conflict</td></tr>
+              <tr><td><code>quest_name</code></td><td>English name, for review only; the addon reads the localized name from the client</td></tr>
+              <tr><td><code>verified</code></td><td><code>true</code> only after the quest was checked in the Forever client</td></tr>
+              <tr><td><code>source</code></td><td>the https page the quest was taken from</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <pre><code>python3 tools/conflicts.py           # validate and write Data/Conflicts.lua
+python3 tools/conflicts.py --check   # validate; fail if Data/Conflicts.lua is stale (CI)</code></pre>
+        <p>The validator refuses rows that disagree within a conflict, a quest in two conflicts, a side without quests, two sides with the same faction, <code>honored</code> without a faction and partial anchors. Commit the CSV and the generated <code>Data/Conflicts.lua</code> together, and never edit the generated file by hand.</p>
+        <p>Every row stays <code>verified = false</code> until it is checked in the client. The Conflicts test check reads every quest title and faction name from the client, so a run of <code>/ashmark test</code> shows which IDs resolve.</p>
+        <p>Provenance: the pilot set was researched on 30 and 31 October 2026 from Wowhead's Forever database and re-checked quest by quest. It holds 10 conflicts: Gelkis against Magram in Desolace and Shen'dralas (six), Booty Bay against the Bloodsail Buccaneers in Stranglethorn Vale (two) and the Windshapers against the High Order on Zephras Isle (two). The classic starter zones yielded no quest pairs whose texts oppose each other. Format details: <a href="https://github.com/nullthrone/ashmark/blob/main/data/conflicts/README.md">data/conflicts/README.md</a>.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="developers" class="section" aria-labelledby="developers-h">
+  <div class="wrap">
+    <div class="section-grid">
+      <div class="section-head">
+        <p class="eyebrow">08 · Source</p>
+        <h2 id="developers-h">For developers</h2>
+      </div>
+      <div class="section-body prose">
+        <h3>Repository</h3>
+<pre><code>Ashmark_Forever.toc  Ashmark_Camelot.toc   identical except ## X-TocVariant
+Core/      event log, SavedVariables, events, bus, addon messages, settings, slash commands
+Locales/   enUS/ (one file per unit) and the nine translated locales
+UI/        main window, dialog, notice, chat line, compartment; Tabs/ for the four tabs
+Data/      Conflicts.lua, generated from data/conflicts/
+Modules/   Conflicts Profile Map Encounters House Campfire Knowledge Fiction Rumours Traces
+Dev/       TestMode.lua Probe.lua
+data/      conflict source CSVs                               not shipped
+tools/     conflicts.py, toc_check.py                         not shipped
+tests/     busted specs and the WoW mock                      not shipped
+docs/      ARCHITECTURE.md DECISIONS.md research/ index.html  not shipped</code></pre>
+        <h3>Architecture</h3>
+        <p>One addon: a core and nine modules in one private namespace. The core keeps one event log per character in account-wide SavedVariables; modules write facts into it and derive everything else from it. Units talk through a synchronous bus and a small set of public service functions. Every uncertain API is feature-detected, every value that can be secret is read through one guard, and a module that lacks a capability turns itself off and says so. Errors are caught per module; after 10 in one session that module stops. The contract every unit builds against is <a href="https://github.com/nullthrone/ashmark/blob/main/docs/ARCHITECTURE.md">docs/ARCHITECTURE.md</a>; the decisions behind it are in <a href="https://github.com/nullthrone/ashmark/blob/main/docs/DECISIONS.md">docs/DECISIONS.md</a> and the platform facts in <a href="https://github.com/nullthrone/ashmark/blob/main/docs/research/forever-platform.md">docs/research/forever-platform.md</a>.</p>
+        <h3>Checks</h3>
+<pre><code>luacheck .                            # lint, Lua 5.1, configured in .luacheckrc
+busted                                # specs under Lua 5.1, configured in .busted
+python3 tools/conflicts.py --check    # conflict data is current
+python3 tools/toc_check.py --strict   # both TOCs agree, and every listed file exists</code></pre>
+        <p>CI (<code>.github/workflows/ci.yml</code>) runs these four on every push to <code>main</code> and on every pull request, on Ubuntu 24.04 with Lua 5.1, luacheck and busted from LuaRocks.</p>
+        <h3>Ownership</h3>
+        <p>Every file belongs to exactly one unit, listed in section 9 of the architecture. A unit that needs a change in a file it does not own asks for it instead of making it, and adds files only as its own specs and mocks. Both TOCs list every file from the start, so no unit edits them.</p>
+        <h3>Release</h3>
+        <p>Push a tag that starts with <code>v</code>. The release workflow runs the BigWigs packager: it packages the <code>Ashmark</code> folder as described in <code>.pkgmeta</code>, leaves out the development files, replaces <code>@project-version@</code> with the tag and creates the zip and a GitHub release. The upload to CurseForge needs the repository secret <code>CF_API_KEY</code> and a <code>##&nbsp;X-Curse-Project-ID</code> line in both TOCs; the TOCs carry none yet. Wago is optional: the workflow passes <code>WAGO_API_TOKEN</code> as well. <code>##&nbsp;Interface:&nbsp;16001</code> is the beta and test value and is confirmed at launch.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="band footer">
+  <div class="wrap">
+    <p class="wordmark caps">Nullthrone</p>
+    <div class="hero-rule" aria-hidden="true"></div>
+    <p>Ashmark is released under the <a href="https://github.com/nullthrone/ashmark/blob/main/LICENSE">MIT License</a>. Copyright 2026 Nullthrone.</p>
+    <p><a href="https://github.com/nullthrone/ashmark">github.com/nullthrone/ashmark</a></p>
+    <p>Ashmark started under the working name Embertale.</p>
+  </div>
+</footer>
+
+</body>
+</html>
