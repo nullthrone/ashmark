@@ -65,7 +65,4 @@ read_globals = {
 }
 
 -- Specs and their helpers run under busted and build the mock client through _G.
-files["tests/"] = {
-  std = "+busted",
-  globals = { "AshmarkDB", "SlashCmdList" },
-}
+files["tests/"] = { std = "+busted" }

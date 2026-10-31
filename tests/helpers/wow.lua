@@ -148,7 +148,40 @@ local registry = {}              -- [event] = { frame, ... } in registration ord
 local methods = {}
 local frameMeta = {}
 
-local function newFrame(kind, name, parent, template)
+-- Named children of the Blizzard templates the UI inherits ([key] = { kind, children }).
+local TEMPLATE_CHILDREN = {
+  ButtonFrameTemplate = {
+    Inset = { "Frame", { Bg = { "Texture" } } }, Bg = { "Texture" }, NineSlice = { "Frame" },
+    TitleContainer = { "Frame", { TitleText = { "FontString" } } }, CloseButton = { "Button" },
+    PortraitContainer = { "Frame", { portrait = { "Texture" } } },
+  },
+  PortraitFrameTemplate = {
+    Bg = { "Texture" }, NineSlice = { "Frame" }, CloseButton = { "Button" },
+    TitleContainer = { "Frame", { TitleText = { "FontString" } } },
+    PortraitContainer = { "Frame", { portrait = { "Texture" } } },
+  },
+  PanelTabButtonTemplate = { Text = { "FontString" }, Left = { "Texture" }, Middle = { "Texture" },
+                             Right = { "Texture" } },
+  UIPanelButtonTemplate = { Text = { "FontString" }, Left = { "Texture" }, Middle = { "Texture" },
+                            Right = { "Texture" } },
+  InputBoxTemplate = { Left = { "Texture" }, Middle = { "Texture" }, Right = { "Texture" } },
+  DialogBorderTemplate = { Bg = { "Texture" }, NineSlice = { "Frame" } },
+  TooltipBackdropTemplate = { NineSlice = { "Frame" } },
+  WowScrollBoxList = { ScrollTarget = { "Frame" } },
+  MinimalScrollBar = { Track = { "Frame", { Thumb = { "Button" } } }, Back = { "Button" }, Forward = { "Button" } },
+}
+
+local newFrame
+
+local function addChildren(f, children)
+  for key, spec in pairs(children) do
+    local child = newFrame(spec[1], nil, f)
+    rawset(f, key, child)
+    if spec[2] then addChildren(child, spec[2]) end
+  end
+end
+
+function newFrame(kind, name, parent, template)
   local f = setmetatable({
     __kind = kind or "Frame", __name = name, __parent = parent, __template = template, __shown = true,
     __scripts = {}, __hooks = {}, __events = {}, __units = {}, __points = {}, __lines = {}, __regions = {},
@@ -162,17 +195,21 @@ local function newFrame(kind, name, parent, template)
     _G[name] = f
   end
   table.insert(wow.frames, f)
+  for t in tostring(template or ""):gmatch("[^,%s]+") do
+    if TEMPLATE_CHILDREN[t] then addChildren(f, TEMPLATE_CHILDREN[t]) end
+  end
   return f
 end
 wow.newFrame = newFrame
 
--- Unknown methods are no-ops; Create* methods return new stub frames.
+-- Unknown PascalCase keys are no-op methods (Create* ones return new stub frames); other keys are
+-- data fields and read as nil until set.
 frameMeta.__index = function(self, key)
   local removed = rawget(self, "__removed")
   if removed and removed[key] then return nil end
   local m = methods[key]
   if m then return m end
-  if type(key) ~= "string" or key:sub(1, 2) == "__" then return nil end
+  if type(key) ~= "string" or not key:match("^%u") then return nil end
   local stub
   if key:match("^Create") then
     stub = function(owner, name, _, template) return newFrame(key:sub(7), name, owner, template) end

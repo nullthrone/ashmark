@@ -54,7 +54,8 @@ describe("Core lifecycle", function()
       state = { inGroup = true, senders = {} }, log = {},
     } } })
     for n = 1, 1200 do
-      table.insert(_G.AshmarkDB.chars["Player-1-00000001"].log, { n = n, t = time() - 1000, k = "death" })
+      local age = n <= 100 and 200 * 86400 or 1000
+      table.insert(_G.AshmarkDB.chars["Player-1-00000001"].log, { n = n, t = time() - age, k = "death" })
     end
     wow.state.map = 1443
     local order = {}
@@ -67,9 +68,10 @@ describe("Core lifecycle", function()
       self:Subscribe("LOG_COMPACTED", function() order[#order + 1] = "B:compacted" end)
     end
     wow.login()
-    assert.same({ "A:world", "B:world", "B:zone", "B:group:false", "B:chapter", "B:closed:1" }, order)
+    assert.same({ "A:world", "B:world", "B:zone", "B:group:false", "B:chapter", "B:closed:1", "B:compacted" }, order)
     local char = ns.DB:Char()
     assert.equal(1202, char.seq)
+    assert.equal(1102, #char.log)
     assert.equal(true, char.chapters[1].auto)
     assert.equal(1202, char.chapters[1].to)
   end)
