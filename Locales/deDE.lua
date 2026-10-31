@@ -24,14 +24,14 @@ L.CORE_SV_MIGRATE_FAILED = "Ashmark konnte seine gespeicherten Daten nicht aktua
   .. "dieser Sitzung nur lesen."
 
 -- Modules and settings (3.2, 4.3)
-L.CORE_MODULE_FAILED = "Das Modul {module} wurde nach wiederholten Fehlern angehalten und bleibt bis zum nächsten "
+L.CORE_MODULE_FAILED = "Das Modul „{module}“ wurde nach wiederholten Fehlern angehalten und bleibt bis zum nächsten "
   .. "Neuladen deaktiviert."
 L.CORE_UNAVAILABLE = "Benötigt {capability}"
 L.CORE_MISSING_EVENTS = "Ereignisse, die diesem Client fehlen: {events}"
 L.CORE_SETTING_CHAT_LINES = "Zeilen im Chat"
 L.CORE_SETTING_CHAT_LINES_DESC = "Ashmark darf kurze Zeilen ins Chatfenster schreiben."
-L.CORE_SETTING_SOUNDS = "Klänge"
-L.CORE_SETTING_SOUNDS_DESC = "Ashmark spielt die Seiten- und Buchklänge des Spiels ab."
+L.CORE_SETTING_SOUNDS = "Soundeffekte"
+L.CORE_SETTING_SOUNDS_DESC = "Ashmark spielt die Seiten- und Buchgeräusche des Spiels ab."
 L.CORE_SETTING_SHARE = "Mit anderen Ashmark-Nutzern teilen"
 L.CORE_SETTING_SHARE_DESC = "Sendet Euren Archetyp, Eure Herkunft und Eure Gerüchte an Gruppenmitglieder, die "
   .. "ebenfalls Ashmark nutzen. Kontakte und Notizen verlassen Euren Client nie."
@@ -208,18 +208,18 @@ L.MAP_PIN_CHAPTER_CLOSED = "Hier abgeschlossen am {date}"
 -- Encounters -----------------------------------------------------------------------------------------------------
 
 L.ENC_MODULE_NAME = "Begegnungen"
-L.ENC_MODULE_DESC = "Ashmark merkt sich die Leute, mit denen Ihr in einer Gruppe spielt: wie oft Ihr Euch begegnet "
-  .. "seid, wo und wie es lief. Es fügt ihrem Tooltip eine Zeile hinzu, listet sie im Reiter „Begegnungen“ auf und "
+L.ENC_MODULE_DESC = "Ashmark merkt sich die Leute, mit denen Ihr in einer Gruppe spielt: wie oft Ihr ihnen begegnet "
+  .. "seid, wo und wie es lief. Es fügt ihren Tooltips eine Zeile hinzu, listet sie im Reiter „Begegnungen“ auf und "
   .. "bewahrt Eure Notizen über sie. Kontakte und Notizen verlassen Euren Client nie."
 
 -- Unit tooltip (7.4)
-L.ENC_TOOLTIP = "Getroffen: {count}× · zuletzt: {place}"
-L.ENC_TOOLTIP_NOPLACE = "Getroffen: {count}×"
+L.ENC_TOOLTIP = "Begegnungen: {count} · zuletzt: {place}"
+L.ENC_TOOLTIP_NOPLACE = "Begegnungen: {count}"
 L.ENC_TOOLTIP_PEER = "{archetype}"
 
 -- Chat line when people you know join your group
-L.ENC_RECOGNISE = "Ihr kennt {name}: {count}× getroffen, zuletzt im Gebiet {place}."
-L.ENC_RECOGNISE_NOPLACE = "Ihr kennt {name}: {count}× getroffen."
+L.ENC_RECOGNISE = "Ihr kennt {name}: {count}× begegnet, zuletzt im Gebiet {place}."
+L.ENC_RECOGNISE_NOPLACE = "Ihr kennt {name}: {count}× begegnet."
 L.ENC_RECOGNISE_MORE = "…und {count} weitere, die Ihr kennt."
 
 -- Marker for someone this character has met at least three times
@@ -231,11 +231,11 @@ L.ENC_NOTE_SAVE = "Speichern"
 
 -- Encounters tab (6.1)
 L.ENC_TAB = "Begegnungen"
-L.ENC_TAB_TOTAL = "Leute, die Ihr getroffen habt: {count} · bekannte Gesichter: {recurring}"
-L.ENC_TAB_EMPTY = "Noch hat niemand Euren Weg gekreuzt. Spielt mit jemandem in einer Gruppe, und Ashmark merkt "
-  .. "sich die Begegnung."
-L.ENC_TAB_MET = "{count}× getroffen · zuletzt: {place} · {date}"
-L.ENC_TAB_MET_NOPLACE = "{count}× getroffen · {date}"
+L.ENC_TAB_TOTAL = "Personen, denen Ihr begegnet seid: {count} · bekannte Gesichter: {recurring}"
+L.ENC_TAB_EMPTY = "Noch hat niemand Euren Weg gekreuzt. Bildet mit jemandem eine Gruppe, und Ashmark merkt sich "
+  .. "die Begegnung."
+L.ENC_TAB_MET = "{count}× begegnet · zuletzt: {place} · {date}"
+L.ENC_TAB_MET_NOPLACE = "{count}× begegnet · {date}"
 L.ENC_TAB_NOTE = "Notiz"
 L.ENC_TAB_WHO = "{race} {class}"
 L.ENC_TAB_FIRST = "Erste Begegnung am {date}"
@@ -249,8 +249,8 @@ L.ENC_LOG_BOSS = "Ihr habt an der Seite von {people} gekämpft und gesiegt."
 L.ENC_LOG_BOSS_THEY = "{name} hat an der Seite von {people} gekämpft und gesiegt."
 L.ENC_LOG_WIPE = "Ihr habt an der Seite von {people} gekämpft und seid gefallen."
 L.ENC_LOG_WIPE_THEY = "{name} hat an der Seite von {people} gekämpft und ist gefallen."
-L.ENC_LOG_CAMP = "Ihr habt mit {people} ein Lagerfeuer geteilt."
-L.ENC_LOG_CAMP_THEY = "{name} hat mit {people} ein Lagerfeuer geteilt."
+L.ENC_LOG_CAMP = "Ihr habt mit {people} am Lagerfeuer gerastet."
+L.ENC_LOG_CAMP_THEY = "{name} hat mit {people} am Lagerfeuer gerastet."
 L.ENC_LOG_KICK = "Ihr wurdet aus der Gruppe von {people} fortgeschickt."
 L.ENC_LOG_KICK_THEY = "{name} wurde aus der Gruppe von {people} fortgeschickt."
 
@@ -269,8 +269,8 @@ L.ENC_LIST_AND = "{list} und {last}"
 
 L.HOUSE_MODULE_NAME = "Haus"
 L.HOUSE_MODULE_DESC = "Charaktere auf diesem Account mit demselben Nachnamen bilden ein Haus. Der Reiter „Haus“ "
-  .. "zeigt seine Mitglieder, die Fehden, die Eure Verwandten aufgenommen haben, die Familienchronik und die Leute, "
-  .. "die sie kennen."
+  .. "zeigt seine Mitglieder, die Fehden, die Eure Verwandten auf sich genommen haben, die Familienchronik und "
+  .. "die Leute, die sie kennen."
 
 -- /ashmark house (5.9)
 L.HOUSE_HELP = "Euer Haus anzeigen; „house <Name>“ tritt dem Haus dieses Namens bei, „house reset“ kehrt zu "
@@ -325,7 +325,7 @@ L.KNOW_MODULE_DESC = "Gegenstandstooltips zeigen nur, was Euer Charakter wissen 
 L.KNOW_UNKNOWN = "Euer Charakter hat dies noch nie besessen."
 
 -- Setting (4.3)
-L.KNOW_SETTING_QUEST_REWARDS = "Vollständige Questbelohnungen"
+L.KNOW_SETTING_QUEST_REWARDS = "Questbelohnungen voll anzeigen"
 L.KNOW_SETTING_QUEST_REWARDS_DESC = "Die Tooltips der Belohnungen im Questfenster nie verbergen, damit Ihr eine "
   .. "Belohnung in Kenntnis ihrer Wirkung wählen könnt."
 
@@ -334,7 +334,7 @@ L.KNOW_SETTING_QUEST_REWARDS_DESC = "Die Tooltips der Belohnungen im Questfenste
 L.FICTION_MODULE_NAME = "Gemeinsame Fiktion"
 L.FICTION_MODULE_DESC = "Gruppenmitglieder, die ebenfalls Ashmark nutzen, erfahren Euren Archetyp und Eure "
   .. "Herkunft, ohne dass ein Wort im Chat fällt, und Ihr erfahrt die ihren, sodass Eure Chronik und Eure Tooltips "
-  .. "wissen, mit wem Ihr unterwegs wart. Anderen Spielern wird nichts angezeigt."
+  .. "sagen können, mit wem Ihr unterwegs wart. Anderen Spielern wird nichts angezeigt."
 
 -- Test mode (7.10)
 L.FICTION_TEST_HOWTO = "Bildet mit einem anderen Ashmark-Nutzer eine Gruppe und führt dann erneut /ashmark test aus."
