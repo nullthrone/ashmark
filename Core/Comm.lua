@@ -294,11 +294,14 @@ local function remember(s, sender, guid)
 end
 
 -- The GUID the client resolves for the sender's name, if it does (group members' names work as
--- unit tokens; the sender format on Forever is unverified, so this may be nil).
+-- unit tokens; the sender format on Forever is unverified, so this may be nil). The client reads a
+-- unit token first, ignoring case, so a sender named Target or Focus would name whoever the player
+-- targets: the GUID counts only if the unit it resolves to carries the sender's name.
 local function senderGUID(sender)
   local ok, name = Safe.Call(Ambiguate, sender, "none")
   if not ok or type(name) ~= "string" then name = sender end
-  return Safe.UnitGUID(name)
+  local guid = Safe.UnitGUID(name)
+  if guid and Safe.UnitName(name) == name:match("^[^%-]*") then return guid end
 end
 
 -- HI and PR claim a GUID; the client names the sender. Accepted only if the sender's name does not

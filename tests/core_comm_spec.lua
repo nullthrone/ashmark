@@ -397,6 +397,47 @@ describe("Core Comm", function()
     end)
   end)
 
+  describe("a sender named like a unit token", function()
+    -- The client reads "Target" as the token target before any member's name, ignoring case.
+    local mira = { guid = MIRA, name = "Mira" }
+
+    it("never takes another member's GUID through the unit the token names", function()
+      wow.unit("party1", mira)
+      wow.unit("party2", { guid = THALEN, name = "Target" })
+      wow.unit("target", mira)
+      boot()
+      hi(MIRA, "Mira-Forever")
+      hi(MIRA, "Target-Forever")
+      assert.equal(1, #got)
+      assert.same({ ["Mira-Forever"] = MIRA }, ns.DB:Char().state.senders)
+      ru("Mira-Forever")
+      assert.equal(2, #got)
+      assert.equal(MIRA, got[2][2].guid)
+    end)
+
+    it("is not refused for the member the token names", function()
+      wow.unit("party1", mira)
+      wow.unit("party2", { guid = KEL, name = "Focus" })
+      wow.unit("focus", mira)
+      boot()
+      hi(KEL, "Focus-Forever")
+      assert.equal(1, #got)
+      assert.same({ ["Focus-Forever"] = KEL }, ns.DB:Char().state.senders)
+    end)
+
+    it("still resolves to its own GUID while the token names the sender", function()
+      local target = { guid = THALEN, name = "Target" }
+      wow.unit("party1", mira)
+      wow.unit("party2", target)
+      wow.unit("target", target)
+      boot()
+      hi(THALEN, "Someone-Vell")
+      hi(THALEN, "Target-Forever")
+      assert.equal(2, #got)
+      assert.same({ ["Target-Forever"] = THALEN }, ns.DB:Char().state.senders)
+    end)
+  end)
+
   describe("the queue after the moment it was meant for", function()
     local checks
 

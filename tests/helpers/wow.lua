@@ -597,11 +597,12 @@ end
 -- Globals ------------------------------------------------------------------
 
 -- A unit token, or, as in the client, the name of a group member ("Name" on the player's realm,
--- "Name-Realm" for a fixture with a realm field).
+-- "Name-Realm" for a fixture with a realm field). Tokens come first and ignore case, so "Target" is the target.
 local function unitOf(token)
   if type(token) ~= "string" then return nil end
   local units = wow.state.units
-  if units[token] then return units[token] end
+  local unit = units[token] or units[token:lower()]
+  if unit then return unit end
   for _, group in ipairs({ { "party", 4 }, { "raid", 40 } }) do
     for i = 1, group[2] do
       local u = units[group[1] .. i]
