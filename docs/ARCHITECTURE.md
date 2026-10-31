@@ -84,6 +84,7 @@ TOC header:
 ## AddonCompartmentFuncOnLeave: Ashmark_OnAddonCompartmentLeave
 ## X-TocVariant: Forever                -- "Camelot" in Ashmark_Camelot.toc
 ## X-License: MIT
+## X-Curse-Project-ID: 1777037   -- CurseForge project; the packager uploads there
 ```
 
 `Interface: 16001` is the beta and test value; the live value is confirmed at launch.

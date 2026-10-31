@@ -102,7 +102,7 @@ CI runs all five on every push and every pull request.
 
 ## Release
 
-Push a tag that starts with `v`. The release workflow runs the BigWigs packager, which builds the zip from `.pkgmeta` and creates a GitHub release. Uploading to CurseForge needs the `CF_API_KEY` repository secret and a `## X-Curse-Project-ID` line in both TOCs; Wago is optional and uses `WAGO_API_TOKEN`.
+Push a tag that starts with `v`. The release workflow runs the BigWigs packager, which builds the zip from `.pkgmeta` and creates a GitHub release. Uploading to CurseForge needs the `CF_API_KEY` repository secret; both TOCs carry the project ID (`## X-Curse-Project-ID: 1777037`); Wago is optional and uses `WAGO_API_TOKEN`.
 
 ## License
 

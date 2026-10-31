@@ -31,6 +31,7 @@
 ## AddonCompartmentFuncOnLeave: Ashmark_OnAddonCompartmentLeave
 ## X-TocVariant: Camelot
 ## X-License: MIT
+## X-Curse-Project-ID: 1777037
 
 Core\Init.lua
 Core\Util.lua
