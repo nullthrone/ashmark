@@ -658,6 +658,18 @@ describe("Encounters", function()
         render(last("group.end")))
     end)
 
+    it("labels a peer's archetype in the form for the contact's sex", function()
+      boot({ setup = function(n)
+        local base = n.Locale:Base()
+        base.PROFILE_OATHKEEPER_F, base.PROFILE_WANDERER_F = "Oathkeeper (f)", "Wanderer (f)"
+        mock.fiction(n, { [THALEN] = { guid = THALEN, archetype = "OATHKEEPER", origin = DESOLACE },
+                          [MIRA] = { guid = MIRA, archetype = "WANDERER", origin = 0 } })
+      end })
+      mock.session(wow, ns, { "thalen", "mira" })
+      assert.equal("You travelled with Thalen (Oathkeeper from Desolace) and Mira (Wanderer (f)).",
+        render(last("group.end")))
+    end)
+
     it("uses the third person in the family chronicle", function()
       local char = boot()
       mock.session(wow, ns, { "thalen", "mira" })

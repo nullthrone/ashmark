@@ -122,12 +122,14 @@ function M:IsRecurring(rec)
   return type(rec) == "table" and type(rec.count) == "number" and rec.count >= M.RECURRING
 end
 
--- The archetype label Fiction holds for guid, and the peer's origin zone (or nil).
+-- The archetype label Fiction holds for guid, in the form for the contact's sex (5.8), and the peer's origin
+-- zone (or nil). A key without a label gives nothing.
 function M:PeerLabel(guid)
   local peer = ask("Fiction", "Peer", guid)
-  local key = type(peer) == "table" and peer.archetype
-  local label = type(key) == "string" and ns.Locale:Get("PROFILE_" .. key)
-  if not label then return nil end
+  local key = type(peer) == "table" and type(peer.archetype) == "string" and "PROFILE_" .. peer.archetype
+  if not (key and ns.Locale:Get(key)) then return nil end
+  local contact = self:Contact(guid)
+  local label = ns.Gender(key, contact and contact.sex)
   local origin = peer.origin
   return label, type(origin) == "number" and origin > 0 and origin or nil
 end

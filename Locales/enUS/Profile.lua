@@ -7,6 +7,8 @@ L.PROFILE_MODULE_DESC = "Ashmark reads your character from what you do: whether 
 
 -- Archetypes (7.2), a shared vocabulary: shown by the House tab, the Encounters tooltip, the group sentence in
 -- the chronicle and in rumours. They name a kind of person and are used as labels, without an article.
+-- Translators: where a label inflects for a woman, add PROFILE_<ARCHETYPE>_F; the House tab, the tooltip and the
+-- group sentence pick it by the character's sex. Rumours carry no sex and always use the form without _F.
 L.PROFILE_OATHKEEPER = "Oathkeeper"
 L.PROFILE_OPPORTUNIST = "Opportunist"
 L.PROFILE_WANDERER = "Wanderer"

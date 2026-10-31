@@ -197,6 +197,11 @@ end
 
 -- Tab ----------------------------------------------------------------------------------
 
+-- An archetype label in the form for the character's sex (5.8).
+local function label(archetype, char)
+  return ns.Gender("PROFILE_" .. archetype, char.sex)
+end
+
 local function showAxes(tab, char)
   local profile = ns.Profile
   local shown = profile ~= nil and char ~= nil
@@ -204,11 +209,13 @@ local function showAxes(tab, char)
   for _, bar in ipairs(tab.Bars) do bar:SetShown(shown) end
   if not shown then return end
   local axes = profile:Axes(char)
-  tab.Archetype:SetText(ns.Format(L.HOUSE_TAB_ARCHETYPE, { archetype = L["PROFILE_" .. profile:Archetype(char)] }))
+  tab.Archetype:SetText(ns.Format(L.HOUSE_TAB_ARCHETYPE, { archetype = label(profile:Archetype(char), char) }))
   for i, axis in ipairs(AXES) do
-    local value = tonumber(axes[axis.key]) or 0
-    tab.Bars[i]:SetValue(value)
-    tab.Bars[i].Text:SetText(tostring(value))
+    local value, bar = tonumber(axes[axis.key]) or 0, tab.Bars[i]
+    bar:SetValue(value)
+    bar.Text:SetText(tostring(value))
+    bar.Low:SetText(label(axis.low, char))
+    bar.High:SetText(label(axis.high, char))
   end
 end
 
@@ -223,20 +230,20 @@ local function refresh(tab)
   tab.Empty:SetShown(key == nil)
 end
 
-local function pole(bar, archetype, point, relative, x)
+-- The archetype at one end of a bar; its text follows the shown character (showAxes).
+local function pole(bar, point, relative, x)
   local text = bar:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
   text:SetPoint(point, bar, relative, x, 0)
-  text:SetText(L["PROFILE_" .. archetype])
   return text
 end
 
-local function newBar(parent, i, axis)
+local function newBar(parent, i)
   local bar = UI:StatusBar(parent)
   bar:SetWidth(BAR_WIDTH)
   bar:SetPoint("TOP", parent, "TOP", 0, -(BARS_TOP + (i - 1) * BAR_STEP))
   bar:SetMinMaxValues(-100, 100)
-  bar.Low = pole(bar, axis.low, "RIGHT", "LEFT", -POLE_GAP)
-  bar.High = pole(bar, axis.high, "LEFT", "RIGHT", POLE_GAP)
+  bar.Low = pole(bar, "RIGHT", "LEFT", -POLE_GAP)
+  bar.High = pole(bar, "LEFT", "RIGHT", POLE_GAP)
   return bar
 end
 
@@ -253,7 +260,7 @@ local function build(parent)
   local archetype = parent:CreateFontString(nil, "OVERLAY", "GameFontNormal")
   archetype:SetPoint("TOP", parent, "TOP", 0, -(BARS_TOP - BAR_STEP - 2))
   local bars = {}
-  for i, axis in ipairs(AXES) do bars[i] = newBar(parent, i, axis) end
+  for i = 1, #AXES do bars[i] = newBar(parent, i) end
 
   local body = CreateFrame("Frame", nil, parent)
   body:SetPoint("TOPLEFT", 0, -LIST_TOP)

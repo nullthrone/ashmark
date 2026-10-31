@@ -120,6 +120,21 @@ describe("UI House tab", function()
     assert.is_false(t.Empty:IsShown())
   end)
 
+  it("labels the archetypes in the form for the character's sex", function()
+    wow.state.units.player.sex = 3
+    boot()
+    local base = ns.Locale:Base()
+    base.PROFILE_OATHKEEPER_F, base.PROFILE_OPPORTUNIST_F = "Oathkeeper (f)", "Opportunist (f)"
+    local t = tab()
+    assert.equal("Archetype: Oathkeeper (f)", t.Archetype:GetText())
+    assert.same({ "Opportunist (f)", "Oathkeeper (f)" }, { bars[1].Low:GetText(), bars[1].High:GetText() })
+    assert.same({ "Town-dweller", "Wanderer" }, { bars[2].Low:GetText(), bars[2].High:GetText() })
+    char.sex = 2
+    t = tab()
+    assert.equal("Archetype: Oathkeeper", t.Archetype:GetText())
+    assert.same({ "Opportunist", "Oathkeeper" }, { bars[1].Low:GetText(), bars[1].High:GetText() })
+  end)
+
   it("lists the members by level with their class icons", function()
     boot()
     tab()

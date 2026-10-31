@@ -167,6 +167,14 @@ describe("Rumours", function()
       assert.same({ "People say the Gentle soul from Stranglethorn Vale has chosen a side." }, mock.lines(wow))
     end)
 
+    it("names the archetype without a sex: a feminine form is never picked", function()
+      wow.state.units.player.sex = 3
+      start()
+      ns.Locale:Base().PROFILE_OATHKEEPER_F = "Oathkeeper (f)"
+      mock.ru(wow, "mira", {})
+      assert.same({ "People say the Oathkeeper from Desolace has sided with Gelkis Clan Centaur." }, mock.lines(wow))
+    end)
+
     it("drops a rumour whose place is unknown or that falls below 20", function()
       start()
       mock.ru(wow, "mira", { id = "00000001", m = 777777 })

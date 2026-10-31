@@ -74,6 +74,18 @@ describe("Encounters tooltip", function()
     assert.same({ "Thalen", "Met: 3× · last Desolace", "Oathkeeper" }, hover({ guid = THALEN }))
   end)
 
+  it("labels the archetype in the form for the contact's sex, and leaves out a key without a label", function()
+    boot(function(n)
+      n.Locale:Base().PROFILE_OATHKEEPER_F = "Oathkeeper (f)"
+      mock.fiction(n, { [THALEN] = { guid = THALEN, archetype = "OATHKEEPER", origin = 0 },
+                        [ORLA] = { guid = ORLA, archetype = "NOPE", origin = 0 } })
+    end)
+    assert.same({ "Thalen", "Met: 3× · last Desolace", "Oathkeeper" }, hover({ guid = THALEN }))
+    M:Contact(THALEN).sex = 3
+    assert.same({ "Thalen", "Met: 3× · last Desolace", "Oathkeeper (f)" }, hover({ guid = THALEN }))
+    assert.same({ "Thalen", "Met: 1×" }, hover({ guid = ORLA }))
+  end)
+
   it("adds nothing for strangers, for contacts met only by another character, or on other tooltips", function()
     boot()
     assert.same({ "Thalen" }, hover({ guid = KEL }))
