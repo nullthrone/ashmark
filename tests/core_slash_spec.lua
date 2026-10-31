@@ -26,17 +26,17 @@ describe("Core Slash", function()
 
   it("dispatches subcommands with their arguments, case-insensitive", function()
     local got
-    ns.Slash:Register("house", function(args) got = args end, "HOUSE_HELP")
-    SlashCmdList.ASHMARK("  HOUSE  Ashvale of Lordaeron ")
+    ns.Slash:Register("fixture", function(args) got = args end, "FIXTURE_HELP")
+    SlashCmdList.ASHMARK("  FIXTURE  Ashvale of Lordaeron ")
     assert.equal("Ashvale of Lordaeron", got)
-    SlashCmdList.ASHMARK("house")
+    SlashCmdList.ASHMARK("fixture")
     assert.equal("", got)
   end)
 
   it("lists subcommands on help and on an unknown command", function()
-    ns.Slash:Register("house", function() end, "HOUSE_HELP")
+    ns.Slash:Register("fixture", function() end, "FIXTURE_HELP")
     SlashCmdList.ASHMARK("help")
-    assert.is_true(printed("/ashmark house - HOUSE_HELP"))
+    assert.is_true(printed("/ashmark fixture - FIXTURE_HELP"))
     assert.is_true(printed("/ashmark debug - "))
     wow.chat = {}
     SlashCmdList.ASHMARK("nope")
