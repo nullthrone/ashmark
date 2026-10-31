@@ -360,6 +360,7 @@ describe("Dev test mode", function()
       wow.reset()
       wow.state.locale = "deDE"
       start(SAVED)
+      ns.Locale.tables.deDE.CORE_TITLE = nil
       local check = result(run(), "Core.locale")
       assert.is_false(check.ok)
       assert.truthy(check.detail:match("^deDE: %d+ missing: %u+_"))

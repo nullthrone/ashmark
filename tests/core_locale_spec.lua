@@ -19,6 +19,7 @@ describe("Core Locale", function()
     ns = wow.load()
     local de = ns.Locale:For("deDE")
     de.CORE_TITLE = "Aschmal"
+    de.CORE_UNKNOWN_QUEST = nil
     assert.equal("Aschmal", ns.L.CORE_TITLE)
     assert.equal("a quest", ns.L.CORE_UNKNOWN_QUEST)
     assert.equal("NO_SUCH_KEY", ns.L.NO_SUCH_KEY)
@@ -52,7 +53,8 @@ describe("Core Locale", function()
     assert.equal("Kämpferin", ns.Gender("TEST_WORD", 3))
     assert.equal("Kämpfer", ns.Gender("TEST_WORD", 2))
     assert.equal("Kämpfer", ns.Gender("TEST_WORD", 1))
-    assert.equal("a quest", ns.Gender("CORE_UNKNOWN_QUEST", 3))
+    de.CORE_UNKNOWN_QUEST_F = nil
+    assert.equal(ns.L.CORE_UNKNOWN_QUEST, ns.Gender("CORE_UNKNOWN_QUEST", 3))
   end)
 
   it("lists the enUS keys a locale lacks", function()
