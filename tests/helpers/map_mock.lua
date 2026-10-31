@@ -77,6 +77,25 @@ function mock.template(wow)
   end)
 end
 
+-- Blizzard's MapCanvasMixin:AcquirePin ends with pin:CheckMouseButtonPassthrough("RightButton"), so a right
+-- click on a pin reaches the canvas, which zooms out. MapCanvasPinMixin has no SetPassThroughButtons of its
+-- own: the call reaches the pin frame's method, restricted in combat. Call before boot; the list returned
+-- gets { button, InCombatLockdown() } for each call that reaches the frame.
+function mock.passthrough(wow)
+  local calls = {}
+  wow.stub("MapCanvasPinMixin.SetPassThroughButtons", nil)
+  local acquire = WorldMapFrame.AcquirePin
+  wow.stub("WorldMapFrame.AcquirePin", function(self, template, ...)
+    local pin = acquire(self, template, ...)
+    if rawget(pin, "SetPassThroughButtons") == nil then
+      rawset(pin, "SetPassThroughButtons", function(_, button) calls[#calls + 1] = { button, InCombatLockdown() } end)
+    end
+    pin:SetPassThroughButtons("RightButton")
+    return pin
+  end)
+  return calls
+end
+
 -- The violation kind as Conflicts registers it (Conflicts is not loaded), with a sentence for tooltips.
 function mock.kinds(ns)
   ns.Log:RegisterKind("violation", {
@@ -85,11 +104,11 @@ function mock.kinds(ns)
   })
 end
 
--- Core, Locales and Map, the Conflicts stand-in, opts.setup(ns), then login.
+-- Core, Locales and Map (or opts.files), the Conflicts stand-in, opts.setup(ns), then login.
 function mock.boot(wow, opts)
   opts = opts or {}
   mock.rects(wow)
-  local ns = wow.load(mock.FILES)
+  local ns = wow.load(opts.files or mock.FILES)
   mock.conflicts(ns, opts.data)
   mock.kinds(ns)
   if opts.setup then opts.setup(ns) end

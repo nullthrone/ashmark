@@ -126,9 +126,6 @@ function AshmarkMapPinMixin:OnMouseLeave()
   GameTooltip:Hide()
 end
 
--- Empty override: the real call is restricted in combat.
-function AshmarkMapPinMixin:SetPassThroughButtons() end
-
 -- Positions ------------------------------------------------------------------
 
 -- [mapId] = { { kind, m, x, y, source }, ... }: violation entries and chapter records that have a
@@ -261,7 +258,8 @@ end)
 function provider:RefreshAllData()
   self:RemoveAllData()
   if not M.enabled then return end
-  -- Pins are never acquired in combat (1.5); PLAYER_REGEN_ENABLED catches up on a shown map.
+  -- Pins are never acquired in combat (1.5), so AcquirePin's SetPassThroughButtons("RightButton"), restricted
+  -- there, always runs and a right click on a pin still zooms the map out. PLAYER_REGEN_ENABLED catches up.
   if InCombatLockdown() then
     self.dirty = true
     return
@@ -345,6 +343,17 @@ local function checkTemplate()
   return template[1], template[2]
 end
 
+-- Conflict pins need anchors in the dataset (7.1). None counted means the map shows no conflicts at all.
+local function checkAnchors()
+  local list = conflicts("All")
+  if type(list) ~= "table" or #list == 0 then return nil, "no conflicts" end
+  local n = 0
+  for _, conflict in ipairs(list) do
+    if anchorOf(conflict) then n = n + 1 end
+  end
+  return n > 0 or nil, n .. " of " .. #list .. " conflicts have an anchor"
+end
+
 local function checkProvider()
   if M.unavailable then return false, "unavailable: " .. table.concat(M.unavailable, ", ") end
   if not M.enabled then return nil, "off" end
@@ -357,6 +366,7 @@ end
 function M:OnInitialize()
   ns.Test:Register("Map.atlases", checkAtlases)
   ns.Test:Register("Map.template", checkTemplate)
+  ns.Test:Register("Map.anchors", checkAnchors)
   ns.Test:Register("Map.provider", checkProvider)
 end
 

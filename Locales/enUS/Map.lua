@@ -2,8 +2,11 @@ local _, ns = ...
 local L = ns.Locale:Base()
 
 L.MAP_MODULE_NAME = "World map"
-L.MAP_MODULE_DESC = "Marks your own story on the world map: the conflicts you know and the side you took, the "
-  .. "places where you broke your word and where your chapters closed. Only you see these marks."
+-- No conflict in the shipped data has an anchor yet (Map.anchors counts them); once some do, the
+-- description promises conflict marks again.
+L.MAP_MODULE_DESC = "Marks your own story on the world map: the places where you broke your word and where your "
+  .. "chapters closed. Only you see these marks. Marks for the conflicts you know, and the side you took, come "
+  .. "in a later version."
 
 -- Pin tooltips (7.3). {a} and {b} are the two sides of a conflict and {faction} the side taken, faction
 -- names from the client; {count} is a number, {roman} a Roman numeral, {date} a short date from the client.
