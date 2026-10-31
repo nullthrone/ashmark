@@ -8,13 +8,13 @@ Ashmark is one addon for World of Warcraft Forever: a core and nine feature modu
 2. **Mainline API.** Use `C_*` namespaces (`C_QuestLog`, `C_Reputation`, `C_Map`, `C_Item`, `C_Container`, `C_UnitAuras`, `C_ChatInfo`, `C_Timer`). Never Classic Era globals (`GetFactionInfo`, `GetQuestLogTitle`, global `GetSpellInfo`, `GetItemInfo`).
 3. **Feature-detect everything uncertain.** Every API in the table in 5.1 is read through `ns.Compat.Has`, and every event through the validity check in 3.5. A module whose required capability is missing disables itself and says so in the settings panel and in the test report. Nothing throws.
 4. **Secret values are opaque.** Any value that can be secret is read through `ns.Safe` (5.2). Code never compares, concatenates, negates, indexes with, uses as a table key or stores a secret value. A handler that meets a secret returns without side effects. `ns.Log:Add` and `ns.Safe.Clean` refuse secrets at write time.
-5. **Combat.** Ashmark's own windows (`AshmarkFrame`, `AshmarkDialog`, `AshmarkNoticeFrame`) are shown, hidden, moved and resized only out of combat, through `ns.Combat.Run`. Tooltip post-calls and the quest-dialog line (7.1) apply at once; chat lines print at any time; map pins are never acquired in combat (7.3). Ashmark creates no secure frames and calls no protected function. The only hardware-event call is `Screenshot()` inside the `/ashmark test` handler.
+5. **Combat.** Ashmark's own windows (`AshmarkFrame`, `AshmarkDialog`, `AshmarkNoticeFrame`) are shown, hidden, moved and resized only out of combat, through `ns.Combat.Run` (Escape still closes the two in `UISpecialFrames` at any time; they are not protected, so this is harmless). Tooltip post-calls and the quest-dialog line (7.1) apply at once; chat lines print at any time; map pins are never acquired in combat (7.3). Ashmark creates no secure frames and calls no protected function. The only hardware-event call is `Screenshot()` inside the `/ashmark test` handler.
 6. **No combat log.** Never register `COMBAT_LOG_EVENT` or `COMBAT_LOG_EVENT_UNFILTERED`; never call `CombatLogGetCurrentEventInfo`.
 7. **No libraries.** No LibStub, Ace3, HereBeDragons, ChatThrottleLib, LibDialog. Everything is Blizzard API plus the core in this repo.
 8. **Locale-proof logic.** Logic prefers typed data (IDs, enums, `Enum.TooltipDataLineType`). Where text matching is unavoidable, it matches only strings the client localizes itself: global strings (`ERR_*`, `ITEM_*`) and names returned by client APIs (`C_CreatureInfo`, `C_Item.GetItemInfoInstant`).
 9. **Game terms come from the client** through `ns.Names` (5.7), which copes with uncached data. Ashmark's own strings are the only translated text.
 10. **What leaves the client.** Addon messages carry the sender's own GUID, archetype, origin, ruleset, version and profile (`HI`, `PR`), and rumours. A rumour carries only a random id, a template key, an archetype key, a faction id, a map id, hops, strength and age: never a GUID, a name or free text. Contacts, notes and peers stay local.
-11. **Blizzard frames are read-only.** Never `SetPoint`, `SetText`, `SetHeight`, `Show`, `Hide` or `SetScript` on a Blizzard frame or region. Use `HookScript`, `hooksecurefunc`, `TooltipDataProcessor` and map data providers. The one exception: inside tooltip post-calls, Encounters and Knowledge add lines, Knowledge blanks lines (7.7), and either may call `tooltip:Show()` after its edits to resize the tooltip.
+11. **Blizzard frames are read-only.** Never `SetPoint`, `SetText`, `SetHeight`, `Show`, `Hide` or `SetScript` on a Blizzard frame or region. Use `HookScript`, `hooksecurefunc`, `TooltipDataProcessor` and map data providers. The one exception: inside tooltip post-calls, Encounters and Knowledge add lines, Knowledge blanks lines (7.7), and either may call `tooltip:Show()` after its edits to resize the tooltip. `GameTooltip` after Ashmark's own `SetOwner` call (map pins, the compartment entry, list rows) is filled, shown and hidden as usual.
 12. **Lua 5.1.** No `goto`, `//`, bit operators or `table.unpack`; use `unpack` and `select("#", ...)`. Numbers on the wire go through `string.format("%d", n)`.
 13. **No stored array positions.** Modules reference log entries by sequence number (4.2), never by index into `char.log`.
 
@@ -127,7 +127,7 @@ Every module has `default = true`. Without `canSend`, Fiction and Rumours only r
 | Step | Event | Core does first | Then calls | Allowed in the callback |
 | --- | --- | --- | --- | --- |
 | 1 | `ADDON_LOADED` with arg1 == `ADDON` (then unregistered) | Forever check, DB load and migrations (4.4), `math.randomseed` once if it exists | `M:OnInitialize()` on every module | register settings, kinds, slash subcommands, test checks. `M:Char()` is nil |
-| 2 | `PLAYER_LOGIN` | Identity refresh creates or updates `chars[guid]`, Compat recompute, Comm prefix, settings category | `M:OnEnable()` on every module whose `requires` and `modules` are met and whose setting is on | events, bus subscriptions, hooks (`M:Hook`), data providers. No log writes, no topic fires |
+| 2 | `PLAYER_LOGIN` | Identity refresh creates or updates `chars[guid]`, Compat recompute, Comm prefix | `M:OnEnable()` on every module whose `requires` and `modules` are met and whose setting is on; then Core builds the settings category, so module tooltips can name missing events (3.5) | events, bus subscriptions, hooks (`M:Hook`), data providers. No log writes, no topic fires |
 | 3 | first `PLAYER_ENTERING_WORLD` after login or reload | sets the ready flag (from here on `Log:Add` writes and topics fire), silent watcher baselines (5.10) | `M:OnWorldReady(isInitialLogin, isReloadingUi)` on enabled modules, in TOC order; afterwards Core's own first writes: zone check and group state (5.10), auto chapter and compaction (4.2) | first game-state reads; log writes and topic fires |
 | 4 | `PLAYER_LOGOUT` | played time and `lastSeen` (5.10), pending `other` gold | nothing | |
 
@@ -147,12 +147,13 @@ M:UnregisterEvent(event[, unit])
 M:Subscribe(topic, handler)                -- handler(self, topic, ...); delivered only while M.enabled
 M:Fire(topic, ...)                         -- ns.Bus:Fire
 M:Hook(key, install)                       -- runs install() at most once per session
+M:Wrap(source, fn) -> function             -- returns at once while M is off; runs fn(...) through 3.6 under source
 M:Char()                                   -- current CharRecord; nil before PLAYER_LOGIN
 M:Setting(name)                            -- ns.Settings:Get("<Name>." .. name)
 M:Stat(name, delta)                        -- char.stats["<Name>." .. name] += delta; returns the new value
 ```
 
-Hooks (`hooksecurefunc`, `HookScript`, `TooltipDataProcessor.AddTooltipPostCall`) are installed only through `M:Hook` in `OnEnable`. Every hook body starts with `if not M.enabled then return end` and runs through the error wrapper (3.6).
+Hooks (`hooksecurefunc`, `HookScript`, `TooltipDataProcessor.AddTooltipPostCall`) are installed only through `M:Hook` in `OnEnable`. Every hook body is wrapped with `M:Wrap(key, body)`, so it returns early while the module is off and runs through the error wrapper (3.6). Callbacks a module hands to `ns.Util.Debounce`, `ns.Util.Ticker` or `C_Timer` are wrapped the same way; unwrapped, their errors never count against the module and they keep running after it is disabled.
 
 ```lua
 ns.Util.Token() -> string                  -- 8 lowercase hex chars: two math.random(0, 0xffff)
@@ -168,7 +169,7 @@ ns.Util.Ticker(key, seconds, fn)           -- one C_Timer.NewTicker per key; ns.
 - Plain events share one frame. Each event has an ordered list of (module, handler) and a count; the frame unregisters the event when the count reaches 0.
 - Unit events get one frame per (event, unit) pair, created lazily and shared by every module asking for that pair. A module never uses `RegisterEvent` and `RegisterUnitEvent` for the same event.
 - Validity: before registering, `C_EventUtils.IsEventValid(event)` when it exists, otherwise a `pcall` around the frame call. An invalid event is skipped and added to `M.missingEvents`, which the settings panel and the test report show. Registration never throws.
-- Core's own handlers use the same API under a `Core` pseudo-module.
+- Core's own handlers use the same API under always-enabled Core services (`ns:NewService(name)`, one per service, because an owner holds one handler per event). Their errors are reported but never disable anything.
 
 ### 3.6 Errors
 
@@ -185,7 +186,7 @@ xpcall(function() return handler(self, unpack(args, 1, n)) end, report)
 
 ### 3.7 Bus topics
 
-`ns.Bus:Fire(topic, ...)` is synchronous; handlers run in subscription order. A `Fire` issued while another `Fire` is dispatching is queued and delivered only after the current topic has reached every subscriber (FIFO); the outermost `Fire` returns once the queue is empty. Every subscriber therefore sees topics in the order they were fired: `LOG_ADDED` for a `quest.accept` before `LOG_ADDED` for the `alliance` it caused. State is not queued: a handler can see changes that an earlier subscriber made while handling the same topic (Conflicts handles `LOG_ADDED` before Profile), so rules that depend on the state before an entry compare sequence numbers (7.2).
+`ns.Bus:Fire(topic, ...)` is synchronous; handlers run in subscription order. Before the ready flag (3.3, step 3) it does nothing. A `Fire` issued while another `Fire` is dispatching is queued and delivered only after the current topic has reached every subscriber (FIFO); the outermost `Fire` returns once the queue is empty. Every subscriber therefore sees topics in the order they were fired: `LOG_ADDED` for a `quest.accept` before `LOG_ADDED` for the `alliance` it caused. State is not queued: a handler can see changes that an earlier subscriber made while handling the same topic (Conflicts handles `LOG_ADDED` before Profile), so rules that depend on the state before an entry compare sequence numbers (7.2).
 
 | Topic | Payload | Fired by |
 | --- | --- | --- |
@@ -374,7 +375,7 @@ Core registers the `quest.*`, `zone`, `level`, `death`, `rep` and `gold` kinds i
 **Chapters.** The open chapter is every entry with `n` greater than the last chapter's `to`. `CloseChapter(members, opts)` returns nil if the open chapter is empty; otherwise it writes a `chapter { no, auto }` entry, appends `{ no = #chapters + 1, from = previous.to + 1 (or 1), to = entry.n, closed = entry.t, m, x, y, auto }` to `chapters`, and fires `CHAPTER_CLOSED(chapter, members or {})`. Campfire decides when a rest closes a chapter (7.6). In lifecycle step 3, after every module's `OnWorldReady`, Core closes the open chapter itself (`auto = true`, no notice) when it holds more than 1,000 entries or began more than 7 days ago, so the chronicle never becomes one endless chapter.
 
 **Compaction.** Only `Log:Compact` removes entries, and it does not depend on chapters.
-- It runs in lifecycle step 3, after every module's `OnWorldReady` and the automatic chapter close, for the current character, and after an `Add` that takes the log above 4,000 entries (scheduled with `C_Timer.After(0)` through `ns.Combat.Run("log:compact")`). An `Iter` in progress defers it.
+- It runs in lifecycle step 3, after every module's `OnWorldReady` and the automatic chapter close, for the current character, and after an `Add` that takes the log above 4,000 entries (scheduled with `C_Timer.After(0)` through `ns.Combat.Run("log:compact")`). An `Iter` in progress keeps walking the array it started with.
 - One pass builds a new array: keep-kind entries stay; non-keep entries older than 180 days go; then the oldest non-keep entries go until at most 3,000 entries remain. If keep-kind entries alone exceed 2,000, the oldest `contact` and `peer` entries go first (their stores keep the summary).
 - The new array replaces the old one and `LOG_COMPACTED(char)` fires. Sequence numbers and chapter ranges never change; an old chapter simply contains fewer entries.
 
@@ -410,7 +411,7 @@ At `ADDON_LOADED` for this addon:
 1. `AshmarkDB` is set but not a table: a fresh table is built with `recovered = <old value>`.
 2. A table without `schema`: a fresh table is built with `recovered = <old table>`. Nothing is overwritten silently.
 3. `schema` newer than the code: read-only mode. `ns.DB.readOnly = true`, every module is unavailable (`"schema"`), `Log:Add` returns nil, `CORE_SV_NEWER` is printed, and nothing is written. Core's own writers are gated: it skips the Identity refresh (no `chars[guid]` is created or updated; `M:Char()` returns the existing record or nil), `zones`, `lastSeen`, `stats` (including the played-time ticker), `state` (group flag, sender map; Comm keeps them in memory), pending `other` gold, `dev.blocked`, `dev.tests`, `dev.probes` and the settings binding (no `RegisterAddOnSetting` on `AshmarkDB.settings`; the panel shows only `CORE_SV_NEWER`). `/ashmark test` and `probe` print their report without storing it, and `/ashmark reset` refuses. The table stays untouched, so logout writes it back unchanged.
-4. `schema` older: migrations run in order; each is idempotent and tested.
+4. `schema` older: migrations run in order; each is idempotent and tested. A migration that raises leaves the DB read-only for the session as in 3, with `CORE_SV_MIGRATE_FAILED`.
 5. `AshmarkDB` is nil: a fresh table with `created = time()`, `ns.DB.fresh = true`, and `CORE_SV_NEW` is printed once: "A new record has started. If Ashmark was used on this account before, the saved data did not load: do not /reload or log out again. Quit the game, then replace `Ashmark.lua` with `Ashmark.lua.bak` in `WTF\Account\<account>\SavedVariables\` before the next login." The client moves `Ashmark.lua` to `Ashmark.lua.bak` on every save (each /reload, logout or quit), so after a failed load the first save moves the good file to `.bak` and the second destroys it.
 
 `Core/DB.lua` creates every top-level table of the schema, including `traces`. The test report shows `created`, `fresh`, `readOnly`, `recovered` and the entry count; a second test run must find the first run's record, which proves the SavedVariables round trip.
@@ -574,11 +575,12 @@ ns.Comm:Send(type, fields, channel, target, priority) -> ok, reason
   -- fields: array of strings and integers; channel "PARTY"; target nil (reserved for WHISPER, unused)
   -- priority 1 (handshake) to 3 (bulk); default 1 for HI and PR, 3 for RU
   -- reason: "share" (Comm.share off), "cannotSend", "invalid", "tooLong", "notGrouped"
-ns.Comm:Register(type, fn)    -- fn(from, fields, channel); from = { sender = raw string, guid, unit }
+ns.Comm:Register(type, fn, owner)   -- fn(from, fields, channel); from = { sender = raw string, guid, unit }
+                                    -- owner: the module; fn runs only while owner.enabled, errors count to it
 ns.Comm.stats                 -- { sent, rejected, dropped, results = { [code] = n } }
 ```
 
-**Queue.** Token bucket with capacity 6 and a refill of 1 per 1.5 s, under Blizzard's 10 per prefix with 1 per second regeneration. The queue holds at most 30 messages, ordered by priority then age; when full it drops the oldest message of the lowest priority. A ticker runs only while the queue is not empty. The queue pauses while `ns.Safe.InLockdown()` or `not IsInGroup()`. Results (`Enum.SendAddonMessageResult`; `true` counts as 0): 0 sent; 3 or 8 (throttle) requeue at the front and pause 5 s; 11 (lockdown) requeues and pauses until `ZONE_CHANGED_NEW_AREA` or `PLAYER_ENTERING_WORLD`; 5 (not in group) drops the queue; anything else drops the message. Three consecutive results outside 0, 3, 5, 8 and 11 call `Compat.Disable("canSend")` for the session, and the test report shows why.
+**Queue.** Token bucket with capacity 6 and a refill of 1 per 1.5 s, under Blizzard's 10 per prefix with 1 per second regeneration. The queue holds at most 30 messages, ordered by priority then age; when full it drops the oldest message of the lowest priority. A ticker runs only while the queue is not empty. The queue pauses while `ns.Safe.InLockdown()` or `not ns.Identity:InGroup()`. Results (`Enum.SendAddonMessageResult`; `true` counts as 0): 0 sent; 3 or 8 (throttle) requeue at the front and pause 5 s; 11 (lockdown) requeues and pauses until `ZONE_CHANGED_NEW_AREA` or `PLAYER_ENTERING_WORLD`; 5 (not in group) drops the queue; anything else drops the message. Three consecutive results outside 0, 3, 5, 8 and 11 call `Compat.Disable("canSend")` for the session, and the test report shows why.
 
 **Receive** (`CHAT_MSG_ADDON`), in this order:
 1. Return if `Safe.IsSecret(prefix)` or `prefix ~= "Ashmark"`.
@@ -611,6 +613,8 @@ Every result is checked for nil before it is indexed, table fields go through Sa
 ns.Chronicle:Chapters(char) -> { chapter, ..., open }   -- open = { no, from, open = true }
 ns.Chronicle:Lines(char, chapter, ctx) -> { { entry = e, text = s }, ... }   -- ascending
 ns.Chronicle:Render(entry, ctx) -> string|nil
+ns.Chronicle:Text(key, ctx, values) -> string             -- renderer helper: key, or key .. "_THEY" with
+                                                          -- {name} when ctx.own == false; _F by ctx.char.sex
 -- ctx = { char = CharRecord, own = true|false }   -- own = false in the House's family chronicle
 ```
 
@@ -618,7 +622,7 @@ Renderers:
 - `render(entry, ctx) -> string|nil`, registered with the kind; nil means the entry is not shown.
 - They use only the entry, `ctx`, `ns.Names` and public services, never the current profile or other mutable state. Wording that depends on state is decided and stored at write time (`violation.o`).
 - With `ctx.own == false` they use the third-person key `<KEY>_THEY` with `{name}` (the member's name).
-- They run through the error wrapper; an error renders nothing.
+- They run through the error wrapper under Core (a kind has no owner); an error renders nothing.
 
 Chronicle text is generated at display time, so it follows the client locale and never stores prose.
 
@@ -671,12 +675,12 @@ ns.Locale:Missing(code) -> { key, ... }   -- enUS keys the locale lacks
 `Core/Watch.lua` writes the core kinds, so every module reads one consistent stream.
 
 - **Quests.** `QUEST_ACCEPTED`: `questID = select(select("#", ...), ...)` (the last argument), valid only if `C_QuestLog.GetLogIndexForQuestID(questID)` returns non-nil → `quest.accept`. `QUEST_TURNED_IN(questID, xpReward, moneyReward)` → `quest.turnin`, and if `moneyReward > 0` also `gold { src = "quest", c = moneyReward }`. `QUEST_DETAIL` carries no quest ID; readers use `GetQuestID()`.
-- **Abandon.** With `abandonHooks`: `hooksecurefunc(C_QuestLog, "SetAbandonQuest")` remembers `C_QuestLog.GetAbandonQuest()`, and `hooksecurefunc(C_QuestLog, "AbandonQuest")` writes `quest.abandon` for it; `QUEST_REMOVED` is ignored. Without them: on `QUEST_REMOVED(questID)`, after `C_Timer.After(1)`, write `quest.abandon` only if no `QUEST_TURNED_IN` for that quest arrived within 2 s in either order, `not C_QuestLog.IsQuestFlaggedCompleted(questID)`, and the quest is not a task quest (`C_QuestLog.IsQuestTask`, if present).
+- **Abandon.** With `abandonHooks`: `hooksecurefunc(C_QuestLog, "SetAbandonQuest")` remembers `C_QuestLog.GetAbandonQuest()`, and `hooksecurefunc(C_QuestLog, "AbandonQuest")` writes `quest.abandon` for it; `QUEST_REMOVED` is ignored. Without them: on `QUEST_REMOVED(questID)`, after `C_Timer.After(2)`, write `quest.abandon` only if no `QUEST_TURNED_IN` for that quest arrived within 2 s in either order, `not C_QuestLog.IsQuestFlaggedCompleted(questID)`, and the quest is not a task quest (`C_QuestLog.IsQuestTask`, if present).
 - **Zone.** On `ZONE_CHANGED_NEW_AREA` and in lifecycle step 3 after the modules' `OnWorldReady`: `z = Where.Zone(m)`; no entry when `z` is nil; write `zone` only when `z` differs from the last `zone` entry; `first = true` and `zones[z] = t` on the first visit.
 - **Group.** The group boundary is defined once, here. On `GROUP_ROSTER_UPDATE` and `GROUP_LEFT` (coalesced 1 s), and in lifecycle step 3 after the modules' `OnWorldReady`, Core compares `ns.Identity:InGroup()` with `state.inGroup`. When they differ, Core stores the new value and fires `GROUP_CHANGED(inGroup)`. Comm, Fiction and Encounters take the group boundary only from this topic: Comm clears `state.senders`, Fiction clears `state.greeted`, Encounters opens or ends its session. Because `state.inGroup` survives /reload and logout, a character that logs back in outside the group still gets `GROUP_CHANGED(false)`.
 - **Level and death.** `PLAYER_LEVEL_UP(level)` → `level { l }`; `PLAYER_DEAD` → `death`.
-- **Reputation.** Tracked factions: every non-zero faction in `ns.Data.Conflicts` plus 2802. The baseline (`reaction`, `currentStanding` via `Safe.Fields`) is taken silently at the start of lifecycle step 3, or at a faction's first non-nil read. `UPDATE_FACTION` is coalesced to 1 s; for each tracked faction whose values changed, Core fires `REP_CHANGED(f, reaction, delta)`, and writes `rep { f, s = reaction, d }` only when `reaction` changed.
-- **Gold.** On `PLAYER_MONEY`, `delta = GetMoney() - last`. Money already logged from `QUEST_TURNED_IN` is consumed first (pending for 2 s). The rest accumulates in the open context: `loot` (`LOOT_OPENED` to `LOOT_CLOSED`), `vendor` (`MERCHANT_SHOW` to `MERCHANT_CLOSED`), `trade` (`TRADE_SHOW` to `TRADE_CLOSED`), `mail` (`MAIL_SHOW` to `MAIL_CLOSED`). One `gold` entry with signed `c` is written when the context closes, if `c ~= 0`. Changes outside any context collect as `other`, written at most every 10 minutes and at logout.
+- **Reputation.** Tracked factions: every non-zero faction in `ns.Data.Conflicts` plus 2802. The baseline (`reaction`, `currentStanding` via `Safe.Fields`) is taken silently at the start of lifecycle step 3, or at a faction's first non-nil read. `UPDATE_FACTION` is coalesced to 1 s; for each tracked faction whose values changed, Core writes `rep { f, s = reaction, d }` if `reaction` changed, then fires `REP_CHANGED(f, reaction, delta)`.
+- **Gold.** On `PLAYER_MONEY`, `delta = GetMoney() - last`. Quest money is counted once, in either event order: money logged from `QUEST_TURNED_IN` consumes the `PLAYER_MONEY` gains of the next 2 s, and a gain up to 2 s before the `QUEST_TURNED_IN` is taken back out of the context it went into. The rest accumulates in the open context: `loot` (`LOOT_OPENED` to `LOOT_CLOSED`), `vendor` (`MERCHANT_SHOW` to `MERCHANT_CLOSED`), `trade` (`TRADE_SHOW` to `TRADE_CLOSED`), `mail` (`MAIL_SHOW` to `MAIL_CLOSED`). One `gold` entry with signed `c` is written when the context closes, if `c ~= 0`. Changes outside any context collect as `other`, written at most every 10 minutes and at logout.
 - **Played time.** `stats["Core.playedSec"]` grows by session time on a 5-minute ticker and at `PLAYER_LOGOUT`, and `lastSeen = time()` is written at the same moments. Core never writes `lastSeen` at login, so readers in `OnWorldReady` see when the previous session ended (to within 5 minutes after a crash). Ashmark never calls `RequestTimePlayed()`.
 - **Blocked actions.** `ADDON_ACTION_BLOCKED` and `ADDON_ACTION_FORBIDDEN` with arg1 == `ADDON` append `{ t, event, fn }` to `dev.blocked`.
 
@@ -690,7 +694,7 @@ Rules from the concept, binding for every unit:
 - **Colours** come only from Blizzard colour objects: `NORMAL_FONT_COLOR`, `HIGHLIGHT_FONT_COLOR`, `RED_FONT_COLOR`, `GRAY_FONT_COLOR`, `ChatTypeInfo`, `C_ClassColor.GetClassColor`, `FACTION_BAR_COLORS`. Never literal RGB.
 - **Parchment** only as a client texture: `ns.UI:Parchment(texture)` tries `ns.UI.PARCHMENT_ATLASES = { "QuestBG-Parchment" }` (Core may add candidates from the exported Blizzard art) with `C_Texture.GetAtlasInfo` and returns false if none exists; the caller then leaves `AshmarkFrame.Inset.Bg` visible. Never `SetColorTexture` for surfaces.
 - **Icons** from the client: class atlases via `GetClassAtlas` when present, quest and item icons via their APIs, map icons from Blizzard's atlases. No emoji, no custom vector art.
-- **Sounds:** `SOUNDKIT.IG_QUEST_LOG_OPEN` / `IG_QUEST_LOG_CLOSE` on open and close, `SOUNDKIT.IG_ABILITY_PAGE_TURN` on chapter change; every constant guarded, `Core.sounds` respected.
+- **Sounds:** `SOUNDKIT.IG_QUEST_LOG_OPEN` / `IG_QUEST_LOG_CLOSE` on open and close, `SOUNDKIT.IG_ABILITY_PAGE_TURN` on chapter change; played through `ns.UI:Sound(kit)` (`UI/MainFrame.lua`), which guards the constant and respects `Core.sounds`.
 - **Known game patterns, not tables.** No grid lines, sortable column headers, toggle switches or data tables.
 - **Information where it happens:** quest-dialog line (Conflicts), unit tooltip line (Encounters), world-map pins (Map), centre-screen notice (Campfire), chat line (Rumours, Encounters recognition).
 
@@ -703,6 +707,7 @@ ns.UI.MainFrame:AddTab(id, { label = key, order = n, module = name|nil, build = 
 -- tab must have tab:Refresh()
 ns.UI.MainFrame:Refresh(id)
 ns.UI.MainFrame:Show(id)
+ns.UI.MainFrame:Toggle()         -- /ashmark and the compartment
 ```
 
 MainFrame creates `AshmarkFrame.Tabs[i]` from `PanelTabButtonTemplate` in `order`, calls `SetID(i)`, maps string ids to indices, and uses `PanelTemplates_SetNumTabs`, `PanelTemplates_SetTab` and `PanelTemplates_TabResize`. `build` runs once, when the tab is first shown. Tabs whose module is disabled or unavailable are hidden. MainFrame calls `tab:Refresh()` on show and on `Refresh(id)`, and refreshes the visible tab (only that one) at most every 0.5 s on `LOG_ADDED`, `LOG_COMPACTED`, `NAMES_UPDATED`, `CONTACT_UPDATED`, `HOUSE_CHANGED` and `PROFILE_CHANGED`. Tab files load after `Modules/` and may capture `ns.<Unit>` at load.
@@ -721,18 +726,20 @@ ns.UI:List(parent, { extent = 20, init = function(button, data) end }) -> scroll
   -- WowScrollBoxList + MinimalScrollBar, CreateScrollBoxListLinearView,
   -- view:SetElementInitializer("Button", init), view:SetElementExtent(extent),
   -- ScrollUtil.InitScrollBoxListWithScrollBar(scrollBox, scrollBar, view); no XML needed
+  -- the box and its bar fill parent; new rows: scrollBox:SetDataProvider(CreateDataProvider(rows),
+  -- ScrollBoxConstants.RetainScrollPosition)
 ns.UI:Parchment(texture) -> bool
 ns.UI:ClassColored(text, classFile) -> string
 ns.UI:StatusBar(parent) -> StatusBar
 ```
 
-Header rows are list rows with `data.header = true`; collapsing a header rebuilds the data provider without its children.
+Every `UI/` file extends `ns.UI` (`local UI = ns.UI or {}; ns.UI = UI`) and never replaces it. Header rows are list rows with `data.header = true`; collapsing a header rebuilds the data provider without its children.
 
 ### 6.2 Other surfaces
 
 - `ns.UI.Dialog:Show({ text, edit = { text, max } or nil, accept = key, cancel = key, onAccept = fn(text) })` shows `AshmarkDialog`: DIALOG strata, a `DialogBorderTemplate` border, `GameFontHighlight` text, an `InputBoxTemplate` edit box with `SetMaxLetters(max)` when `edit` is set, two `UIPanelButtonTemplate` buttons. It is in `UISpecialFrames` and is shown and hidden through `ns.Combat.Run`.
 - `ns.UI.Notice:Show(text)` shows `AshmarkNoticeFrame`: HIGH strata, centred at the top of the screen (`TOP` of `UIParent`, y = -200), one `GameFontNormalHuge` FontString coloured from `ChatTypeInfo.SYSTEM`, an AnimationGroup that holds 3 s and fades 1 s. Queued through `ns.Combat.Run("notice")`. Ashmark does not use `RaidNotice_AddMessage`.
-- `ns.UI.ChatLine:Print(text, kind)`: `DEFAULT_CHAT_FRAME:AddMessage` with Ashmark's prefix; colour from `ChatTypeInfo.SYSTEM` (`kind = "system"`) or `ChatTypeInfo.MONSTER_SAY` (`"rumour"`); respects `Core.chatLines`.
+- `ns.UI.ChatLine:Print(text, kind) -> printed`: `DEFAULT_CHAT_FRAME:AddMessage` with Ashmark's prefix; colour from `ChatTypeInfo.SYSTEM` (`kind = "system"`) or `ChatTypeInfo.MONSTER_SAY` (`"rumour"`); respects `Core.chatLines`.
 - Addon Compartment (`UI/Compartment.lua`) and the settings category `Ashmark` (`Core/Settings.lua`).
 
 ## 7. Units
@@ -985,12 +992,12 @@ ns.Test:Tooltip()          -- Core/Init.lua; AshmarkTestTooltip, created on firs
                            -- returned cleared and owned (ClearLines, SetOwner(UIParent, "ANCHOR_NONE"))
 ```
 
-Every unit registers its own checks in `OnInitialize`, in its own files; `Dev/TestMode.lua` only runs them.
+Every unit registers its own checks in `OnInitialize`, in its own files; `Dev/TestMode.lua` runs them and holds Core's own checks. A check that raises or returns a secret is stored as a failure; the error counts against the test mode, never against a module.
 
 `/ashmark test`:
 1. In combat (`InCombatLockdown()`): print `TEST_NOT_IN_COMBAT` and stop.
 2. Run every registered check synchronously, each through the error wrapper.
-3. Store `AshmarkDB.dev.tests[#+1] = { t, build, locale, project, tocVariant, db = { created, fresh, readOnly, recovered, entries, seq }, comm = ns.Comm.stats, results = { { id, ok, detail }, ... } }`. `recovered` is only `type(AshmarkDB.recovered)` or nil, never the value, which can be a whole old DB. In read-only mode nothing is stored (4.4).
+3. Store `AshmarkDB.dev.tests[#+1] = { t, build, locale, project, tocVariant, db = { created, fresh, readOnly, recovered, entries, seq }, comm = <copy of ns.Comm.stats>, results = { { id, ok, detail }, ... }, questDialog, screenshot, blocked }` (the last three from steps 5 and 6). `recovered` is only `type(AshmarkDB.recovered)` or nil, never the value, which can be a whole old DB. In read-only mode nothing is stored (4.4).
 4. Print a summary (`TEST_SUMMARY`).
 5. Show `AshmarkFrame` on the Chronicle tab. If `QuestFrame:IsShown()`, anchor `AshmarkFrame` to the right of it; otherwise print `TEST_OPEN_QUEST_DIALOG` ("Talk to a quest giver first for the screenshot."). Ashmark never opens the quest log or the world map.
 6. Call `Screenshot()` directly in the slash handler (the key press is the hardware event). `SCREENSHOT_SUCCEEDED`, `SCREENSHOT_FAILED`, and `ADDON_ACTION_BLOCKED` / `ADDON_ACTION_FORBIDDEN` with arg1 == `ADDON` within the next 10 s are added to the same test record.
@@ -1002,8 +1009,8 @@ Core checks:
 - Parchment atlases (`C_Texture.GetAtlasInfo`), font objects, every `SOUNDKIT` constant used.
 - Locale completeness: `ns.Locale:Missing(GetLocale())`.
 - `Identity:Player()` fields and `surnameSource`.
-- SavedVariables: `created`, `fresh`, `readOnly`, `recovered`, entry count, `seq`, and whether the previous test record exists (round trip).
-- Secret handling: if `secretwrap` exists, wrap a string and a table; every Safe function returns its not-ok form without error; `Log:Add` drops an entry with a wrapped field; the Comm decoder drops a wrapped text. Also record the `addon*RestrictionsForced` CVars.
+- SavedVariables: `created`, `fresh`, `readOnly`, `recovered`, entry count, `seq`, and whether a test record from an earlier session exists (round trip; skipped until one does).
+- Secret handling: if `secretwrap` exists, wrap a string and a table; every Safe function returns its not-ok form without error; `Log:Add` drops an entry with a wrapped field (of a kind registered with `quiet = true`, so the deliberate drop is counted, then undone, and not reported); the Comm decoder drops a wrapped text. Also record the `addon*RestrictionsForced` CVars.
 - Comm: `canSend`, `stats`, result codes; `dev.blocked` since the last run.
 
 Unit checks:
