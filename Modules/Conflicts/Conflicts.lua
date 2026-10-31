@@ -339,13 +339,16 @@ local function zoneName(conflict)
 end
 
 -- An entry of a retired id (7.1) renders nothing, as a forgotten contact does (7.4): its sides and zone
--- no longer ship, and a line of placeholders would stay in the chronicle for good.
+-- no longer ship, and a line of placeholders would stay in the chronicle for good. A rule-1 entry stands
+-- for one conflict and names its title, so conflicts of one faction pair in one zone read apart; a rule-2
+-- entry stands for every conflict its pass formed in the zone and names none.
 local function renderAlliance(entry, ctx)
   local conflict = M:Get(entry.c)
   if not conflict then return nil end
-  return ns.Chronicle:Text(entry.rep and "CONFLICT_ALLIED_REP" or "CONFLICT_ALLIED", ctx, {
-    faction = M:SideName(conflict, entry.side), zone = zoneName(conflict),
-  })
+  local args = { faction = M:SideName(conflict, entry.side), zone = zoneName(conflict) }
+  if entry.rep then return ns.Chronicle:Text("CONFLICT_ALLIED_REP", ctx, args) end
+  args.title = M:Title(conflict)
+  return ns.Chronicle:Text("CONFLICT_ALLIED", ctx, args)
 end
 
 -- The wording was decided at write time (o), never from the current profile.

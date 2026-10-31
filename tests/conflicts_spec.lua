@@ -136,7 +136,7 @@ describe("Conflicts", function()
       boot(nil, renamedData())
       assert.equal("clan_choice", ns.Conflicts:Get("old_choice").id)
       assert.is_nil(ns.Conflicts:Get("never_was"))
-      assert.equal("You sided with Gelkis Clan Centaur in Desolace.",
+      assert.equal("You sided with Gelkis Clan Centaur in Desolace (Gelkis Alliance).",
         render({ k = "alliance", c = "old_choice", side = "A", n = 1, t = 1 }))
     end)
 
@@ -369,10 +369,24 @@ describe("Conflicts", function()
       local byRep = char.log[1]
       mock.accept(wow, 3001)
       local byQuest = last("alliance")
-      assert.equal("You sided with Booty Bay in Stranglethorn Vale.", render(byQuest))
-      assert.equal("Mira sided with Booty Bay in Stranglethorn Vale.", render(byQuest, false, "Mira"))
+      assert.equal("You sided with Booty Bay in Stranglethorn Vale (Bloodsail Correspondence).", render(byQuest))
+      assert.equal("Mira sided with Booty Bay in Stranglethorn Vale (Bloodsail Correspondence).",
+                   render(byQuest, false, "Mira"))
       assert.equal("Your standing with Magram Clan Centaur decided your side in Desolace.", render(byRep))
       assert.equal("Standing with Magram Clan Centaur decided Mira's side in Desolace.", render(byRep, false, "Mira"))
+    end)
+
+    it("names the conflict of an alliance by quest, so two of one faction pair in one zone read apart", function()
+      boot(nil, mock.twins())
+      mock.accept(wow, 1001)
+      local first = last("alliance")
+      mock.accept(wow, 1003)
+      local second = last("alliance")
+      assert.is_not.equal(first.n, second.n)
+      assert.equal("You sided with Gelkis Clan Centaur in Desolace (Gelkis Alliance).", render(first))
+      assert.equal("You sided with Gelkis Clan Centaur in Desolace (Raid on the Kolkar).", render(second))
+      assert.equal("Mira sided with Gelkis Clan Centaur in Desolace (Raid on the Kolkar).",
+                   render(second, false, "Mira"))
     end)
 
     it("tells of a broken word in the wording stored with it", function()
@@ -397,7 +411,7 @@ describe("Conflicts", function()
     it("names a side without a faction", function()
       boot()
       mock.turnIn(wow, 6001)
-      assert.equal("You sided with those without a banner in Shen'dralas.", render(last("alliance")))
+      assert.equal("You sided with those without a banner in Shen'dralas (Grove Keepers).", render(last("alliance")))
     end)
 
     it("tells nothing of a conflict the data no longer has, so a retired id leaves no line of placeholders", function()

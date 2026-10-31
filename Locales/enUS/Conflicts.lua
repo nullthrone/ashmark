@@ -16,9 +16,10 @@ L.CONFLICT_HOUSE_STANDS_AGAINST = "Your house, {house}, stands against {faction}
 L.CONFLICT_TEST_DIALOG = "Ashmark's line under the quest dialog appears here."
 
 -- Chronicle sentences; _THEY forms are used in the family chronicle with {name}. {zone} is a zone name,
--- {quest} a quest title, {faction} the side taken, {broken} the side left.
-L.CONFLICT_ALLIED = "You sided with {faction} in {zone}."
-L.CONFLICT_ALLIED_THEY = "{name} sided with {faction} in {zone}."
+-- {quest} a quest title, {faction} the side taken, {broken} the side left, {title} the conflict's title
+-- (the client's title of its first quest, as in the Decisions tab).
+L.CONFLICT_ALLIED = "You sided with {faction} in {zone} ({title})."
+L.CONFLICT_ALLIED_THEY = "{name} sided with {faction} in {zone} ({title})."
 L.CONFLICT_ALLIED_REP = "Your standing with {faction} decided your side in {zone}."
 L.CONFLICT_ALLIED_REP_THEY = "Standing with {faction} decided {name}'s side in {zone}."
 L.CONFLICT_BROKE_WORD = "You broke faith with {broken} and finished {quest} for {faction}."
