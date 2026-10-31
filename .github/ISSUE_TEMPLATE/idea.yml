@@ -1,0 +1,37 @@
+name: "💡 Idea"
+description: "Something Ashmark could remember, show or let your character do."
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Ashmark runs on WoW Forever only, cannot read the combat log and never automates anything, such as accepting or blocking a quest. Ideas inside those limits have the best chance.
+  - type: dropdown
+    id: module
+    attributes:
+      label: "Which part of Ashmark?"
+      options:
+        - "Chronicle"
+        - "Conflicts / Decisions tab"
+        - "Profile and archetypes"
+        - "World map"
+        - "Encounters"
+        - "House"
+        - "Campfire"
+        - "Character knowledge"
+        - "Rumours"
+        - "Shared fiction"
+        - "Something new"
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: "Your idea"
+      description: "Describe it as a moment in the game: what happens, what you see."
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: "Why it matters for role-play"

@@ -1,0 +1,6 @@
+conflict_id,zone,theme,honored,anchor_m,anchor_x,anchor_y,side,faction,quest,quest_name,verified,source
+zephras_windshapers_vs_high_order_leyline,2521,feud,6,,,,A,2778,94411,Meddlesome Mages,false,https://www.wowhead.com/forever/quest=94411
+zephras_windshapers_vs_high_order_leyline,2521,feud,6,,,,B,2779,94413,A Magical Affront,false,https://www.wowhead.com/forever/quest=94413
+zephras_belathaan_overlook_ambush,2521,feud,6,,,,A,2778,93746,A Firm Response,false,https://www.wowhead.com/forever/quest=93746
+zephras_belathaan_overlook_ambush,2521,feud,6,,,,B,2779,92840,Catching Wind,false,https://www.wowhead.com/forever/quest=92840
+zephras_belathaan_overlook_ambush,2521,feud,6,,,,B,2779,99260,Fillion's Mission,false,https://www.wowhead.com/forever/quest=99260

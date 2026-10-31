@@ -1,0 +1,59 @@
+name: "⚔️ Conflict proposal"
+description: "Two sides whose quests set them against each other, for Ashmark's conflict dataset."
+labels: ["conflict data"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A good conflict is one where the quest texts themselves set one side against the other. Conflicts below level 30 outside Zephras Isle are the most wanted.
+        Prefer a pull request? The format is in [data/conflicts/README.md](https://github.com/nullthrone/ashmark/blob/main/data/conflicts/README.md).
+  - type: input
+    id: zone
+    attributes:
+      label: "Zone"
+      description: "The zone's name, and its uiMapID if you know it."
+      placeholder: "Desolace (1443)"
+    validations:
+      required: true
+  - type: textarea
+    id: side_a
+    attributes:
+      label: "Side A"
+      description: "The faction (name and reputation ID, if it has one) and every quest of this side, with ID and English name."
+      placeholder: |
+        Faction: Gelkis Clan Centaur (92)
+        1368 Gelkis Alliance
+    validations:
+      required: true
+  - type: textarea
+    id: side_b
+    attributes:
+      label: "Side B"
+      placeholder: |
+        Faction: Magram Clan Centaur (93)
+        1367 Magram Alliance
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: "Why do these quests oppose each other?"
+      description: "What the quest texts say, in a sentence or two."
+    validations:
+      required: true
+  - type: textarea
+    id: sources
+    attributes:
+      label: "Sources"
+      description: "One https link per quest, for example its Wowhead Forever page."
+    validations:
+      required: true
+  - type: dropdown
+    id: verified
+    attributes:
+      label: "Checked in the Forever client?"
+      options:
+        - "No, only from the sources"
+        - "Yes, I took these quests in the live client"
+    validations:
+      required: true

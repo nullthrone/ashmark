@@ -1,0 +1,106 @@
+## Interface: 16001
+## Title: Ashmark
+## Notes: Decisions leave a mark. Solo role-play for World of Warcraft Forever.
+## Notes-deDE: Entscheidungen hinterlassen Spuren. Solo-Rollenspiel für World of Warcraft Forever.
+## Notes-frFR: Chaque décision laisse sa marque. Jeu de rôle en solo pour World of Warcraft Forever.
+## Notes-esES: Las decisiones dejan huella. Rol en solitario para World of Warcraft Forever.
+## Notes-esMX: Las decisiones dejan huella. Rol en solitario para World of Warcraft Forever.
+## Notes-ptBR: Decisões deixam marcas. Interpretação solo para World of Warcraft Forever.
+## Notes-ruRU: Решения оставляют след. Ролевой отыгрыш в одиночку для World of Warcraft Forever.
+## Notes-koKR: 결정은 흔적을 남긴다. World of Warcraft Forever를 위한 솔로 역할극.
+## Notes-zhTW: 抉擇留下印記。專為 World of Warcraft Forever 打造的單人角色扮演。
+## Notes-zhCN: 每个抉择都会留下印记。适用于World of Warcraft Forever的单人角色扮演插件。
+## Author: Nullthrone
+## Version: @project-version@
+## AllowLoadGameType: forever, camelot
+## ExcludeLoadGameType: standard, classic
+## SavedVariables: AshmarkDB
+## IconTexture: Interface\Icons\INV_Misc_Book_09
+## Category: Roleplay
+## Category-deDE: Rollenspiel
+## Category-frFR: Jeu de rôle
+## Category-esES: Juego de rol
+## Category-esMX: Juego de rol
+## Category-ptBR: Interpretação de Papel
+## Category-ruRU: Ролевая игра
+## Category-koKR: 역할 수행
+## Category-zhTW: 角色扮演
+## Category-zhCN: 角色扮演
+## AddonCompartmentFunc: Ashmark_OnAddonCompartmentClick
+## AddonCompartmentFuncOnEnter: Ashmark_OnAddonCompartmentEnter
+## AddonCompartmentFuncOnLeave: Ashmark_OnAddonCompartmentLeave
+## X-TocVariant: Forever
+## X-License: MIT
+## X-Curse-Project-ID: 1777037
+
+Core\Init.lua
+Core\Util.lua
+
+Locales\Locale.lua
+Locales\enUS\Core.lua
+Locales\enUS\Test.lua
+Locales\enUS\Conflicts.lua
+Locales\enUS\Profile.lua
+Locales\enUS\Map.lua
+Locales\enUS\Encounters.lua
+Locales\enUS\House.lua
+Locales\enUS\Campfire.lua
+Locales\enUS\Knowledge.lua
+Locales\enUS\Fiction.lua
+Locales\enUS\Rumours.lua
+Locales\deDE.lua
+Locales\frFR.lua
+Locales\esES.lua
+Locales\esMX.lua
+Locales\ptBR.lua
+Locales\ruRU.lua
+Locales\koKR.lua
+Locales\zhTW.lua
+Locales\zhCN.lua
+
+Core\Compat.lua
+Core\Safe.lua
+Core\Combat.lua
+Core\Events.lua
+Core\Bus.lua
+Core\DB.lua
+Core\Identity.lua
+Core\Where.lua
+Core\Names.lua
+Core\Log.lua
+Core\Watch.lua
+Core\Chronicle.lua
+Core\Comm.lua
+Core\Settings.lua
+Core\Slash.lua
+
+UI\Widgets.lua
+UI\MainFrame.lua
+UI\Dialog.lua
+UI\Notice.lua
+UI\ChatLine.lua
+UI\Compartment.lua
+
+Data\Conflicts.lua
+
+Modules\Conflicts\Conflicts.lua
+Modules\Conflicts\QuestDialog.lua
+Modules\Profile\Profile.lua
+Modules\Map\Map.lua
+Modules\Map\MapPins.xml
+Modules\Encounters\Encounters.lua
+Modules\Encounters\Tooltip.lua
+Modules\House\House.lua
+Modules\Campfire\Campfire.lua
+Modules\Knowledge\Knowledge.lua
+Modules\Fiction\Fiction.lua
+Modules\Rumours\Rumours.lua
+Modules\Traces\Traces.lua
+
+UI\Tabs\Chronicle.lua
+UI\Tabs\Decisions.lua
+UI\Tabs\Encounters.lua
+UI\Tabs\House.lua
+
+Dev\TestMode.lua
+Dev\Probe.lua

@@ -1,0 +1,103 @@
+local ADDON, ns = ...
+local L = ns.Locale:Base()
+
+L.CORE_TITLE = "Ashmark"
+
+-- Load safety (4.4)
+L.CORE_NOT_FOREVER = "Ashmark runs only on World of Warcraft Forever and stays off on this client."
+L.CORE_SV_NEW = "A new record has started. If Ashmark was used on this account before, the saved data did not load: "
+  .. "do not /reload or log out again. Quit the game, then replace Ashmark.lua with Ashmark.lua.bak in "
+  .. "WTF\\Account\\<account>\\SavedVariables\\ before the next login."
+L.CORE_SV_NEWER = "This saved data comes from a newer version of Ashmark. Ashmark only reads it until you update."
+L.CORE_SV_RECOVERED = "The saved data was not in a form Ashmark knows. A new record has started; the old data is "
+  .. "kept untouched in AshmarkDB.recovered."
+L.CORE_SV_MIGRATE_FAILED = "Ashmark could not update its saved data and only reads it this session."
+
+-- Modules and settings (3.2, 4.3)
+L.CORE_MODULE_FAILED = "{module} stopped after repeated errors and stays off until the next reload."
+L.CORE_UNAVAILABLE = "Needs {capability}"
+L.CORE_UNAVAILABLE_CLIENT = "This client lacks a feature it needs."
+L.CORE_MISSING_EVENTS = "Events this client lacks: {events}"
+L.CORE_SETTING_CHAT_LINES = "Lines in chat"
+L.CORE_SETTING_CHAT_LINES_DESC = "Ashmark may write short lines into the chat window."
+L.CORE_SETTING_SOUNDS = "Sounds"
+L.CORE_SETTING_SOUNDS_DESC = "Ashmark plays the game's page and book sounds."
+L.CORE_SETTING_SHARE = "Share with other Ashmark users"
+L.CORE_SETTING_SHARE_DESC = "Send your archetype, origin, profile scores (fidelity, habitat, mercy), ruleset, "
+  .. "Ashmark version and rumours to party members who also use Ashmark. Contacts and notes never leave your client."
+
+-- Shared vocabulary (5.8)
+L.CORE_UNKNOWN_QUEST = "a quest"
+L.CORE_UNKNOWN_ITEM = "an item"
+L.CORE_UNKNOWN_FACTION = "a faction"
+L.CORE_UNKNOWN_PLACE = "an unknown place"
+L.CORE_UNKNOWN_PLAYER = "someone"
+L.CORE_UNKNOWN_CLASS = "adventurer"
+L.CORE_UNKNOWN_RACE = "unknown folk"
+L.CORE_RULESET_NORMAL = "Normal"
+L.CORE_RULESET_PVP = "PvP"
+L.CORE_RULESET_RP = "Roleplay"
+L.CORE_RULESET_RPPVP = "Roleplay PvP"
+L.CORE_RULESET_HARDCORE = "Hardcore"
+
+-- Chronicle sentences for Core's kinds; _THEY forms are used in the family chronicle with {name}.
+L.CORE_LOG_TURNIN = "You completed {quest}."
+L.CORE_LOG_TURNIN_THEY = "{name} completed {quest}."
+L.CORE_LOG_ABANDON = "You abandoned {quest}."
+L.CORE_LOG_ABANDON_THEY = "{name} abandoned {quest}."
+L.CORE_LOG_ZONE_FIRST = "You set foot in {zone} for the first time."
+L.CORE_LOG_ZONE_FIRST_THEY = "{name} set foot in {zone} for the first time."
+L.CORE_LOG_LEVEL = "You reached level {level}."
+L.CORE_LOG_LEVEL_THEY = "{name} reached level {level}."
+L.CORE_LOG_DEATH = "You died in {place}."
+L.CORE_LOG_DEATH_THEY = "{name} died in {place}."
+L.CORE_LOG_REP = "You are now {standing} with {faction}."
+L.CORE_LOG_REP_THEY = "{name} is now {standing} with {faction}."
+L.CORE_LOG_CHAPTER = "Chapter {roman} closes in {place}."
+L.CORE_LOG_CHAPTER_THEY = "{name}'s chapter {roman} closes in {place}."
+-- The same two sentences for a place outside every zone: {place} is then a continent or another map that is no
+-- zone (the open sea between continents, a dungeon outside any zone), so the text must not call it a zone.
+L.CORE_LOG_DEATH_NOZONE = "You died in {place}."
+L.CORE_LOG_DEATH_NOZONE_THEY = "{name} died in {place}."
+L.CORE_LOG_CHAPTER_NOZONE = "Chapter {roman} closes in {place}."
+L.CORE_LOG_CHAPTER_NOZONE_THEY = "{name}'s chapter {roman} closes in {place}."
+
+-- Slash commands (5.9)
+L.CORE_HELP_HEADER = "Commands:"
+L.CORE_HELP_TOGGLE = "open or close the chronicle"
+L.CORE_HELP_HELP = "list these commands"
+L.CORE_HELP_DEBUG = "turn debug output on or off for this session"
+L.CORE_HELP_RESET = "wipe this character's record; \"reset others\" wipes contacts, peers and heard rumours; "
+  .. "\"reset <name>\" forgets another character of this account"
+L.CORE_UNKNOWN_COMMAND = "Unknown command: {command}"
+L.CORE_DEBUG_ON = "Debug output is on for this session."
+L.CORE_DEBUG_OFF = "Debug output is off."
+L.CORE_RESET_CONFIRM = "Wipe everything Ashmark has recorded for this character? This cannot be undone."
+L.CORE_RESET_OTHERS_CONFIRM = "Wipe every contact, peer and heard rumour on this account? Your own rumours stay. "
+  .. "This cannot be undone."
+L.CORE_RESET_ACCEPT = "Wipe"
+L.CORE_CANCEL = "Cancel"
+L.CORE_RESET_DONE = "This character's record was wiped."
+L.CORE_RESET_OTHERS_DONE = "Contacts, peers and heard rumours were wiped."
+L.CORE_RESET_READONLY = "The saved data comes from a newer Ashmark, so nothing can be wiped."
+-- /ashmark reset <name>: {name} is a character name as typed or as stored, {level} a number, {guid} the
+-- character's GUID, which the player types to pick one of several characters with the same name.
+L.CORE_RESET_CHAR_UNKNOWN = "No other character named {name} is stored on this account."
+L.CORE_RESET_CHAR_AMBIGUOUS = "Several characters are named {name}. Type /ashmark reset <GUID> with one of these:"
+L.CORE_RESET_CHAR_LINE = "{name}, level {level}: {guid}"
+L.CORE_RESET_CHAR_CONFIRM = "Forget {name}? Ashmark deletes this character's chronicle, decisions, profile and "
+  .. "meetings. Do this only for a character you deleted or moved."
+L.CORE_RESET_CHAR_DONE = "{name} is forgotten."
+
+-- UI shell (6.1, 6.2): main window tabs, the Chronicle tab and the Addon Compartment ---------------
+-- {roman} is a Roman numeral, {date} a short date from the client, {place} a zone name.
+L.CORE_TAB_CHRONICLE = "Chronicle"
+L.CORE_CHRONICLE_CHAPTER = "Chapter {roman}"
+L.CORE_CHRONICLE_CHAPTER_OPEN = "Chapter {roman} (current)"
+L.CORE_CHRONICLE_CLOSED = "Closed {date} · {place}"
+L.CORE_CHRONICLE_BEGUN = "Begun {date} · still being written"
+L.CORE_CHRONICLE_OPEN = "Still being written"
+L.CORE_CHRONICLE_EMPTY = "Nothing in this chapter is worth telling yet."
+L.CORE_CHRONICLE_NO_RECORD = "Ashmark keeps no record for this character yet."
+L.CORE_COMPARTMENT_CLICK = "Click to open or close the chronicle."
+L.CORE_COMPARTMENT_RIGHT_CLICK = "Right-click to open the settings."
