@@ -184,9 +184,13 @@ local function build(parent)
   return parent
 end
 
--- An entry the page never shows (gold, quest.accept, item.held, ...) redraws nothing, unless it
--- begins the open chapter, whose date heads the page.
+-- No line reads the profile or the house (violation and houseturn keep their words in the entry), so
+-- PROFILE_CHANGED and HOUSE_CHANGED redraw nothing. Nor does an entry the page never shows (gold,
+-- quest.accept, kills, item.held, ...), unless it begins the open chapter, whose date heads the page.
+local IDLE = { PROFILE_CHANGED = true, HOUSE_CHANGED = true }
+
 local function ignore(topic, entry, char)
+  if IDLE[topic] then return true end
   if topic ~= "LOG_ADDED" or type(entry) ~= "table" or ns.Log:Shown(entry) then return false end
   local chapters = type(char) == "table" and char.chapters
   local last = type(chapters) == "table" and chapters[#chapters]

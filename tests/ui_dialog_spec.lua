@@ -154,6 +154,23 @@ describe("UI Dialog", function()
     assert.is_true(dialog():IsShown())
   end)
 
+  it("takes no keyboard focus for an editor asked for in combat when it appears after combat", function()
+    local highlighted = 0
+    wow.combat(true)
+    show({ text = "Note for Mira", edit = { text = "Great healer", max = 120 } })
+    assert.is_nil(dialog())
+    wow.combat(false)
+    local d = dialog()
+    d.EditBox.HighlightText = function() highlighted = highlighted + 1 end
+    assert.is_true(d:IsShown())
+    assert.is_true(d.EditBox:IsShown())
+    assert.equal("Great healer", d.EditBox:GetText())
+    assert.is_falsy(d.EditBox.focused)
+    show({ text = "Note for Mira", edit = { text = "Great healer", max = 120 } })
+    assert.is_true(d.EditBox.focused)
+    assert.equal(1, highlighted)
+  end)
+
   it("answers once in combat and hides when combat ends", function()
     local d = show()
     wow.combat(true)

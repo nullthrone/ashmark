@@ -94,7 +94,9 @@ local function label(key, fallback)
   return fallback
 end
 
-local function show(opts)
+-- A dialog asked for in combat appears when combat ends, while the player is moving and casting: its
+-- editor then takes no keyboard focus, or the next keys would overwrite the text and Enter would accept.
+local function show(opts, deferred)
   if not frame then create() end
   current = opts
   local edit, box = opts.edit, frame.EditBox
@@ -111,7 +113,7 @@ local function show(opts)
   box:SetShown(edit ~= nil)
   frame:SetHeight(height)
   frame:Show()
-  if edit then
+  if edit and not deferred then
     box:SetFocus()
     box:HighlightText()
   end
@@ -121,5 +123,6 @@ end
 -- onAccept gets the edit box's text, or nil without one. A new Show replaces a dialog on screen.
 function Dialog:Show(opts)
   if type(opts) ~= "table" or Safe.IsSecret(opts.text) or type(opts.text) ~= "string" then return end
-  ns.Combat.Run("dialog", function() show(opts) end)
+  local deferred = (InCombatLockdown and InCombatLockdown()) and true or false
+  ns.Combat.Run("dialog", function() show(opts, deferred) end)
 end

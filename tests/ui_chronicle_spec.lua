@@ -155,6 +155,24 @@ describe("UI Chronicle tab", function()
     assert.same({ "You reached level 5." }, texts(2))
   end)
 
+  it("redraws nothing when the profile or the house changes, which no line reads", function()
+    show()
+    local box = lists[2].box
+    local fills = 0
+    local set = box.SetDataProvider
+    box.SetDataProvider = function(self, ...)
+      fills = fills + 1
+      return set(self, ...)
+    end
+    ns.Bus:Fire("PROFILE_CHANGED")
+    ns.Bus:Fire("HOUSE_CHANGED")
+    wow.advance(1)
+    assert.equal(0, fills)
+    ns.Bus:Fire("LOG_COMPACTED", ns.DB:Char())
+    wow.advance(1)
+    assert.equal(1, fills)
+  end)
+
   it("plays no page-turn sound with Core.sounds off", function()
     ns.Log:Add("level", { l = 2 })
     ns.Log:CloseChapter({})
