@@ -175,6 +175,21 @@ describe("Core Slash", function()
       assert.is_true(printed(ns.Format(ns.L.CORE_RESET_CHAR_UNKNOWN, { name = me.name })))
       assert.is_true(printed(ns.Format(ns.L.CORE_RESET_CHAR_UNKNOWN, { name = ns.playerGUID })))
     end)
+
+    it("never wipes the current character for an argument that names nobody", function()
+      local db = _G.AshmarkDB
+      local me, contacts = db.chars[ns.playerGUID], db.contacts
+      for _, arg in ipairs({ "nobody", "othres", "me", "all", "Player-1-ffffffff" }) do
+        SlashCmdList.ASHMARK("reset " .. arg)
+        assert.is_nil(dialog)
+        assert.is_true(printed(ns.Format(ns.L.CORE_RESET_CHAR_UNKNOWN, { name = arg })))
+      end
+      assert.equal(me, db.chars[ns.playerGUID])
+      assert.equal(contacts, db.contacts)
+      assert.is_table(db.chars[MIRA])
+      assert.is_table(db.contacts.mine.byChar[ns.playerGUID])
+      assert.equal(0, refreshed)
+    end)
   end)
 
   it("refuses to reset in read-only mode", function()
