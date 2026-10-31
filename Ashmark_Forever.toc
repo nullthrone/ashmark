@@ -1,6 +1,15 @@
 ## Interface: 16001
 ## Title: Ashmark
 ## Notes: Decisions leave a mark. Solo role-play for World of Warcraft Forever.
+## Notes-deDE: Entscheidungen hinterlassen Spuren. Solo-Rollenspiel für World of Warcraft Forever.
+## Notes-frFR: Chaque décision laisse sa marque. Jeu de rôle en solo pour World of Warcraft Forever.
+## Notes-esES: Las decisiones dejan huella. Rol en solitario para World of Warcraft Forever.
+## Notes-esMX: Las decisiones dejan huella. Rol en solitario para World of Warcraft Forever.
+## Notes-ptBR: Decisões deixam marcas. Interpretação solo para World of Warcraft Forever.
+## Notes-ruRU: Решения оставляют след. Ролевой отыгрыш в одиночку для World of Warcraft Forever.
+## Notes-koKR: 결정은 흔적을 남긴다. World of Warcraft Forever를 위한 솔로 역할극.
+## Notes-zhTW: 抉擇留下印記。專為 World of Warcraft Forever 打造的單人角色扮演。
+## Notes-zhCN: 每个抉择都会留下印记。适用于World of Warcraft Forever的单人角色扮演插件。
 ## Author: Nullthrone
 ## Version: @project-version@
 ## AllowLoadGameType: forever, camelot
