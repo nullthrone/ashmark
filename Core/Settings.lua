@@ -1,11 +1,13 @@
 local ADDON, ns = ...
 
 -- ns.Settings; the Blizzard Settings API is the global Settings.
-local Options = { defs = {}, order = {}, bound = {} }
+local Options = { defs = {}, order = {}, bound = {}, initializers = {} }
 ns.Settings = Options
 
 local L = ns.L
 local muted
+-- Why the saved data is only read (DB.readOnlyReason, also the modules' unavailable reason).
+local READ_ONLY = { schema = "CORE_SV_NEWER", migration = "CORE_SV_MIGRATE_FAILED" }
 
 function Options:Register(key, default, labelKey, tooltipKey)
   if not self.defs[key] then self.order[#self.order + 1] = key end
@@ -65,8 +67,8 @@ local function reasons(M)
       lines[#lines + 1] = ns.Format(L.CORE_UNAVAILABLE, { capability = moduleName(D) })
     elseif reason == "error" then
       lines[#lines + 1] = ns.Format(L.CORE_MODULE_FAILED, { module = moduleName(M) })
-    elseif reason == "schema" then
-      lines[#lines + 1] = L.CORE_SV_NEWER
+    elseif READ_ONLY[reason] then
+      lines[#lines + 1] = L[READ_ONLY[reason]]
     elseif not client then
       client = true
       lines[#lines + 1] = L.CORE_UNAVAILABLE_CLIENT
@@ -99,8 +101,28 @@ local function bind(api, category, key, def)
   elseif setting and setting.SetValueChangedCallback then
     setting:SetValueChangedCallback(callback)
   end
-  api.CreateCheckbox(category, setting, tooltip(key, def))
+  Options.initializers[key] = api.CreateCheckbox(category, setting, tooltip(key, def))
   Options.bound[key] = setting
+end
+
+-- A module that needs other modules (opts.modules) sits under the first of them and is greyed out while
+-- any of them is switched off: unticking Shared fiction shows that Rumours stops with it.
+local function nest()
+  local all = Options.initializers
+  for _, key in ipairs(Options.order) do
+    local init = all[key]
+    local M = ns:GetModule(key:match("^(%w+)%.enabled$") or "")
+    local needs = M and M.opts.modules
+    local parent = type(needs) == "table" and needs[1] and all[needs[1] .. ".enabled"]
+    if parent and type(init) == "table" and type(init.SetParentInitializer) == "function" then
+      init:SetParentInitializer(parent, function()
+        for _, name in ipairs(needs) do
+          if Options:Get(name .. ".enabled") ~= true then return false end
+        end
+        return true
+      end)
+    end
+  end
 end
 
 local function build()
@@ -108,12 +130,14 @@ local function build()
   local category, layout = api.RegisterVerticalLayoutCategory("Ashmark")
   if ns.DB.readOnly then
     if layout and CreateSettingsListSectionHeaderInitializer then
-      layout:AddInitializer(CreateSettingsListSectionHeaderInitializer(L.CORE_SV_NEWER))
+      local text = L[READ_ONLY[ns.DB.readOnlyReason] or READ_ONLY.schema]
+      layout:AddInitializer(CreateSettingsListSectionHeaderInitializer(text))
     end
   else
     for _, key in ipairs(Options.order) do
       bind(api, category, key, Options.defs[key])
     end
+    nest()
   end
   api.RegisterAddOnCategory(category)
   Options.category = category

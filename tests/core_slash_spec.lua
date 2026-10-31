@@ -107,7 +107,50 @@ describe("Core Slash", function()
     assert.same({}, db.contacts)
     assert.same({}, db.peers)
     assert.same({ mine = { id = "mine", own = true } }, db.rumours.heard)
-    assert.same({ mine = { p = 1 } }, db.rumours.told)
+    assert.same({ mine = {} }, db.rumours.told)
+  end)
+
+  it("wipes what every character's record keeps of other players", function()
+    local THALEN, ALT = "Player-1-00000002", "Player-1-0000000b"
+    local db = _G.AshmarkDB
+    local me = db.chars[ns.playerGUID]
+    local function session(id)
+      return { id = id, start = 1, members = { THALEN }, people = { [THALEN] = { guid = THALEN, name = "Thalen" } },
+               maps = { 1443 }, inst = {}, boss = 0, wipe = 0, camp = false, kick = false }
+    end
+    me.log = { { n = 1, t = 1, k = "level", l = 21 }, { n = 2, t = 1, k = "contact", p = THALEN },
+               { n = 3, t = 1, k = "peer", p = THALEN, a = "GENTLE" }, { n = 4, t = 1, k = "death" } }
+    me.seq = 4
+    me.sessions = { old = session("old") }
+    me.state.group = session("open")
+    me.state.senders = { Thalen = THALEN }
+    db.chars[ALT] = { guid = ALT, name = "Bryn", seq = 2, chapters = {}, sessions = { s = session("s") },
+      log = { { n = 1, t = 1, k = "contact", p = THALEN }, { n = 2, t = 1, k = "level", l = 5 } },
+      state = { inGroup = true, group = session("altOpen"), senders = { Thalen = THALEN },
+                greeted = { [THALEN] = 1 } } }
+    local compacted = 0
+    ns.Core:Subscribe("LOG_COMPACTED", function(_, _, char) if char == me then compacted = compacted + 1 end end)
+    local log = me.log
+    SlashCmdList.ASHMARK("reset others")
+    dialog.onAccept()
+    local kinds = {}
+    for _, e in ipairs(me.log) do kinds[#kinds + 1] = e.k end
+    assert.same({ "level", "death" }, kinds)
+    assert.are_not.equal(log, me.log)
+    assert.equal(1, compacted)
+    assert.equal(4, me.seq)
+    assert.is_nil(me.sessions)
+    assert.same({}, me.state.group.members)
+    assert.same({}, me.state.group.people)
+    assert.equal("open", me.state.group.id)
+    assert.same({ Thalen = THALEN }, me.state.senders)
+    local alt = db.chars[ALT]
+    assert.same({ { n = 2, t = 1, k = "level", l = 5 } }, alt.log)
+    assert.is_nil(alt.sessions)
+    assert.same({}, alt.state.group.members)
+    assert.same({}, alt.state.group.people)
+    assert.same({}, alt.state.senders)
+    assert.is_nil(alt.state.greeted)
   end)
 
   it("redraws the visible tab after a wipe of others", function()
@@ -193,7 +236,7 @@ describe("Core Slash", function()
   end)
 
   it("refuses to reset in read-only mode", function()
-    ns.DB.readOnly = true
+    ns.DB.readOnly, ns.DB.readOnlyReason = true, "schema"
     SlashCmdList.ASHMARK("reset")
     SlashCmdList.ASHMARK("reset Mira")
     assert.is_nil(dialog)

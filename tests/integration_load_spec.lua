@@ -205,6 +205,35 @@ describe("Integration", function()
       assert.is_true(ns.Log:Seq(ns.DB:Char()) >= 4)
     end)
 
+    it("never learns again on another character's login whom /ashmark reset others forgot", function()
+      local THALEN, BRYN = "Player-1-00000002", "Player-1-0000000b"
+      local aren = wow.state.units.player
+      local bryn = { guid = BRYN, name = "Bryn", surname = "Ashvale", classFile = "MAGE", className = "Mage",
+                     classID = 8, raceID = 1, raceFile = "Human", raceName = "Human", sex = 3, faction = "Alliance",
+                     level = 12, isPlayer = true }
+      wow.state.map = 1443
+      wow.unit("player", bryn)
+      wow.unit("party1", { guid = THALEN, name = "Thalen", surname = "Vell", classFile = "PRIEST", raceID = 3,
+                           sex = 2, faction = "Alliance", level = 12, isPlayer = true })
+      local ns = start()
+      wow.fire("GROUP_ROSTER_UPDATE")
+      wow.advance(2)
+      assert.is_table(ns.DB:Char().state.group.people[THALEN])
+      -- Bryn logs out in the group; Aren, alone, forgets everyone.
+      wow.unit("player", aren)
+      wow.unit("party1", nil)
+      wow.reload()
+      SlashCmdList.ASHMARK("reset others")
+      wow.script(AshmarkDialog.Accept, "OnClick")
+      assert.is_nil(_G.AshmarkDB.contacts[THALEN])
+      -- Bryn's next login ends the old session without making Thalen a contact again.
+      wow.unit("player", bryn)
+      ns = wow.reload()
+      assert.is_nil(ns.DB:Char().state.group)
+      assert.is_nil(_G.AshmarkDB.contacts[THALEN])
+      assert.same({}, wow.errors)
+    end)
+
     it("keeps its record through a /reload", function()
       local ns = start()
       wow.state.map = 1443

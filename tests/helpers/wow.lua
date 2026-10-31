@@ -1069,7 +1069,18 @@ local function buildGlobals()
       table.insert(wow.panel.callbacks[variable], cb)
     end,
     CreateCheckbox = function(category, setting, tooltip)
-      local initializer = { category = category, setting = setting, tooltip = tooltip }
+      local initializer = { category = category, setting = setting, tooltip = tooltip, predicates = {} }
+      -- A child sits under its parent; the panel greys it out unless every modify predicate holds.
+      function initializer:SetParentInitializer(parent, predicate)
+        self.parent = parent
+        if predicate then table.insert(self.predicates, predicate) end
+      end
+      function initializer:EvaluateModifyPredicates()
+        for _, predicate in ipairs(self.predicates) do
+          if not predicate() then return false end
+        end
+        return true
+      end
       table.insert(wow.panel.checkboxes, initializer)
       return initializer
     end,

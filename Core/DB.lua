@@ -4,6 +4,7 @@ local DB = {
   SCHEMA = 1,
   migrations = {},     -- [v] = function(db) upgrading schema v - 1 to v; idempotent
   readOnly = false,
+  readOnlyReason = nil, -- "schema" (a newer Ashmark wrote the data) or "migration" (updating it failed)
   fresh = false,
 }
 ns.DB = DB
@@ -64,13 +65,13 @@ function DB:Load()
     db = { schema = self.SCHEMA, created = time(), recovered = db }
     ns.Print(L.CORE_SV_RECOVERED)
   elseif db.schema > self.SCHEMA then
-    self.readOnly = true
+    self.readOnly, self.readOnlyReason = true, "schema"
     ns.Print(L.CORE_SV_NEWER)
     return
   elseif db.schema < self.SCHEMA then
     local ok, migrated = ns:Call(ns.Core, "migration", migrate, db)
     if not ok then
-      self.readOnly = true
+      self.readOnly, self.readOnlyReason = true, "migration"
       ns.Print(L.CORE_SV_MIGRATE_FAILED)
       return
     end

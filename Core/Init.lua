@@ -188,7 +188,7 @@ end
 -- Enabling and disabling -------------------------------------------------
 
 local function unavailable(M)
-  if ns.DB.readOnly then return { "schema" } end
+  if ns.DB.readOnly then return { ns.DB.readOnlyReason or "schema" } end
   if failed[M] then return { "error" } end
   local reasons = {}
   for _, cap in ipairs(M.opts.requires or {}) do

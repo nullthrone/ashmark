@@ -68,7 +68,32 @@ local function wipeCharacter()
   ns.Print(L.CORE_RESET_DONE)
 end
 
--- Contacts, peers and every rumour this account did not start (and their told lists).
+-- Log kinds that name another player (Encounters' first meetings, Fiction's peer sightings).
+local OTHERS_KINDS = { contact = true, peer = true }
+
+-- What a character's record keeps of other players: its log's contact and peer entries, its stored group
+-- sessions (their member GUIDs; a group.end line then counts its companions), and the open session's
+-- members and snapshots, which would make contacts again when it ends. Another character's sender map
+-- and greetings go too; the current character keeps those of the party it is in. True if the log changed.
+local function forgetOthers(char, current)
+  if type(char) ~= "table" then return false end
+  char.sessions = nil
+  local state = type(char.state) == "table" and char.state or nil
+  local open = state and state.group
+  if type(open) == "table" then open.members, open.people = {}, {} end
+  if state and not current then state.senders, state.greeted = {}, nil end
+  if type(char.log) ~= "table" then return false end
+  local kept = {}
+  for _, entry in ipairs(char.log) do
+    if not (type(entry) == "table" and OTHERS_KINDS[entry.k]) then kept[#kept + 1] = entry end
+  end
+  if #kept == #char.log then return false end
+  char.log = kept                -- a new array, as a compaction leaves it, so an Iter in progress is safe
+  return true
+end
+
+-- Contacts, peers, every rumour this account did not start, whom its own were told to, and what each
+-- character's record keeps of other players.
 local function wipeOthers()
   if ns.DB.readOnly then return end
   local db = AshmarkDB
@@ -77,10 +102,15 @@ local function wipeOthers()
   for id, rumour in pairs(db.rumours.heard) do
     if type(rumour) == "table" and rumour.own then
       heard[id] = rumour
-      told[id] = db.rumours.told[id]
+      told[id] = {}
     end
   end
   db.rumours.heard, db.rumours.told = heard, told
+  for guid, char in pairs(type(db.chars) == "table" and db.chars or {}) do
+    if forgetOthers(char, guid == ns.playerGUID) and guid == ns.playerGUID then
+      ns.Bus:Fire("LOG_COMPACTED", char)
+    end
+  end
   redraw()
   ns.Print(L.CORE_RESET_OTHERS_DONE)
 end
@@ -143,7 +173,8 @@ end
 
 local function reset(args)
   if ns.DB.readOnly then
-    ns.Print(L.CORE_RESET_READONLY)
+    -- After a failed update the data is only read for this session; it is not from a newer Ashmark.
+    ns.Print(ns.DB.readOnlyReason == "migration" and L.CORE_SV_MIGRATE_FAILED or L.CORE_RESET_READONLY)
   elseif args == "" or args == nil then
     confirm("CORE_RESET_CONFIRM", wipeCharacter)
   elseif args:lower() == "others" then

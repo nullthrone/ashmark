@@ -23,8 +23,8 @@ L.CORE_SETTING_CHAT_LINES_DESC = "Ashmark may write short lines into the chat wi
 L.CORE_SETTING_SOUNDS = "Sounds"
 L.CORE_SETTING_SOUNDS_DESC = "Ashmark plays the game's page and book sounds."
 L.CORE_SETTING_SHARE = "Share with other Ashmark users"
-L.CORE_SETTING_SHARE_DESC = "Send your archetype, origin and rumours to group members who also use Ashmark. "
-  .. "Contacts and notes never leave your client."
+L.CORE_SETTING_SHARE_DESC = "Send your archetype, origin, profile scores (fidelity, habitat, mercy), ruleset, "
+  .. "Ashmark version and rumours to party members who also use Ashmark. Contacts and notes never leave your client."
 
 -- Shared vocabulary (5.8)
 L.CORE_UNKNOWN_QUEST = "a quest"

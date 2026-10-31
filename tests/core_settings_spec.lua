@@ -89,6 +89,51 @@ describe("Core Settings", function()
       wow.panel.checkboxes[4].tooltip)
   end)
 
+  it("nests a module under the first module it needs, greyed out while any of them is off", function()
+    boot(function()
+      ns:NewModule("Beta", { locale = "BETA" })
+      ns:NewModule("Gamma", { locale = "GAMMA" })
+      ns:NewModule("Alpha", { locale = "ALPHA", modules = { "Beta", "Gamma" } })
+    end)
+    local boxes = {}
+    for _, box in ipairs(wow.panel.checkboxes) do boxes[box.setting.key] = box end
+    local alpha = boxes["Alpha.enabled"]
+    assert.equal(boxes["Beta.enabled"], alpha.parent)
+    assert.is_nil(boxes["Beta.enabled"].parent)
+    assert.is_true(alpha:EvaluateModifyPredicates())
+    wow.panel.settings["Ashmark_Beta.enabled"]:SetValue(false)
+    assert.is_false(alpha:EvaluateModifyPredicates())
+    assert.is_false(ns:GetModule("Alpha").enabled)
+    wow.panel.settings["Ashmark_Beta.enabled"]:SetValue(true)
+    ns.Settings:Set("Gamma.enabled", false)
+    assert.is_false(alpha:EvaluateModifyPredicates())
+    ns.Settings:Set("Gamma.enabled", true)
+    assert.is_true(alpha:EvaluateModifyPredicates())
+    assert.is_true(ns:GetModule("Alpha").enabled)
+  end)
+
+  it("nests nothing where the Settings API has no parent initializers", function()
+    local create = Settings.CreateCheckbox
+    wow.stub("Settings.CreateCheckbox", function(...)
+      local init = create(...)
+      init.SetParentInitializer = nil
+      return init
+    end)
+    boot(function()
+      ns:NewModule("Beta", { locale = "BETA" })
+      ns:NewModule("Alpha", { locale = "ALPHA", modules = { "Beta" } })
+    end)
+    assert.same({}, wow.errors)
+    assert.equal(5, #wow.panel.checkboxes)
+  end)
+
+  it("names in the sharing setting every kind of value the protocol sends", function()
+    boot()
+    for _, word in ipairs({ "archetype", "origin", "fidelity", "habitat", "mercy", "ruleset", "version", "rumours" }) do
+      assert.truthy(ns.L.CORE_SETTING_SHARE_DESC:find(word, 1, true), word)
+    end
+  end)
+
   it("names missing events in a module's tooltip", function()
     wow.invalidEvents.NOT_AN_EVENT = true
     boot(function()

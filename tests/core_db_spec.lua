@@ -76,6 +76,7 @@ describe("Core DB load safety", function()
 
     it("is read-only and makes every module unavailable", function()
       assert.is_true(ns.DB.readOnly)
+      assert.equal("schema", ns.DB.readOnlyReason)
       assert.is_true(printed("newer version of Ashmark"))
       assert.same({ "schema" }, ns.Alpha.unavailable)
       assert.is_false(ns.Alpha.enabled)
@@ -149,8 +150,31 @@ describe("Core DB load safety", function()
     it("leave the record read-only when one fails", function()
       boot({ schema = 1, created = 7 }, { [2] = function() error("broken") end }, 2)
       assert.is_true(ns.DB.readOnly)
+      assert.equal("migration", ns.DB.readOnlyReason)
       assert.equal(1, _G.AshmarkDB.schema)
       assert.equal(1, #wow.errors)
+    end)
+
+    it("say after one failed that the update failed, never that the data is from a newer Ashmark", function()
+      wow.saved({ schema = 1, created = 7 })
+      ns = wow.load()
+      ns.DB.SCHEMA = 2
+      ns.DB.migrations[2] = function() error("broken") end
+      local M = ns:NewModule("Alpha", { locale = "ALPHA" })
+      M.OnEnable = function() error("must not run") end
+      local dialog
+      ns.UI = { Dialog = { Show = function(_, opts) dialog = opts end } }
+      wow.login()
+      wow.errors = {}
+      assert.is_true(printed(ns.L.CORE_SV_MIGRATE_FAILED))
+      assert.is_false(printed(ns.L.CORE_SV_NEWER))
+      assert.same({ "migration" }, ns.Alpha.unavailable)
+      assert.same({ { header = ns.L.CORE_SV_MIGRATE_FAILED } }, wow.panel.categories[1].layout.initializers)
+      wow.chat = {}
+      SlashCmdList.ASHMARK("reset")
+      assert.is_nil(dialog)
+      assert.is_true(printed(ns.L.CORE_SV_MIGRATE_FAILED))
+      assert.is_false(printed(ns.L.CORE_RESET_READONLY))
     end)
 
     it("leave the stored record untouched by the steps before and the part of the step that failed", function()
