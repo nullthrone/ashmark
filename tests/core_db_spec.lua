@@ -152,6 +152,24 @@ describe("Core DB load safety", function()
       assert.equal(1, _G.AshmarkDB.schema)
       assert.equal(1, #wow.errors)
     end)
+
+    it("leave the stored record untouched by the steps before and the part of the step that failed", function()
+      local log = { { n = 1, old = "x" }, { n = 2, old = "y" } }
+      local stored = { schema = 1, created = 7, chars = { a = { log = log } } }
+      local before = wow.deepcopy(stored)
+      boot(stored, {
+        [2] = function(db) db.two = true end,
+        [3] = function(db)
+          for _, entry in ipairs(db.chars.a.log) do
+            entry.new, entry.old = entry.old, nil
+            if entry.n == 2 then error("corrupt entry") end
+          end
+        end,
+      }, 3)
+      assert.is_true(ns.DB.readOnly)
+      assert.equal(stored, _G.AshmarkDB)
+      assert.same(before, _G.AshmarkDB)
+    end)
   end)
 
   it("appends to array stores and drops the oldest beyond the cap", function()

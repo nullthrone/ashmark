@@ -36,12 +36,21 @@ local function ensure(db)
   sub(dev, "blocked")
 end
 
-local function migrate(db)
+local function copy(t)
+  local out = {}
+  for k, v in pairs(t) do out[k] = type(v) == "table" and copy(v) or v end
+  return out
+end
+
+-- Runs on a copy, so a step that raises leaves AshmarkDB exactly as it was loaded (4.4).
+local function migrate(stored)
+  local db = copy(stored)
   for v = db.schema + 1, DB.SCHEMA do
     local step = DB.migrations[v]
     if step then step(db) end
     db.schema = v
   end
+  return db
 end
 
 -- Load safety (4.4), at ADDON_LOADED for this addon.
@@ -58,10 +67,14 @@ function DB:Load()
     self.readOnly = true
     ns.Print(L.CORE_SV_NEWER)
     return
-  elseif db.schema < self.SCHEMA and not ns:Call(ns.Core, "migration", migrate, db) then
-    self.readOnly = true
-    ns.Print(L.CORE_SV_MIGRATE_FAILED)
-    return
+  elseif db.schema < self.SCHEMA then
+    local ok, migrated = ns:Call(ns.Core, "migration", migrate, db)
+    if not ok then
+      self.readOnly = true
+      ns.Print(L.CORE_SV_MIGRATE_FAILED)
+      return
+    end
+    db = migrated
   end
   ensure(db)
   AshmarkDB = db
