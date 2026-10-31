@@ -284,6 +284,7 @@ describe("Dev probe", function()
 
     it("sends no HI while Shared fiction is off, from login or switched off later, and says so", function()
       local fiction = ns:NewModule("Fiction")
+      ns.Settings:Set("Fiction.enabled", false)
       local fromLogin = probe()
       ns.Comm:Register("HI", function() end, fiction)   -- on earlier in the session: its handler stays
       local later = probe()
@@ -295,6 +296,10 @@ describe("Dev probe", function()
       end
       assert.same({}, wow.sent)
       assert.equal(0, ns.Comm.stats.dropped)
+      ns.Settings:Set("Fiction.enabled", true)
+      fiction.enabled, fiction.unavailable = false, { "Profile" }   -- a module it needs went off
+      assert.same({ "<Shared fiction unavailable: Profile>" }, fact(probe(), 'ns.Comm:Send("HI")').r)
+      assert.same({}, wow.sent)
     end)
 
     it("records why Comm refused", function()

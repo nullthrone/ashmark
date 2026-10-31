@@ -410,11 +410,13 @@ local function sayHello(facts)
     add(facts, what, false, { "<not grouped>" })
     return
   end
-  -- The HI is Fiction's (7.9): with Shared fiction off it never leaves, and Comm would drop a queued one
-  -- unsent once Fiction had been on, which would read as a missing echo.
+  -- The HI is Fiction's (7.9): switched off, it never leaves; off for any reason after Fiction had been on,
+  -- Comm would drop it unsent, which would read as a missing echo.
   local fiction = ns:GetModule("Fiction")
   if fiction and not fiction.enabled then
-    add(facts, what, false, { "<Shared fiction off>" })
+    local why = ns.Settings:Get("Fiction.enabled") ~= true and "off"
+      or "unavailable: " .. table.concat(fiction.unavailable or {}, ", ")
+    add(facts, what, false, { "<Shared fiction " .. why .. ">" })
     return
   end
   local before = {}
