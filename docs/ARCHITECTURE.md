@@ -14,7 +14,7 @@ Ashmark is one addon for World of Warcraft Forever: a core and nine feature modu
 8. **Locale-proof logic.** Logic prefers typed data (IDs, enums, `Enum.TooltipDataLineType`). Where text matching is unavoidable, it matches only strings the client localizes itself: global strings (`ERR_*`, `ITEM_*`) and names returned by client APIs (`C_CreatureInfo`, `C_Item.GetItemInfoInstant`).
 9. **Game terms come from the client** through `ns.Names` (5.7), which copes with uncached data. Ashmark's own strings are the only translated text.
 10. **What leaves the client.** Addon messages carry the sender's own GUID, archetype, origin, ruleset, version and profile (`HI`, `PR`), and rumours. A rumour carries only a random id, a template key, an archetype key, a faction id, a map id, hops, strength and age: never a GUID, a name or free text. Contacts, notes and peers stay local.
-11. **Blizzard frames are read-only.** Never `SetPoint`, `SetText`, `SetHeight`, `Show`, `Hide` or `SetScript` on a Blizzard frame or region. Use `HookScript`, `hooksecurefunc`, `TooltipDataProcessor` and map data providers. The one exception: inside tooltip post-calls, Encounters and Knowledge add lines and Knowledge blanks lines (7.7).
+11. **Blizzard frames are read-only.** Never `SetPoint`, `SetText`, `SetHeight`, `Show`, `Hide` or `SetScript` on a Blizzard frame or region. Use `HookScript`, `hooksecurefunc`, `TooltipDataProcessor` and map data providers. The one exception: inside tooltip post-calls, Encounters and Knowledge add lines, Knowledge blanks lines (7.7), and either may call `tooltip:Show()` after its edits to resize the tooltip.
 12. **Lua 5.1.** No `goto`, `//`, bit operators or `table.unpack`; use `unpack` and `select("#", ...)`. Numbers on the wire go through `string.format("%d", n)`.
 13. **No stored array positions.** Modules reference log entries by sequence number (4.2), never by index into `char.log`.
 
@@ -51,7 +51,7 @@ Not loaded by the client:
 
 ```
 Ashmark_Forever.toc Ashmark_Camelot.toc        -- identical except ## X-TocVariant
-data/conflicts/*.csv                           -- dataset source, not shipped
+data/conflicts/*.csv data/conflicts/README.md  -- dataset source and its format, not shipped
 tools/conflicts.py                             -- generator + validator, not shipped
 tests/helpers/wow.lua tests/helpers/<unit>_mock.lua tests/core_<service>_spec.lua tests/<unit>_spec.lua
 .busted .luacheckrc .pkgmeta .github/workflows/*.yml
@@ -87,7 +87,7 @@ TOC header:
 
 ### 3.1 Globals
 
-Every Lua file starts with `local ADDON, ns = ...`. `ns` is private. The only globals are `AshmarkDB`; `Ashmark_OnAddonCompartmentClick`, `Ashmark_OnAddonCompartmentEnter`, `Ashmark_OnAddonCompartmentLeave`; `SLASH_ASHMARK1`, `SLASH_ASHMARK2` and `SlashCmdList.ASHMARK`; `AshmarkMapPinMixin` (XML can only name a global mixin); and frame names prefixed `Ashmark` (`AshmarkFrame`, `AshmarkDialog`, `AshmarkNoticeFrame`). `.luacheckrc` lists exactly these as writable globals.
+Every Lua file starts with `local ADDON, ns = ...`. `ns` is private. The only globals are `AshmarkDB`; `Ashmark_OnAddonCompartmentClick`, `Ashmark_OnAddonCompartmentEnter`, `Ashmark_OnAddonCompartmentLeave`; `SLASH_ASHMARK1`, `SLASH_ASHMARK2` and `SlashCmdList.ASHMARK`; `AshmarkMapPinMixin` (XML can only name a global mixin); and frame names prefixed `Ashmark` (`AshmarkFrame`, `AshmarkDialog`, `AshmarkNoticeFrame`, `AshmarkTestTooltip`). `.luacheckrc` lists exactly these as writable globals.
 
 ### 3.2 Modules
 
@@ -128,10 +128,12 @@ Every module has `default = true`. Without `canSend`, Fiction and Rumours only r
 | --- | --- | --- | --- | --- |
 | 1 | `ADDON_LOADED` with arg1 == `ADDON` (then unregistered) | Forever check, DB load and migrations (4.4), `math.randomseed` once if it exists | `M:OnInitialize()` on every module | register settings, kinds, slash subcommands, test checks. `M:Char()` is nil |
 | 2 | `PLAYER_LOGIN` | Identity refresh creates or updates `chars[guid]`, Compat recompute, Comm prefix, settings category | `M:OnEnable()` on every module whose `requires` and `modules` are met and whose setting is on | events, bus subscriptions, hooks (`M:Hook`), data providers. No log writes, no topic fires |
-| 3 | first `PLAYER_ENTERING_WORLD` after login or reload | core watcher baselines (5.10), auto chapter and compaction (4.2) | `M:OnWorldReady(isInitialLogin, isReloadingUi)` on enabled modules | first game-state reads; log writes and topic fires allowed from here on |
-| 4 | `PLAYER_LOGOUT` | played time (5.10) | nothing | |
+| 3 | first `PLAYER_ENTERING_WORLD` after login or reload | sets the ready flag (from here on `Log:Add` writes and topics fire), silent watcher baselines (5.10) | `M:OnWorldReady(isInitialLogin, isReloadingUi)` on enabled modules, in TOC order; afterwards Core's own first writes: zone check and group state (5.10), auto chapter and compaction (4.2) | first game-state reads; log writes and topic fires |
+| 4 | `PLAYER_LOGOUT` | played time and `lastSeen` (5.10), pending `other` gold | nothing | |
 
 - Every `OnEnable` runs before any `OnWorldReady`, so every subscriber is in place before the first write.
+- Core's own step-3 writes run after every `OnWorldReady` has returned, so each module has seeded its state (Encounters' resumed session, Map's cache, Campfire's `present`) before those entries and topics reach it.
+- Entries and topics written inside one module's `OnWorldReady` (Conflicts' reputation alliance, Encounters ending a stale session) can reach a module whose `OnWorldReady` has not run yet. Subscribers accept them: the state their handlers need is created in `OnInitialize` or on first use.
 - Reads that return nil at `OnWorldReady` retry on the next `UPDATE_FACTION` (reputation) or `QUEST_LOG_UPDATE` (quest log).
 - Enabling later (settings): `OnEnable`, then `OnWorldReady(false, false)`, through `ns.Combat.Run("module:" .. name, fn)`.
 - Disabling (settings or errors): Core removes every event, unit event and bus subscription made through the helpers, then calls the optional `M:OnDisable()` (remove data providers, hide own frames). Hooks stay installed and return early.
@@ -183,7 +185,7 @@ xpcall(function() return handler(self, unpack(args, 1, n)) end, report)
 
 ### 3.7 Bus topics
 
-`ns.Bus:Fire(topic, ...)` is synchronous; handlers run in subscription order.
+`ns.Bus:Fire(topic, ...)` is synchronous; handlers run in subscription order. A `Fire` issued while another `Fire` is dispatching is queued and delivered only after the current topic has reached every subscriber (FIFO); the outermost `Fire` returns once the queue is empty. Every subscriber therefore sees topics in the order they were fired: `LOG_ADDED` for a `quest.accept` before `LOG_ADDED` for the `alliance` it caused. State is not queued: a handler can see changes that an earlier subscriber made while handling the same topic (Conflicts handles `LOG_ADDED` before Profile), so rules that depend on the state before an entry compare sequence numbers (7.2).
 
 | Topic | Payload | Fired by |
 | --- | --- | --- |
@@ -191,6 +193,7 @@ xpcall(function() return handler(self, unpack(args, 1, n)) end, report)
 | `LOG_COMPACTED` | char | Log |
 | `CHAPTER_CLOSED` | chapter, members (list of GUIDs present, may be empty) | Log (`CloseChapter`) |
 | `REP_CHANGED` | factionId, reaction, delta | Core (5.10) |
+| `GROUP_CHANGED` | inGroup | Core (5.10) |
 | `NAMES_UPDATED` | kind (`"quest"`, `"item"`), id | Names |
 | `SETTINGS_CHANGED` | key, value | Settings |
 | `ALLIANCE_FORMED` | conflictId, side, viaRep | Conflicts |
@@ -206,18 +209,22 @@ xpcall(function() return handler(self, unpack(args, 1, n)) end, report)
 
 Cross-unit calls use only the functions below and the core services in section 5. They read AshmarkDB and static data, work whether the owning module is enabled, unavailable or failed, never error, and return nil or an empty table when data is missing. No unit reads another unit's locals or file-scope tables, and CharRecord fields are written only by the unit listed in 4.1.
 
+- Units may read, but never write, other units' `AshmarkDB` stores and CharRecord fields in the shapes this spec defines (4, 4.1, 7). Where a service below exists, use it.
+- Modules reference other units as `ns.<Unit>` at call time (`OnInitialize` or later), never captured at file scope. `NewModule` sets `ns[name]` when the module file loads, in TOC order (Conflicts, Profile, Map, Encounters, House, Campfire, Knowledge, Fiction, Rumours), so `local House = ns.House` at the top of `Conflicts.lua` is nil. Only tab files (6.1) may capture units at load.
+
 ```lua
 ns.Conflicts:All() -> { conflict, ... }
 ns.Conflicts:Get(id) -> conflict|nil
 ns.Conflicts:SideOf(questId) -> conflictId, side | nil
 ns.Conflicts:InZone(mapId) -> { conflict, ... }          -- zone == mapId or anchor.m == mapId
-ns.Conflicts:Alliance(char, id) -> "A"|"B"|nil
+ns.Conflicts:Alliance(char, id) -> "A"|"B"|nil, began     -- began: n of the entry that began it (7.1)
 ns.Profile:Axes(char) -> { fidelity, habitat, mercy }      -- integers -100..100, decayed to now
 ns.Profile:Archetype(char) -> key                          -- "OATHKEEPER" .. "PRAGMATIST" (7.2)
 ns.Profile:Origin(char) -> zoneMapId|nil
 ns.Profile:IsOpportunist(char) -> bool                     -- fidelity <= -34
 ns.Encounters:Contact(guid) -> Contact|nil
 ns.Encounters:Met(guid, char) -> ContactChar|nil           -- char's sub-record
+ns.Encounters:Known(char[, minCount]) -> { [guid] = ContactChar }   -- byChar[char.guid].count >= minCount (default 1)
 ns.Encounters:Session(char, id) -> Session|nil
 ns.Encounters:OpenSession() -> Session|nil
 ns.House:Key(char) -> houseKey|nil
@@ -271,6 +278,8 @@ AshmarkDB = {
 | `peers` | 500 | Fiction | oldest `last` |
 | `rumours.heard` | 200 | Rumours | weakest after decay; `told[id]` goes with it |
 | `rumours.told[id]` | 50 peers | Rumours | oldest; entries older than 30 days |
+| `chars[guid].state.greeted` | 4 (the party) | Fiction | GUIDs that left the party; all on `GROUP_CHANGED(false)` |
+| `chars[guid].state.senders` | 40 | Core (Comm) | senders whose GUID is no longer in the group first; all on `GROUP_CHANGED(false)` |
 | `dev.tests`, `dev.probes`, `dev.blocked` | 10, 20, 20 | Dev, Dev, Core | oldest |
 
 ### 4.1 CharRecord
@@ -278,12 +287,15 @@ AshmarkDB = {
 ```lua
 {
   guid, name, surname, surnameSource, ruleset, faction, race, class, sex, level,  -- Core, at PLAYER_LOGIN
-  firstSeen, lastSeen,                                   -- Core, epoch
+  firstSeen, lastSeen,                                   -- Core, epoch; lastSeen is written on the 5-minute
+                                                         -- played-time ticker and at PLAYER_LOGOUT, never at
+                                                         -- login, so OnWorldReady sees when the last session ended
   houseOverride = nil,                                   -- House
   seq = 0, log = { Entry, ... },                         -- Log, 4.2
   chapters = { { no, from, to, closed, m, x, y, auto }, ... },   -- Log; from/to are sequence numbers
   zones = { [zoneMapId] = epoch },                       -- Core: first visit
   conflicts = { allied = { [conflictId] = "A"|"B" }, since = { [conflictId] = epoch },
+                began = { [conflictId] = n },            -- n of the alliance or violation entry that began it
                 broken = { [conflictId] = n }, violations = 0, turned = { [conflictId] = true } },  -- Conflicts
   profile = { fidelity = 0, habitat = 0, mercy = 0, raw = { fidelity = 0, habitat = 0, mercy = 0 },
               asOf, origin, originSec = { [zoneMapId] = s }, kept = { [conflictId] = epoch },
