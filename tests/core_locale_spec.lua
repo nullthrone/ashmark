@@ -5,7 +5,8 @@ local LOCALES = { "enUS", "deDE", "frFR", "esES", "esMX", "ptBR", "ruRU", "koKR"
 -- The keys shown with a sex (5.8): Chronicle:Text keys and their _THEY forms, the map pins and the archetypes.
 local GENDERED = {}
 for _, key in ipairs({ "CORE_LOG_TURNIN", "CORE_LOG_ABANDON", "CORE_LOG_ZONE_FIRST", "CORE_LOG_LEVEL",
-                       "CORE_LOG_DEATH", "CORE_LOG_REP", "CORE_LOG_CHAPTER", "CONFLICT_ALLIED", "CONFLICT_ALLIED_REP",
+                       "CORE_LOG_DEATH", "CORE_LOG_REP", "CORE_LOG_CHAPTER", "CORE_LOG_DEATH_NOZONE",
+                       "CORE_LOG_CHAPTER_NOZONE", "CONFLICT_ALLIED", "CONFLICT_ALLIED_REP",
                        "CONFLICT_BROKE_WORD", "CONFLICT_SWITCHED", "CONFLICT_HOUSETURN", "ENC_LOG_TRAVEL",
                        "ENC_LOG_BOSS", "ENC_LOG_WIPE", "ENC_LOG_CAMP", "ENC_LOG_KICK", "ENC_LOG_CONTACT" }) do
   GENDERED[key], GENDERED[key .. "_THEY"] = true, true

@@ -58,4 +58,21 @@ describe("Core Chronicle", function()
     ns.Log:CloseChapter({})
     assert.equal("Chapter I closes in Desolace.", ns.Chronicle:Render(ns.Log:Last(char, "chapter"), { char = char }))
   end)
+
+  it("never sets a place outside every zone into a sentence that may call it a zone", function()
+    -- As deDE and ruRU write them: the plain keys put {place} after a word for zone.
+    local L = ns.Locale:Base()
+    L.CORE_LOG_DEATH, L.CORE_LOG_DEATH_THEY = "You died in the zone {place}.", "{name} died in the zone {place}."
+    L.CORE_LOG_CHAPTER = "Chapter {roman} closes in the zone {place}."
+    local own, family = { char = char }, { char = char, own = false }
+    local function render(entry, ctx) return ns.Chronicle:Render(entry, ctx or own) end
+    assert.equal("You died in the zone Desolace.", render({ k = "death", m = 9002 }))
+    assert.equal("You died in Kalimdor.", render({ k = "death", m = 1414 }))
+    assert.equal("Aren died in Kalimdor.", render({ k = "death", m = 1414 }, family))
+    assert.equal("You died in the zone an unknown place.", render({ k = "death" }))
+    assert.equal("You died in the zone an unknown place.", render({ k = "death", m = 4242 }))
+    assert.equal("Chapter III closes in the zone Desolace.", render({ k = "chapter", no = 3, m = 1443 }))
+    assert.equal("Chapter III closes in Test Orphan.", render({ k = "chapter", no = 3, m = 9003 }))
+    assert.equal("Aren's chapter III closes in Kalimdor.", render({ k = "chapter", no = 3, m = 1414 }, family))
+  end)
 end)

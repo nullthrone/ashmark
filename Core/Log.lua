@@ -238,10 +238,6 @@ Log:RegisterKind("chapter", {
   fields = { "no", "auto" },
   keep = true,
   render = function(entry, ctx)
-    local place = entry.m and (ns.Where.Zone(entry.m) or entry.m)
-    return ns.Chronicle:Text("CORE_LOG_CHAPTER", ctx, {
-      roman = ns.Util.Roman(entry.no),
-      place = ns.Names.Map(place),
-    })
+    return ns.Chronicle:PlaceText("CORE_LOG_CHAPTER", ctx, entry.m, { roman = ns.Util.Roman(entry.no) })
   end,
 })

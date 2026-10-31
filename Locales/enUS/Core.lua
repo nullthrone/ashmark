@@ -55,6 +55,12 @@ L.CORE_LOG_REP = "You are now {standing} with {faction}."
 L.CORE_LOG_REP_THEY = "{name} is now {standing} with {faction}."
 L.CORE_LOG_CHAPTER = "Chapter {roman} closes in {place}."
 L.CORE_LOG_CHAPTER_THEY = "{name}'s chapter {roman} closes in {place}."
+-- The same two sentences for a place outside every zone: {place} is then a continent or another map that is no
+-- zone (the open sea between continents, a dungeon outside any zone), so the text must not call it a zone.
+L.CORE_LOG_DEATH_NOZONE = "You died in {place}."
+L.CORE_LOG_DEATH_NOZONE_THEY = "{name} died in {place}."
+L.CORE_LOG_CHAPTER_NOZONE = "Chapter {roman} closes in {place}."
+L.CORE_LOG_CHAPTER_NOZONE_THEY = "{name}'s chapter {roman} closes in {place}."
 
 -- Slash commands (5.9)
 L.CORE_HELP_HEADER = "Commands:"

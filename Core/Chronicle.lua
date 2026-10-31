@@ -42,3 +42,14 @@ function Chronicle:Text(key, ctx, values)
   end
   return ns.Format(ns.Gender(key, char and char.sex), values)
 end
+
+-- Renderer helper for a sentence set at a stored map m: key with m's zone in {place}. A known map outside
+-- every zone (a continent, the open sea) takes key .. "_NOZONE", whose text calls it no zone, as key's may
+-- ("im Gebiet", "в зоне"); without a known map key takes CORE_UNKNOWN_PLACE, which is written for it.
+function Chronicle:PlaceText(key, ctx, m, values)
+  values = values or {}
+  local zone = ns.Where.Zone(m)
+  values.place = ns.Names.Map(zone or m)
+  if not zone and values.place ~= ns.L.CORE_UNKNOWN_PLACE then key = key .. "_NOZONE" end
+  return self:Text(key, ctx, values)
+end

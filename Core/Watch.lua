@@ -43,9 +43,9 @@ Log:RegisterKind("zone", {
 Log:RegisterKind("level", { fields = { "l" }, keep = true, render = say("CORE_LOG_LEVEL", function(entry)
   return { level = entry.l }
 end) })
-Log:RegisterKind("death", { fields = {}, render = say("CORE_LOG_DEATH", function(entry)
-  return { place = ns.Names.Map(entry.m and (ns.Where.Zone(entry.m) or entry.m)) }
-end) })
+Log:RegisterKind("death", { fields = {}, render = function(entry, ctx)
+  return ns.Chronicle:PlaceText("CORE_LOG_DEATH", ctx, entry.m)
+end })
 Log:RegisterKind("rep", { fields = { "f", "s", "d" }, render = say("CORE_LOG_REP", function(entry, ctx)
   return { faction = ns.Names.Faction(entry.f), standing = standing(entry.s, ctx.char and ctx.char.sex) }
 end) })
