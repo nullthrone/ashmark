@@ -158,14 +158,24 @@ end
 
 -- /ashmark house (5.9) ---------------------------------------------------------------
 
--- The stored surname of an account character that equals name ignoring ASCII case (string.lower
--- folds only A-Z); an exact match wins, otherwise the first in byte order. nil without a match.
-local function storedSurname(name)
+-- The house name already on the account that equals name ignoring ASCII case (string.lower folds
+-- only A-Z): the stored surname of any character, or the override of another one, so two alts that
+-- type the same house in different case share it. An exact match wins, otherwise the first in byte
+-- order. nil without a match.
+local function knownHouse(name, self)
   local folded, match = name:lower()
+  local function consider(key)
+    if not key then return false end
+    if key == name then return true end
+    if key:lower() == folded and (not match or key < match) then match = key end
+    return false
+  end
   for _, char in pairs(records()) do
-    local surname = type(char) == "table" and clean(char.surname)
-    if surname == name then return surname end
-    if surname and surname:lower() == folded and (not match or surname < match) then match = surname end
+    if type(char) == "table" then
+      if consider(clean(char.surname)) then return name end
+      local other = char ~= self and char.guid ~= self.guid
+      if other and consider(clean(char.houseOverride)) then return name end
+    end
   end
   return match
 end
@@ -189,7 +199,7 @@ local function house(args)
     char.houseOverride = nil
     report(houseKey(char), "HOUSE_SLASH_RESET", "HOUSE_SLASH_RESET_NONE")
   else
-    char.houseOverride = storedSurname(args) or args
+    char.houseOverride = knownHouse(args, char) or args
     ns.Print(ns.Format(L.HOUSE_SLASH_SET, { house = char.houseOverride }))
   end
   M:Fire("HOUSE_CHANGED", houseKey(char))
