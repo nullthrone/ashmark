@@ -38,7 +38,7 @@ read_globals = {
   "UnitRace", "UnitSex", "UnitFactionGroup", "UnitLevel", "UnitIsPlayer", "UnitIsDead", "UnitIsTapDenied",
   "UnitIsAFK", "UnitPlayerControlled", "UnitReaction", "UnitCreatureType", "UnitHealth", "UnitHealthMax",
   "UnitAffectingCombat", "UnitInParty", "UnitInRaid", "IsInRaid", "IsInGroup", "GetNumSubgroupMembers",
-  "GetNumGroupMembers", "Ambiguate",
+  "GetNumGroupMembers", "Ambiguate", "LE_PARTY_CATEGORY_HOME", "LE_PARTY_CATEGORY_INSTANCE",
   -- C_ namespaces and enums
   "C_AddOns", "C_ChatInfo", "C_ClassColor", "C_CombatLog", "C_Container", "C_CreatureInfo", "C_CVar",
   "C_EventUtils", "C_GameRules", "C_Item", "C_MajorFactions", "C_Map", "C_PlayerInfo", "C_QuestLog",

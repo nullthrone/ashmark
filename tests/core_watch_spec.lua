@@ -296,6 +296,15 @@ describe("Core watchers", function()
       assert.same({ "GROUP_CHANGED", false }, topics[2])
     end)
 
+    it("takes a battleground the player queued for alone for no group", function()
+      boot()
+      wow.state.instanceGroup = true
+      for i = 1, 15 do wow.unit("raid" .. i, { guid = "Player-1-1" .. i, name = "Fighter" .. i }) end
+      wow.fire("GROUP_ROSTER_UPDATE")
+      wow.advance(1)
+      assert.same({}, topics)
+    end)
+
     it("fires GROUP_CHANGED(false) after logging in outside the stored group", function()
       wow.saved({ schema = 1, created = 1, chars = { [GUID] = {
         guid = GUID, seq = 0, log = {}, chapters = {}, zones = {}, stats = {},

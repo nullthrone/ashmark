@@ -72,13 +72,34 @@ function Identity:Player()
   return p
 end
 
-function Identity:Group(scope)
-  local prefix, count = "party", 4
-  if scope == "all" and IsInRaid and IsInRaid() then
-    prefix, count = "raid", 40
+-- Ashmark's group is the home group, the party or raid the player formed. Without a category the client
+-- answers for the instance group while there is one, and a battleground puts every player into one.
+local function home()
+  return type(LE_PARTY_CATEGORY_HOME) == "number" and LE_PARTY_CATEGORY_HOME or nil
+end
+
+local function inInstanceGroup()
+  if type(LE_PARTY_CATEGORY_INSTANCE) ~= "number" then return false end
+  local ok, grouped = Safe.Call(IsInGroup, LE_PARTY_CATEGORY_INSTANCE)
+  return ok and grouped == true
+end
+
+-- The home group's unit tokens, "party", 4 or (scope "all" in a raid) "raid", 40; nil while the tokens
+-- name an instance group, which leaves the home group without tokens of its own.
+function Identity:Tokens(scope)
+  if inInstanceGroup() then return nil end
+  if scope == "all" then
+    local ok, raid = Safe.Call(IsInRaid, home())
+    if ok and raid == true then return "raid", 40 end
   end
-  local me = Safe.UnitGUID("player")
+  return "party", 4
+end
+
+function Identity:Group(scope)
   local out = {}
+  local prefix, count = self:Tokens(scope)
+  if not prefix then return out end
+  local me = Safe.UnitGUID("player")
   for i = 1, count do
     local p = self:Unit(prefix .. i)
     if p and p.guid ~= me then out[p.guid] = p end
@@ -87,7 +108,10 @@ function Identity:Group(scope)
 end
 
 function Identity:InGroup()
-  return (IsInGroup and IsInGroup() and (GetNumGroupMembers() or 0) > 1) and true or false
+  local ok, grouped = Safe.Call(IsInGroup, home())
+  if not (ok and grouped == true) then return false end
+  local counted, n = Safe.Call(GetNumGroupMembers, home())
+  return counted and type(n) == "number" and n > 1 or false
 end
 
 local function ensure(t, key, value)

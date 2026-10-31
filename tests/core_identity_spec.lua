@@ -102,6 +102,47 @@ describe("Core Identity", function()
     assert.is_nil(Identity:Group("party")["Player-1-9"])
   end)
 
+  describe("in a battleground", function()
+    -- The unit tokens name the battleground's raid, an instance group; the home group stands behind it.
+    local function battleground(home)
+      wow.state.instanceGroup, wow.state.homeGroup = true, home
+      wow.unit("raid1", wow.state.units.player)
+      for i = 2, 15 do wow.unit("raid" .. i, { guid = "Player-1-1" .. i, name = "Fighter" .. i }) end
+      for i = 1, 4 do wow.unit("party" .. i, wow.state.units["raid" .. (i + 1)]) end
+    end
+
+    it("counts no group for a player who queued alone, and names no members", function()
+      battleground(nil)
+      assert.is_false(Identity:InGroup())
+      assert.same({}, Identity:Group("all"))
+      assert.same({}, Identity:Group("party"))
+      assert.is_nil(Identity:Tokens("all"))
+    end)
+
+    it("keeps the home party as the group, but never takes the battleground's members for it", function()
+      battleground({ size = 3 })
+      assert.is_true(Identity:InGroup())
+      assert.same({}, Identity:Group("all"))
+      assert.same({}, Identity:Group("party"))
+      wow.state.instanceGroup, wow.state.homeGroup = false, nil
+      for i = 1, 15 do wow.unit("raid" .. i, nil) end
+      wow.unit("party3", nil)
+      wow.unit("party4", nil)
+      assert.is_true(Identity:InGroup())
+      assert.same({ "party", 4 }, { Identity:Tokens("all") })
+      assert.equal("party1", Identity:Group("all")["Player-1-12"].unit)
+    end)
+  end)
+
+  it("asks for the home group even where the client lacks the category constants", function()
+    wow.stub("LE_PARTY_CATEGORY_HOME", nil)
+    wow.stub("LE_PARTY_CATEGORY_INSTANCE", nil)
+    wow.unit("raid1", wow.state.units.player)
+    wow.unit("raid2", { guid = "Player-1-2", name = "Mira" })
+    assert.is_true(Identity:InGroup())
+    assert.equal("raid2", Identity:Group("all")["Player-1-2"].unit)
+  end)
+
   it("treats a group of one as no group", function()
     assert.is_false(Identity:InGroup())
     wow.unit("party1", { guid = "Player-1-2", name = "Mira" })
