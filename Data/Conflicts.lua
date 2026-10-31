@@ -2,7 +2,7 @@
 local _, ns = ...
 ns.Data = ns.Data or {}
 ns.Data.Conflicts = {
-  count = 6,
+  count = 10,
   list = {
     {
       id = "gelkis_magram_clan_choice", zone = 1443, theme = "feud",
@@ -43,6 +43,34 @@ ns.Data.Conflicts = {
       id = "shendralas_scouting_vs_attack", zone = 2652, theme = "feud",
       A = { faction = 92, quests = { 93122 } },
       B = { faction = 93, quests = { 93072 } },
+      honored = 6,
+      verified = false,
+    },
+    {
+      id = "sw_bootybay_bloodsail_attack", zone = 1434, theme = "feud",
+      A = { faction = 21, quests = { 597, 599 } },
+      B = { faction = 87, quests = { 4621 } },
+      honored = 6,
+      verified = false,
+    },
+    {
+      id = "sw_bootybay_bloodsail_recovery", zone = 1434, theme = "feud",
+      A = { faction = 21, quests = { 576, 587 } },
+      B = { faction = 87, quests = { 1036 } },
+      honored = 6,
+      verified = false,
+    },
+    {
+      id = "zephras_belathaan_overlook_ambush", zone = 2521, theme = "feud",
+      A = { faction = 2778, quests = { 93746 } },
+      B = { faction = 2779, quests = { 92840, 99260 } },
+      honored = 6,
+      verified = false,
+    },
+    {
+      id = "zephras_windshapers_vs_high_order_leyline", zone = 2521, theme = "feud",
+      A = { faction = 2778, quests = { 94411 } },
+      B = { faction = 2779, quests = { 94413 } },
       honored = 6,
       verified = false,
     },

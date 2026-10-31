@@ -1,0 +1,7 @@
+conflict_id,zone,theme,honored,anchor_m,anchor_x,anchor_y,side,faction,quest,quest_name,verified,source
+sw_bootybay_bloodsail_attack,1434,feud,6,,,,A,21,597,The Bloodsail Buccaneers,false,https://www.wowhead.com/forever/quest=597
+sw_bootybay_bloodsail_attack,1434,feud,6,,,,A,21,599,The Bloodsail Buccaneers,false,https://www.wowhead.com/forever/quest=599
+sw_bootybay_bloodsail_attack,1434,feud,6,,,,B,87,4621,"Avast Ye, Admiral!",false,https://www.wowhead.com/forever/quest=4621
+sw_bootybay_bloodsail_recovery,1434,feud,6,,,,A,21,576,Keep An Eye Out,false,https://www.wowhead.com/forever/quest=576
+sw_bootybay_bloodsail_recovery,1434,feud,6,,,,A,21,587,Up to Snuff,false,https://www.wowhead.com/forever/quest=587
+sw_bootybay_bloodsail_recovery,1434,feud,6,,,,B,87,1036,"Avast Ye, Scallywag",false,https://www.wowhead.com/forever/quest=1036

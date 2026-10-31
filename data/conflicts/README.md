@@ -28,4 +28,11 @@ One CSV file per area, UTF-8, one row per quest. The conflict columns repeat on 
 
 ## Provenance
 
-The pilot set was researched on 2026-10-30 and 2026-10-31 from Wowhead's Forever database and re-checked quest by quest by a second pass. Every row is `verified = false` until it is tested in the client. Not yet covered: quest-giver coordinates (Wowhead's Forever pages did not show them), and whether each quest is open to both factions.
+The pilot set was researched on 2026-10-30 and 2026-10-31 from Wowhead's Forever database and re-checked quest by quest by a second pass. Every row is `verified = false` until it is tested in the client. The pilot holds 10 conflicts: three Gelkis–Magram decision points in Desolace, three in Shen'dralas, two Booty Bay–Bloodsail conflicts in Stranglethorn Vale and two Windshapers–High Order conflicts on Zephras Isle. The classic starter zones yielded no quest pairs whose texts oppose each other, so none are included.
+
+Open points, to settle in the client:
+
+- Zone IDs for Stranglethorn Vale (1434) and Zephras Isle (2521) come from the Classic and Forever uiMap tables, not from quest pages.
+- The Zephras Isle factions may each be tied to one player faction (Skyborne Horde shamans, Alliance mages); then no single character can reach both sides and the conflict never triggers.
+- Quest-giver coordinates are missing (Wowhead's Forever pages did not show them), so no conflict has a map anchor yet.
+- Whether each quest is open to both factions.
