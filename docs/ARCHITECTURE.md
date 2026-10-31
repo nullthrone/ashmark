@@ -54,6 +54,7 @@ Ashmark_Forever.toc Ashmark_Camelot.toc        -- identical except ## X-TocVaria
 data/conflicts/*.csv data/conflicts/README.md  -- dataset source and its format, not shipped
 tools/conflicts.py                             -- generator + validator, not shipped
 tests/helpers/wow.lua tests/helpers/<unit>_mock.lua tests/core_<service>_spec.lua tests/<unit>_spec.lua
+tests/helpers/integration_flow.lua tests/integration_*_spec.lua
 .busted .luacheckrc .pkgmeta .github/workflows/*.yml
 README.md LICENSE docs/ .claude/
 ```
@@ -1084,6 +1085,8 @@ wow.combat(on)                     -- InCombatLockdown and the REGEN events
 | `knowledge` | silent first scan of bags and of the bank, keep set by type and by pattern, secret bail-out |
 | `rumours` | ids, decay with age, precision loss, caps, re-print limits |
 | `fiction` | greeting once per member, no loop, peer storage, `PR` before `HI`, a join inside the 30 s window greeted when it ends, leave and rejoin greeted again, `greeted` cleared on `GROUP_CHANGED(false)`, no re-greeting after a /reload |
+| `integration_load` | both TOCs against section 2, every file loaded into one ns, lifecycle and /reload, no new globals, the integration flow (`tests/helpers/integration_flow.lua`: every module's main events with every tab open, each module off and on, the test mode) |
+| `integration_locales` | the integration flow once under each of the ten locales with a female player, the test mode's locale check complete, every chronicle line of the flow rendered in both persons and for both sexes without a placeholder or key name left, the TOC `## Notes-<locale>` lines |
 
 - `luacheck .` must pass with `.luacheckrc` (Core): std `lua51`, a broad WoW `read_globals` list, Ashmark's globals (3.1) as `globals`. A unit that reads a WoW global missing from the list declares it at the top of its own file with `-- luacheck: read globals X, Y`. Units never edit `.luacheckrc`.
 - CI (Packaging) runs busted, luacheck, `python3 tools/conflicts.py --check` and the TOC file-list comparison on every push and pull request.
@@ -1094,7 +1097,7 @@ Every file in the repository belongs to exactly one unit.
 
 | Unit | Owns |
 | --- | --- |
-| Core | `Ashmark_Forever.toc`, `Ashmark_Camelot.toc`, `Core/*.lua`, `Locales/Locale.lua`, `Locales/enUS/Core.lua`, `Locales/enUS/Test.lua`, `UI/*.lua` (Widgets, MainFrame, Dialog, Notice, ChatLine, Compartment), `UI/Tabs/Chronicle.lua`, `Dev/*.lua`, `tests/helpers/wow.lua`, `tests/core_*_spec.lua`, `.busted`, `.luacheckrc` |
+| Core | `Ashmark_Forever.toc`, `Ashmark_Camelot.toc`, `Core/*.lua`, `Locales/Locale.lua`, `Locales/enUS/Core.lua`, `Locales/enUS/Test.lua`, `UI/*.lua` (Widgets, MainFrame, Dialog, Notice, ChatLine, Compartment), `UI/Tabs/Chronicle.lua`, `Dev/*.lua`, `tests/helpers/wow.lua`, `tests/helpers/integration_flow.lua`, `tests/core_*_spec.lua`, `tests/integration_*_spec.lua`, `.busted`, `.luacheckrc` |
 | Conflicts | `Modules/Conflicts/*`, `UI/Tabs/Decisions.lua`, `Locales/enUS/Conflicts.lua`, `tests/conflicts*_spec.lua`, `tests/helpers/conflicts_mock.lua` |
 | Profile | `Modules/Profile/*`, `Locales/enUS/Profile.lua`, `tests/profile*_spec.lua`, `tests/helpers/profile_mock.lua` |
 | Map | `Modules/Map/Map.lua`, `Modules/Map/MapPins.xml`, `Locales/enUS/Map.lua`, `tests/map*_spec.lua`, `tests/helpers/map_mock.lua` |
