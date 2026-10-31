@@ -33,7 +33,7 @@ local function confirm(textKey, onAccept)
 end
 
 -- This character's part of the account stores: its meetings in contacts (a contact no other
--- character met and without a note goes with them) and its sightings of peers.
+-- character met and without a note goes with them) and its sightings of peers (seenBy, logged).
 local function forgetCharacter(db, guid)
   for id, contact in pairs(type(db.contacts) == "table" and db.contacts or {}) do
     local byChar = type(contact) == "table" and contact.byChar
@@ -44,7 +44,9 @@ local function forgetCharacter(db, guid)
     end
   end
   for _, peer in pairs(type(db.peers) == "table" and db.peers or {}) do
-    if type(peer) == "table" and type(peer.seenBy) == "table" then peer.seenBy[guid] = nil end
+    for _, key in ipairs({ "seenBy", "logged" }) do
+      if type(peer) == "table" and type(peer[key]) == "table" then peer[key][guid] = nil end
+    end
   end
 end
 

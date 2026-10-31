@@ -82,7 +82,9 @@ describe("Core Slash", function()
       shared = { guid = "shared", byChar = { [me] = { count = 1 }, [alt] = { count = 4 } } },
       other = { guid = "other", byChar = { [alt] = { count = 1 } } },
     }
-    db.peers = { p = { guid = "p", seenBy = { [me] = "GENTLE", [alt] = "RUTHLESS" } } }
+    db.peers = {
+      p = { guid = "p", seenBy = { [me] = "GENTLE", [alt] = "RUTHLESS" }, logged = { [me] = 5, [alt] = 6 } },
+    }
     SlashCmdList.ASHMARK("reset")
     dialog.onAccept()
     assert.same({
@@ -91,6 +93,7 @@ describe("Core Slash", function()
       other = { guid = "other", byChar = { [alt] = { count = 1 } } },
     }, db.contacts)
     assert.same({ [alt] = "RUTHLESS" }, db.peers.p.seenBy)
+    assert.same({ [alt] = 6 }, db.peers.p.logged)
   end)
 
   it("wipes contacts, peers and rumours that are not own", function()
