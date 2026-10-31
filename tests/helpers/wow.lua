@@ -858,6 +858,18 @@ local function buildGlobals()
       if i then return id, i.itemType, i.itemSubType, i.equipLoc, i.icon, i.classID, i.subclassID end
     end,
     GetItemIconByID = function(id) local i = data.items[id] return i and i.icon end,
+    -- As the client answers it without its options: the count in the backpack to the reagent bag (0 to 5),
+    -- not the bank, read from the bag fixtures at call time.
+    GetItemCount = function(id)
+      local n = 0
+      for bag = 0, 5 do
+        local b = data.bags[bag]
+        for slot = 1, b and (b.size or #b) or 0 do
+          if b[slot] == id then n = n + 1 end
+        end
+      end
+      return n
+    end,
   }
   G.C_Container = {
     GetContainerNumSlots = function(bag) local b = data.bags[bag] return b and (b.size or #b) or 0 end,

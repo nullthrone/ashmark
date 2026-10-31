@@ -185,7 +185,6 @@ local function copyFields(source, keys)
   return Safe.Clean(fields)
 end
 
--- luacheck: read globals UNKNOWNOBJECT UKNOWNBEING
 -- The client's stand-in for a name that has not loaded yet ("Unknown"; no character may take it) is no name.
 local function placeholder(name)
   return name == UNKNOWNOBJECT or name == UKNOWNBEING

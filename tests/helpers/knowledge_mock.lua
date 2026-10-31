@@ -113,30 +113,13 @@ function mock.put(wow, bag, id)
   error("no free slot in bag " .. tostring(bag))
 end
 
--- C_Item.GetItemCount as the client answers it without its options: the count in the backpack to the reagent
--- bag, not the bank, read from the container fixtures at call time.
-local function itemCount(wow)
-  return function(id)
-    local count = 0
-    for bag = mock.BACKPACK, mock.REAGENT do
-      local b = wow.data.bags[bag]
-      for slot = 1, b and (b.size or #b) or 0 do
-        if b[slot] == id then count = count + 1 end
-      end
-    end
-    return count
-  end
-end
-
--- Core, Locales and Knowledge, opts.setup(ns), then login. The backpack has 16 slots unless a spec set it;
--- C_Item.GetItemCount counts the bag fixtures unless the mock client has one.
+-- Core, Locales and Knowledge, opts.setup(ns), then login. The backpack has 16 slots unless a spec set it.
 function mock.boot(wow, opts)
   opts = opts or {}
   if not wow.data.bags[mock.BACKPACK] then mock.bag(wow, mock.BACKPACK, 16) end
   for key, text in pairs(mock.STRINGS) do
     if _G[key] == nil then wow.stub(key, text) end
   end
-  if C_Item.GetItemCount == nil then wow.stub("C_Item.GetItemCount", itemCount(wow)) end
   local ns = wow.load(mock.FILES)
   if opts.setup then opts.setup(ns) end
   wow.login()
