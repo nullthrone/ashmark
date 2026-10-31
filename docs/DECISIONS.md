@@ -11,7 +11,7 @@ Decisions for Ashmark v1, set in the design interview on 2026-10-30 and revised 
 | Identity keys | Characters are keyed by player GUID; names are display only. Full names are unique per region, first names and surnames are not. Account-wide SavedVariables only. |
 | Libraries | None. Blizzard APIs only, including map pins and addon-message throttling. |
 | Dev environment | Code is written in the cloud. In-client verification runs locally on Windows. |
-| In-game test mode | `/ashmark test` checks frames, templates, atlas entries, secret-value handling and locale completeness against the live client. It writes results to SavedVariables, then reloads the UI. A screenshot of the chronicle next to the real quest dialog is part of the run. |
+| In-game test mode | `/ashmark test` checks frames, templates, atlas entries, secret-value handling and locale completeness against the live client. It records the results, then asks the player to type `/reload`, which writes them to SavedVariables (addon code cannot reload the UI without a hardware event). A screenshot of the chronicle next to the real quest dialog is part of the run. |
 | Release | Prepared for CurseForge: `.pkgmeta` plus a GitHub Action that packages on tag. Upload happens only once a CurseForge project ID and API token are configured. |
 
 ## Scope v1
