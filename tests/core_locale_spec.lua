@@ -79,6 +79,33 @@ describe("Core Locale", function()
         it(code .. " has every enUS key", function()
           assert.same({}, loaded.Locale:Missing(code))
         end)
+        if code ~= "enUS" then
+          it(code .. " has only enUS keys and their _F forms, as non-empty strings", function()
+            local base, unknown = loaded.Locale:Base(), {}
+            for key, text in pairs(loaded.Locale.tables[code]) do
+              local stem = key:match("^(.+)_F$")
+              if base[key] == nil and not (stem and base[stem] ~= nil) then unknown[#unknown + 1] = key end
+              if type(text) ~= "string" or text == "" then unknown[#unknown + 1] = key .. " (empty)" end
+            end
+            table.sort(unknown)
+            assert.same({}, unknown)
+          end)
+          it(code .. " keeps every placeholder of the enUS text", function()
+            local base, wrong = loaded.Locale:Base(), {}
+            local function holders(text)
+              local set = {}
+              for name in tostring(text):gmatch("{(%w+)}") do set[#set + 1] = name end
+              table.sort(set)
+              return table.concat(set, ",")
+            end
+            for key, text in pairs(loaded.Locale.tables[code]) do
+              local source = base[key] or base[key:match("^(.+)_F$") or ""]
+              if source ~= nil and holders(text) ~= holders(source) then wrong[#wrong + 1] = key end
+            end
+            table.sort(wrong)
+            assert.same({}, wrong)
+          end)
+        end
       else
         pending(code .. ": " .. file .. " is not delivered yet")
       end
