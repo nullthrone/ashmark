@@ -9,6 +9,7 @@ L.ENC_MODULE_DESC = "Ashmark remembers the people you group with: how often you 
 -- Unit tooltip (7.4). {count} is a number, {place} a zone name from the client, {archetype} one of the
 -- PROFILE_<ARCHETYPE> labels.
 L.ENC_TOOLTIP = "Met: {count}× · last {place}"
+L.ENC_TOOLTIP_NOPLACE = "Met: {count}×"
 L.ENC_TOOLTIP_PEER = "{archetype}"
 
 -- Chat line when people you know join your group. {name} is a character name.
@@ -28,6 +29,7 @@ L.ENC_TAB = "Encounters"
 L.ENC_TAB_TOTAL = "People you have met: {count} · familiar faces: {recurring}"
 L.ENC_TAB_EMPTY = "Nobody has crossed your path yet. Group with someone and Ashmark will remember them."
 L.ENC_TAB_MET = "Met {count}× · last in {place} · {date}"
+L.ENC_TAB_MET_NOPLACE = "Met {count}× · {date}"
 L.ENC_TAB_NOTE = "Note"
 L.ENC_TAB_WHO = "{race} {class}"
 L.ENC_TAB_FIRST = "First met {date}"

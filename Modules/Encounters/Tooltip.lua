@@ -23,8 +23,9 @@ function Tooltip.Fill(tooltip, data)
   if guid == nil then guid = displayedGuid(tooltip) end
   local rec = type(guid) == "string" and M:Met(guid, M:Char())
   if not (rec and type(rec.count) == "number") then return false end
-  local place = ns.Names.Map(rec.lastPlace)
-  tooltip:AddLine(ns.Format(L.ENC_TOOLTIP, { count = rec.count, place = place }), NORMAL_FONT_COLOR:GetRGB())
+  local text = rec.lastPlace and ns.Format(L.ENC_TOOLTIP, { count = rec.count, place = ns.Names.Map(rec.lastPlace) })
+    or ns.Format(L.ENC_TOOLTIP_NOPLACE, { count = rec.count })
+  tooltip:AddLine(text, NORMAL_FONT_COLOR:GetRGB())
   local archetype = M:PeerLabel(guid)
   if archetype then
     tooltip:AddLine(ns.Format(L.ENC_TOOLTIP_PEER, { archetype = archetype }), HIGHLIGHT_FONT_COLOR:GetRGB())

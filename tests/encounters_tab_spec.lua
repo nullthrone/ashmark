@@ -157,7 +157,7 @@ describe("Encounters tab", function()
     assert.equal(icon, b.icon)
     assert.is_false(b.icon:IsShown())
     assert.equal("", b.marker:GetText())
-    assert.equal("Met 1× · last in somewhere · " .. os.date("%Y-%m-%d", now - 86400), b.info:GetText())
+    assert.equal("Met 1× · " .. os.date("%Y-%m-%d", now - 86400), b.info:GetText())
   end)
 
   it("opens the note editor from the row's button and shows the new note", function()

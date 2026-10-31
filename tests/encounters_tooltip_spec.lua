@@ -2,13 +2,13 @@ local wow = require("tests.helpers.wow")
 local mock = require("tests.helpers.encounters_mock")
 
 local ME, ALT = mock.ME, mock.ALT
-local THALEN, MIRA, KEL = mock.guid("thalen"), mock.guid("mira"), mock.guid("kel")
+local THALEN, MIRA, KEL, ORLA = mock.guid("thalen"), mock.guid("mira"), mock.guid("kel"), mock.guid("orla")
 local DESOLACE = 1443
 
 describe("Encounters tooltip", function()
   local ns, M
 
-  -- Thalen met three times by this character, Mira only by the alt, Kel never.
+  -- Thalen met three times by this character, Orla once somewhere unknown, Mira only by the alt, Kel never.
   local function stored()
     local now = wow.state.epoch
     return {
@@ -17,6 +17,7 @@ describe("Encounters tooltip", function()
         [THALEN] = mock.contact(THALEN, { name = "Thalen", class = "PALADIN",
                                           byChar = { [ME] = mock.met(3, now - 600, { lastPlace = DESOLACE }) } }),
         [MIRA] = mock.contact(MIRA, { name = "Mira", byChar = { [ALT] = mock.met(1, now - 600) } }),
+        [ORLA] = mock.contact(ORLA, { name = "Orla", byChar = { [ME] = mock.met(1, now - 600) } }),
       },
     }
   end
@@ -61,6 +62,11 @@ describe("Encounters tooltip", function()
     GameTooltip:Hide()
     assert.same({ "Thalen", "Met: 3× · last Desolace" }, hover({ type = Enum.TooltipDataType.Unit, guid = THALEN }))
     assert.is_true(GameTooltip:IsShown())
+  end)
+
+  it("leaves out the place when none is known", function()
+    boot()
+    assert.same({ "Thalen", "Met: 1×" }, hover({ guid = ORLA }))
   end)
 
   it("adds the archetype Fiction knows", function()

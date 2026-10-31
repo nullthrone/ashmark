@@ -98,6 +98,13 @@ local function initRow(row, data)
   row.info:SetText(data.info)
 end
 
+local function met(rec, last)
+  if rec.lastPlace then
+    return ns.Format(L.ENC_TAB_MET, { count = rec.count, place = ns.Names.Map(rec.lastPlace), date = day(last) })
+  end
+  return ns.Format(L.ENC_TAB_MET_NOPLACE, { count = rec.count, date = day(last) })
+end
+
 local function contactRow(guid, rec)
   local contact = Encounters:Contact(guid) or {}
   local note = type(contact.note) == "string" and contact.note or ""
@@ -110,7 +117,7 @@ local function contactRow(guid, rec)
     class = type(contact.class) == "string" and contact.class or nil,
     recurring = Encounters:IsRecurring(rec),
     note = note,
-    info = ns.Format(L.ENC_TAB_MET, { count = rec.count, place = ns.Names.Map(rec.lastPlace), date = day(last) }),
+    info = met(rec, last),
     who = ns.Format(L.ENC_TAB_WHO, { race = ns.Names.Race(contact.race), class = ns.Names.Class(contact.class,
       contact.sex) }),
     first = type(rec.first) == "number" and ns.Format(L.ENC_TAB_FIRST, { date = day(rec.first) }) or nil,
