@@ -32,10 +32,27 @@ local function confirm(textKey, onAccept)
   dialog:Show({ text = L[textKey], accept = "CORE_RESET_ACCEPT", cancel = "CORE_CANCEL", onAccept = onAccept })
 end
 
+-- This character's part of the account stores: its meetings in contacts (a contact no other
+-- character met and without a note goes with them) and its sightings of peers.
+local function forgetCharacter(db, guid)
+  for id, contact in pairs(type(db.contacts) == "table" and db.contacts or {}) do
+    local byChar = type(contact) == "table" and contact.byChar
+    if type(byChar) == "table" then
+      byChar[guid] = nil
+      local note = contact.note
+      if next(byChar) == nil and (type(note) ~= "string" or note == "") then db.contacts[id] = nil end
+    end
+  end
+  for _, peer in pairs(type(db.peers) == "table" and db.peers or {}) do
+    if type(peer) == "table" and type(peer.seenBy) == "table" then peer.seenBy[guid] = nil end
+  end
+end
+
 local function wipeCharacter()
   local guid = ns.playerGUID
   if ns.DB.readOnly or not guid then return end
   AshmarkDB.chars[guid] = nil
+  forgetCharacter(AshmarkDB, guid)
   ns.Identity:Refresh()
   local char = ns.DB:Char()
   if char then ns.Bus:Fire("LOG_COMPACTED", char) end

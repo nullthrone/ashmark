@@ -73,6 +73,26 @@ describe("Core Slash", function()
     assert.equal("Aren", char.name)
   end)
 
+  it("wipes this character's meetings and peer sightings with its record", function()
+    local me, alt = ns.playerGUID, "Player-1-0000000b"
+    local db = _G.AshmarkDB
+    db.contacts = {
+      once = { guid = "once", note = "", byChar = { [me] = { count = 2 } } },
+      noted = { guid = "noted", note = "owes me", byChar = { [me] = { count = 1 } } },
+      shared = { guid = "shared", byChar = { [me] = { count = 1 }, [alt] = { count = 4 } } },
+      other = { guid = "other", byChar = { [alt] = { count = 1 } } },
+    }
+    db.peers = { p = { guid = "p", seenBy = { [me] = "GENTLE", [alt] = "RUTHLESS" } } }
+    SlashCmdList.ASHMARK("reset")
+    dialog.onAccept()
+    assert.same({
+      noted = { guid = "noted", note = "owes me", byChar = {} },
+      shared = { guid = "shared", byChar = { [alt] = { count = 4 } } },
+      other = { guid = "other", byChar = { [alt] = { count = 1 } } },
+    }, db.contacts)
+    assert.same({ [alt] = "RUTHLESS" }, db.peers.p.seenBy)
+  end)
+
   it("wipes contacts, peers and rumours that are not own", function()
     local db = _G.AshmarkDB
     db.contacts.x, db.peers.y = {}, {}
