@@ -324,6 +324,19 @@ describe("Profile", function()
       assert.same({ -14, 4 }, { char.profile.fidelity, char.profile.mercy })
     end)
 
+    it("decays by the realm's clock, so a system date set a year ahead and back keeps the axes", function()
+      local char = boot()
+      set({ fidelity = 40, habitat = -40 })
+      local real = time
+      _G.time = function(t) if t then return real(t) end return real() + 365 * DAY end
+      abandon(1382)
+      assert.same({ fidelity = 38, habitat = -40, mercy = 0 }, axes())
+      _G.time = real
+      ns.Log:Add("rest.camp", {})
+      assert.same({ fidelity = 38, habitat = -34, mercy = 0 }, axes())
+      assert.equal(GetServerTime(), char.profile.asOf)
+    end)
+
     it("clamps the displayed axes to -100 and 100", function()
       boot()
       set({ fidelity = 0, habitat = 180, mercy = -250 })

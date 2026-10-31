@@ -32,6 +32,36 @@ describe("Core Util", function()
     assert.equal("", ns.Util.Trim(nil))
   end)
 
+  it("reads the realm's clock, and the system clock only without it", function()
+    wow.stub("GetServerTime", function() return 1234 end)
+    assert.equal(1234, ns.Util.Now())
+    wow.stub("GetServerTime", function() return wow.secret(5) end)
+    assert.equal(time(), ns.Util.Now())
+    wow.stub("GetServerTime", function() error("no clock") end)
+    assert.equal(time(), ns.Util.Now())
+    wow.stub("GetServerTime", nil)
+    assert.equal(time(), ns.Util.Now())
+  end)
+
+  it("tells names that begin with the sounds /i/ and /o/, for Spanish e and u", function()
+    local S = ns.Util.StartsWithSound
+    for _, name in ipairs({ "Ira", "isla", "\195\141caro", "Hilda", "h\195\173gado", "|cffff0000Ines|r" }) do
+      assert.is_true(S(name, "i"), name)
+    end
+    for _, name in ipairs({ "Hierro", "hielo", "Hiato", "Mira", "", "Yara" }) do
+      assert.is_false(S(name, "i"), name)
+    end
+    for _, name in ipairs({ "Orgrimmar", "ojo", "\195\147rdenes", "Hojas", "Hombres", "|cff00ff00Olga|r" }) do
+      assert.is_true(S(name, "o"), name)
+    end
+    for _, name in ipairs({ "Gelkis", "Uldum", "Huevo", "Ira" }) do
+      assert.is_false(S(name, "o"), name)
+    end
+    assert.is_false(S(nil, "i"))
+    assert.is_false(S("Ira", "a"))
+    assert.is_false(S(wow.secret("Ira"), "i"))
+  end)
+
   it("debounces per key and absorbs later calls", function()
     local calls = 0
     ns.Util.Debounce("k", 1, function() calls = calls + 1 end)

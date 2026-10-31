@@ -289,6 +289,17 @@ describe("Rumours", function()
       assert.is_nil(heard()["00000001"])
       assert.equal(200, #mock.heardIds())
     end)
+    it("decay by the realm's clock, so a system date set ahead keeps a heard rumour", function()
+      start()
+      local real = time
+      _G.time = function(t) if t then return real(t) end return real() + 30 * DAY end
+      mock.ru(wow, "mira", { id = "deadbeef", strength = 100 })
+      _G.time = real
+      local r = heard().deadbeef
+      assert.same({ wow.state.epoch, 70 }, { r.heard, ns.Rumours:Strength(r) })
+      ns.Rumours:OnWorldReady()
+      assert.is_table(heard().deadbeef)
+    end)
   end)
 
   describe("caps", function()

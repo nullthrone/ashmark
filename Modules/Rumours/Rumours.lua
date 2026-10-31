@@ -38,7 +38,7 @@ local ID_TRIES = 10
 local SEEDS = { alliance = "ALLIANCE", violation = "BROKE", houseturn = "TURNED" }
 local OTHER = { A = "B", B = "A" }
 
-local lastRound                  -- time() of the last round that sent something
+local lastRound                  -- ns.Util.Now() of the last round that sent something
 local fresh = {}                 -- [senderGuid] = { start, count }: new rumours in the sender's current window
 
 -- Stores --------------------------------------------------------------------------------
@@ -133,7 +133,7 @@ end
 
 function M:Strength(rumour)
   if type(rumour) ~= "table" then return 0 end
-  return strength(rumour, time())
+  return strength(rumour, ns.Util.Now())
 end
 
 -- Seeds ---------------------------------------------------------------------------------------
@@ -161,11 +161,13 @@ local function seed(entry, char)
   local side = conflict[entry.k == "violation" and OTHER[entry.side] or entry.side]
   local id = newId(heard)
   if not (id and type(side) == "table" and type(side.faction) == "number") then return end
+  -- Stamped by the same clock that decays it (ns.Util.Now), not the entry's system time.
+  local now = ns.Util.Now()
   heard[id] = {
     id = id, tpl = SEEDS[entry.k], a = ask("Profile", "Archetype", char) or "PRAGMATIST", f = side.faction,
-    m = conflict.zone, hops = 0, strength = 100, t = entry.t, heard = entry.t, own = true,
+    m = conflict.zone, hops = 0, strength = 100, t = now, heard = now, own = true,
   }
-  prune(time())
+  prune(now)
 end
 
 local function onLogAdded(_, _, entry, char)
@@ -215,7 +217,7 @@ local function onZone()
   local char = M:Char()
   local state = char and char.state
   local shown = type(state) == "table" and type(state.shown) == "table" and state.shown or {}
-  local now = time()
+  local now = ns.Util.Now()
   local best, most
   for id, r in pairs(heard) do
     local last = shown[id]
@@ -270,7 +272,7 @@ end
 local function onRumour(from, fields)
   local heard, told = stores()
   if not heard or type(from.guid) ~= "string" then return end
-  local now = time()
+  local now = ns.Util.Now()
   local r = fromWire(fields, now)
   if not r then return end
   local known = heard[r.id]
@@ -319,7 +321,7 @@ local function exchange()
   local heard, told = stores()
   local present = ask("Fiction", "PresentPeers")
   if not (heard and type(present) == "table" and next(present)) then return end
-  local now = time()
+  local now = ns.Util.Now()
   local list = candidates(heard, told, present, now)
   if #list == 0 then return end
   local wait = lastRound and lastRound + ROUND_EVERY - now or 0
@@ -352,7 +354,7 @@ local function checkRumours()
   if M.unavailable then return false, "unavailable: " .. table.concat(M.unavailable, ", ") end
   if not M.enabled then return nil, "off" end
   local heard, told = stores()
-  local now = time()
+  local now = ns.Util.Now()
   local own, others, strong, toldTo = 0, 0, 0, 0
   for _, r in pairs(heard or {}) do
     if type(r) == "table" and r.own then own = own + 1 else others = others + 1 end
@@ -383,5 +385,5 @@ function M:OnEnable()
 end
 
 function M:OnWorldReady()
-  prune(time())
+  prune(ns.Util.Now())
 end

@@ -86,7 +86,7 @@ local function record(char)
   end
   number(p, "wild")
   number(p, "civil")
-  if type(p.asOf) ~= "number" then p.asOf = time() end
+  if type(p.asOf) ~= "number" then p.asOf = ns.Util.Now() end
   if type(p.kept) ~= "table" then p.kept = {} end
   if type(p.day) ~= "table" or type(p.day.key) ~= "string" then p.day = newDay() end
   for _, key in ipairs(DAY_COUNTS) do number(p.day, key) end
@@ -106,7 +106,7 @@ end
 -- Decays every raw value to now: before every change (7.2).
 local function begin(char)
   local p = record(char)
-  local now = time()
+  local now = ns.Util.Now()
   local f = decay(p.asOf, now)
   if f < 1 then
     for _, axis in ipairs(AXES) do p.raw[axis] = p.raw[axis] * f end
@@ -141,7 +141,7 @@ function M:Axes(char)
   local p = type(char) == "table" and char.profile
   local raw = type(p) == "table" and p.raw
   if type(raw) ~= "table" then return axes end
-  local f = decay(p.asOf, time())
+  local f = decay(p.asOf, ns.Util.Now())
   for _, axis in ipairs(AXES) do
     if type(raw[axis]) == "number" then axes[axis] = shown(raw[axis] * f) end
   end
@@ -282,7 +282,7 @@ local function rollDay(char)
     bump(p, "fidelity", math.max(W.fidelity.loot * math.floor(beyond / GOLD_STEP), W.fidelity.lootMax))
   end
   if day.kills == 0 then bump(p, "mercy", W.mercy.calmDay) end
-  bump(p, "fidelity", W.fidelity.kept * keptAlliances(char, p, time()))
+  bump(p, "fidelity", W.fidelity.kept * keptAlliances(char, p, ns.Util.Now()))
   p.day = newDay()
   return p
 end

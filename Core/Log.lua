@@ -158,9 +158,7 @@ end
 -- Compaction ages entries by the server's clock where the client offers it, so a wrong system
 -- date cannot delete history (4.2).
 local function clock()
-  local ok, now = ns.Safe.Call(GetServerTime)
-  if ok and type(now) == "number" and now > 0 then return now end
-  return time()
+  return ns.Util.Now()
 end
 
 -- Drops stay[i] for the oldest entries that pass test(i), until count(dropped) reaches excess.

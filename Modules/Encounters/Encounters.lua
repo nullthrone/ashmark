@@ -542,29 +542,11 @@ local function memberText(guid)
   return ns.Format(L.ENC_LOG_PEER_NOPLACE, { who = name, archetype = archetype })
 end
 
-local I_LETTERS = { "I", "i", "\195\141", "\195\173" }   -- I, i, Í, í in UTF-8
-
--- True when text begins with the sound /i/ (I-, Í-, Hi-, Hí-, but not the diphthongs hia-, hie-, ...),
--- before which Spanish writes "e" for "y". Only code sees the name, so the rule lives here; every other
--- language's ENC_LIST_AND_VOWEL repeats its ENC_LIST_AND.
-local function iSound(text)
-  local s = (tostring(text):gsub("^|c%x%x%x%x%x%x%x%x", ""))
-  local rest = s:match("^[Hh](.*)$")
-  local word = rest or s
-  for _, letter in ipairs(I_LETTERS) do
-    if word:sub(1, #letter) == letter then
-      if not (rest and #letter == 1) then return true end
-      local after = word:sub(2)
-      return not (after:find("^[AaEeOoUu]") or after:find("^\195[\129\137\147\154\161\169\179\186]"))
-    end
-  end
-  return false
-end
-
 local function joined(items)
   if #items == 1 then return items[1] end
   local last = items[#items]
-  return ns.Format(iSound(last) and L.ENC_LIST_AND_VOWEL or L.ENC_LIST_AND, {
+  -- Spanish writes "e" for "y" before the sound /i/; every other ENC_LIST_AND_VOWEL repeats ENC_LIST_AND.
+  return ns.Format(ns.Util.StartsWithSound(last, "i") and L.ENC_LIST_AND_VOWEL or L.ENC_LIST_AND, {
     list = table.concat(items, L.ENC_LIST_SEP, 1, #items - 1), last = last,
   })
 end
