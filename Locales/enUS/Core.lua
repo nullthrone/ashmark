@@ -72,3 +72,16 @@ L.CORE_CANCEL = "Cancel"
 L.CORE_RESET_DONE = "This character's record was wiped."
 L.CORE_RESET_OTHERS_DONE = "Contacts, peers and heard rumours were wiped."
 L.CORE_RESET_READONLY = "The saved data comes from a newer Ashmark, so nothing can be wiped."
+
+-- UI shell (6.1, 6.2): main window tabs, the Chronicle tab and the Addon Compartment ---------------
+-- {roman} is a Roman numeral, {date} a short date from the client, {place} a zone name.
+L.CORE_TAB_CHRONICLE = "Chronicle"
+L.CORE_CHRONICLE_CHAPTER = "Chapter {roman}"
+L.CORE_CHRONICLE_CHAPTER_OPEN = "Chapter {roman} (current)"
+L.CORE_CHRONICLE_CLOSED = "Closed {date} · {place}"
+L.CORE_CHRONICLE_BEGUN = "Begun {date} · still being written"
+L.CORE_CHRONICLE_OPEN = "Still being written"
+L.CORE_CHRONICLE_EMPTY = "Nothing in this chapter is worth telling yet."
+L.CORE_CHRONICLE_NO_RECORD = "Ashmark keeps no record for this character yet."
+L.CORE_COMPARTMENT_CLICK = "Click to open or close the chronicle."
+L.CORE_COMPARTMENT_RIGHT_CLICK = "Right-click to open the settings."
