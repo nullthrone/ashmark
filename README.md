@@ -40,7 +40,6 @@ Mercy is an approximation: without the combat log, a kill counts when you target
 ### 🚫 What Ashmark never does
 
 - 🛑 read the combat log: Forever closes it to addons
-- 🤖 automate anything: it never accepts, blocks or abandons a quest
 - 🧩 use StaticPopup or ship libraries: Blizzard APIs only
 - 🌐 run outside WoW Forever: Retail and Classic Era are not supported
 

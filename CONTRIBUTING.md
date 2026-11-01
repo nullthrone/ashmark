@@ -47,7 +47,7 @@ The ground rules:
 
 - Lua 5.1, Blizzard APIs only, no libraries.
 - WoW Forever only: no code paths for Retail or Classic Era.
-- No combat log, no automation, no protected calls, no StaticPopup.
+- No combat log, no protected calls, no StaticPopup.
 - Feature-detect every API that may be missing, and read every value that can be secret through `ns.Safe`.
 - Every string a player sees goes through `ns.L`, with the English text in `Locales/enUS/`.
 - Every file belongs to one unit (section 9 of the architecture). Keep a change inside one unit where you can, and say in the pull request when it crosses units.
