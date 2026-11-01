@@ -5,7 +5,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Ashmark runs on WoW Forever only, cannot read the combat log and never automates anything, such as accepting or blocking a quest. Ideas inside those limits have the best chance.
+        Ashmark runs on WoW Forever only and cannot read the combat log. Ideas inside those limits have the best chance.
   - type: dropdown
     id: module
     attributes:

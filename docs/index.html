@@ -428,7 +428,6 @@ td.wrap-ok { white-space: normal; }
         <h3>What it never does</h3>
         <ul class="never">
           <li><span class="caps">No combat log</span>Ashmark never registers <code>COMBAT_LOG_EVENT</code> or <code>COMBAT_LOG_EVENT_UNFILTERED</code>. Forever closes the combat log to addons.</li>
-          <li><span class="caps">No automation</span>It never accepts, blocks or abandons a quest, creates no secure frames and calls no protected function. The only call that needs a key press is <code>Screenshot()</code> inside <code>/ashmark test</code>.</li>
           <li><span class="caps">No StaticPopup</span>Confirmations and the note editor use Ashmark's own dialog, so Blizzard's shared popups stay untainted.</li>
           <li><span class="caps">No libraries</span>Blizzard APIs only: no LibStub, Ace3, HereBeDragons or ChatThrottleLib. Map pins and the addon-message throttle are Ashmark's own code.</li>
         </ul>
@@ -458,7 +457,7 @@ td.wrap-ok { white-space: normal; }
             <p class="where"><span class="caps-column">In game</span>A line under the quest dialog · Decisions tab</p>
             <p>Accepting or turning in a quest on one side of a conflict allies you with that side. Standing alone also decides it, once exactly one side's faction reaches the conflict's level (Honored in every pilot conflict); one standing decides every conflict of that faction in a zone at once, with one line in the chronicle. An alliance by quest names its conflict by the title of its first quest, so two conflicts between the same factions in one zone read apart. A quest that contradicts your side shows a red line under the dialog:</p>
             <blockquote>Contradicts your alliance with {faction}.</blockquote>
-            <p>Ashmark cannot block the quest. Turning it in breaks your word: the chronicle and the Decisions tab record it and your alliance moves to the new side. There is no further penalty; the rewards you gave up are the consequence. The Decisions tab lists the conflicts by zone, each under the title of its first quest with both sides, the side taken and since when, how often it was broken, and your total of broken words. Ten pilot conflicts ship with v1. Outside Zephras Isle, the Skyborne starting zone, the first of them begin around level 30 in Desolace.</p>
+            <p>Turning such a quest in breaks your word: the chronicle and the Decisions tab record it and your alliance moves to the new side. The Decisions tab lists the conflicts by zone, each under the title of its first quest with both sides, the side taken and since when, how often it was broken, and your total of broken words. Ten pilot conflicts ship with v1. Outside Zephras Isle, the Skyborne starting zone, the first of them begin around level 30 in Desolace.</p>
           </li>
           <li class="feature">
             <h3>Profile</h3>
